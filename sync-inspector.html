@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Wirog — Sync Inspector</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>body{padding:16px} .item{border:1px solid #eee;padding:10px;margin-bottom:8px;border-radius:8px}</style>
+</head>
+<body>
+  <h2>Sync Queue Inspector</h2>
+  <p>View and manage the local sync queue.</p>
+  <div id="controls">
+    <button id="refresh">Refresh</button>
+    <button id="flush">Flush Now</button>
+    <button id="clear">Clear Queue</button>
+  </div>
+  <div id="list"></div>
+
+  <script src="sync.js"></script>
+  <script>
+    async function render() {
+      const list = document.getElementById('list');
+      list.innerHTML = '<p>Loading...</p>';
+      const items = await window.SyncQueue.getAll();
+      if (!items || items.length === 0) { list.innerHTML = '<p>No queued items.</p>'; return; }
+      list.innerHTML = '';
+      items.forEach(it => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = '<strong>' + it.type + '</strong> <small>' + it.id + '</small><pre style="white-space:pre-wrap">' + JSON.stringify(it.payload,null,2) + '</pre>' +
+          '<div><button onclick="remove(\''+it.id+'\')">Remove</button></div>';
+        list.appendChild(div);
+      });
+    }
+
+    async function remove(id) { await window.SyncQueue.remove(id); render(); }
+    document.getElementById('refresh').addEventListener('click', render);
+    document.getElementById('flush').addEventListener('click', async ()=>{ await window.SyncQueue.flush(); render(); });
+    document.getElementById('clear').addEventListener('click', async ()=>{ if(confirm('Clear queue?')){ await window.SyncQueue.clear(); render(); }});
+
+    render();
+  </script>
+</body>
+</html>

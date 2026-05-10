@@ -1,0 +1,14 @@
+{
+  "name": "Wirog Supply Solutions",
+  "short_name": "Wirog",
+  "description": "Botswana's construction & hardware marketplace",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ed6626",
+  "theme_color": "#ed6626",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "assets/images/company_logos_dummy/new_wirog_logo_icon.webp", "sizes": "192x192", "type": "image/webp" },
+    { "src": "assets/images/company_logos_dummy/new_wirog_logo_icon.webp", "sizes": "512x512", "type": "image/webp" }
+  ]
+}

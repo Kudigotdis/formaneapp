@@ -1,0 +1,27 @@
+{
+  "name": "wirog-app-2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "account.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node tests/pricing_engine_test.js && node tests/wirogdb_test.js",
+    "test:pricing": "node tests/pricing_engine_test.js",
+    "test:wirogdb": "node tests/wirogdb_test.js",
+    "test:e2e": "node tests/e2e_puppeteer.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^3.1.8",
+    "puppeteer": "^24.43.0"
+  }
+}

@@ -1,0 +1,986 @@
+window.WIROG_PRODUCT_CATEGORIES = {
+  "version": "1.0",
+  "categories": [
+    {
+      "id": "attire-uniform",
+      "name": "Attire & Uniform",
+      "slug": "attire-uniform",
+      "path": "attire-uniform",
+      "children": [
+        {
+          "id": "workwear",
+          "name": "Workwear",
+          "slug": "workwear",
+          "path": "attire-uniform/workwear",
+          "children": [
+            { "id": "overalls", "name": "Overalls", "slug": "overalls", "path": "attire-uniform/workwear/overalls", "children": [] },
+            { "id": "safety-boots", "name": "Safety Boots", "slug": "safety-boots", "path": "attire-uniform/workwear/safety-boots", "children": [] },
+            { "id": "high-vis", "name": "High-Vis", "slug": "high-vis", "path": "attire-uniform/workwear/high-vis", "children": [] },
+            { "id": "gloves", "name": "Gloves", "slug": "gloves", "path": "attire-uniform/workwear/gloves", "children": [] },
+            { "id": "head-protection", "name": "Head Protection", "slug": "head-protection", "path": "attire-uniform/workwear/head-protection", "children": [] }
+          ]
+        },
+        {
+          "id": "corporate-uniforms",
+          "name": "Corporate Uniforms",
+          "slug": "corporate-uniforms",
+          "path": "attire-uniform/corporate-uniforms",
+          "children": [
+            { "id": "shirts", "name": "Shirts", "slug": "shirts", "path": "attire-uniform/corporate-uniforms/shirts", "children": [] },
+            { "id": "trousers", "name": "Trousers", "slug": "trousers", "path": "attire-uniform/corporate-uniforms/trousers", "children": [] },
+            { "id": "dresses", "name": "Dresses", "slug": "dresses", "path": "attire-uniform/corporate-uniforms/dresses", "children": [] },
+            { "id": "branded-wear", "name": "Branded Wear", "slug": "branded-wear", "path": "attire-uniform/corporate-uniforms/branded-wear", "children": [] }
+          ]
+        },
+        {
+          "id": "school-hospitality",
+          "name": "School & Hospitality",
+          "slug": "school-hospitality",
+          "path": "attire-uniform/school-hospitality",
+          "children": [
+            { "id": "school-uniforms", "name": "School Uniforms", "slug": "school-uniforms", "path": "attire-uniform/school-hospitality/school-uniforms", "children": [] },
+            { "id": "chef-wear", "name": "Chef Wear", "slug": "chef-wear", "path": "attire-uniform/school-hospitality/chef-wear", "children": [] },
+            { "id": "housekeeping", "name": "Housekeeping", "slug": "housekeeping", "path": "attire-uniform/school-hospitality/housekeeping", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bathroom-kitchen",
+      "name": "Bathroom & Kitchen",
+      "slug": "bathroom-kitchen",
+      "path": "bathroom-kitchen",
+      "children": [
+        {
+          "id": "bathroomware",
+          "name": "Bathroomware",
+          "slug": "bathroomware",
+          "path": "bathroom-kitchen/bathroomware",
+          "children": [
+            { "id": "bathtubs", "name": "Bathtubs", "slug": "bathtubs", "path": "bathroom-kitchen/bathroomware/bathtubs", "children": [] },
+            { "id": "showers-accessories", "name": "Showers & Accessories", "slug": "showers-accessories", "path": "bathroom-kitchen/bathroomware/showers-accessories", "children": [] },
+            { "id": "toilets", "name": "Toilets", "slug": "toilets", "path": "bathroom-kitchen/bathroomware/toilets", "children": [] },
+            { "id": "toilet-seats-spares", "name": "Toilet Seats & Spares", "slug": "toilet-seats-spares", "path": "bathroom-kitchen/bathroomware/toilet-seats-spares", "children": [] },
+            { "id": "basins-pedestals", "name": "Basins & Pedestals", "slug": "basins-pedestals", "path": "bathroom-kitchen/bathroomware/basins-pedestals", "children": [] },
+            { "id": "bathroom-accessories", "name": "Bathroom Accessories", "slug": "bathroom-accessories", "path": "bathroom-kitchen/bathroomware/bathroom-accessories", "children": [] },
+            { "id": "taps-mixer-accessories", "name": "Taps / Mixer Accessories", "slug": "taps-mixer-accessories", "path": "bathroom-kitchen/bathroomware/taps-mixer-accessories", "children": [] },
+            { "id": "taps-mixers", "name": "Taps & Mixers", "slug": "taps-mixers", "path": "bathroom-kitchen/bathroomware/taps-mixers", "children": [] },
+            { "id": "bathroom-furniture", "name": "Bathroom Furniture", "slug": "bathroom-furniture", "path": "bathroom-kitchen/bathroomware/bathroom-furniture", "children": [] }
+          ]
+        },
+        {
+          "id": "kitchen",
+          "name": "Kitchen",
+          "slug": "kitchen",
+          "path": "bathroom-kitchen/kitchen",
+          "children": [
+            { "id": "sinks-prep-bowls", "name": "Sinks & Prep Bowls", "slug": "sinks-prep-bowls", "path": "bathroom-kitchen/kitchen/sinks-prep-bowls", "children": [] },
+            { "id": "sink-prep-accessories", "name": "Sink / Prep Accessories", "slug": "sink-prep-accessories", "path": "bathroom-kitchen/kitchen/sink-prep-accessories", "children": [] },
+            { "id": "wash-troughs", "name": "Wash Troughs", "slug": "wash-troughs", "path": "bathroom-kitchen/kitchen/wash-troughs", "children": [] },
+            { "id": "complete-diy-units", "name": "Complete DIY Units", "slug": "complete-diy-units", "path": "bathroom-kitchen/kitchen/complete-diy-units", "children": [] },
+            { "id": "accessories", "name": "Accessories", "slug": "accessories", "path": "bathroom-kitchen/kitchen/accessories", "children": [] },
+            { "id": "taps-mixers", "name": "Taps & Mixers", "slug": "taps-mixers", "path": "bathroom-kitchen/kitchen/taps-mixers", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "boards-timber",
+      "name": "Boards & Timber",
+      "slug": "boards-timber",
+      "path": "boards-timber",
+      "children": [
+        {
+          "id": "boards",
+          "name": "Boards",
+          "slug": "boards",
+          "path": "boards-timber/boards",
+          "children": [
+            { "id": "chipboard", "name": "Chipboard", "slug": "chipboard", "path": "boards-timber/boards/chipboard", "children": [] },
+            { "id": "plywood", "name": "Plywood", "slug": "plywood", "path": "boards-timber/boards/plywood", "children": [] },
+            { "id": "melamine-faced-board", "name": "Melamine Faced Board", "slug": "melamine-faced-board", "path": "boards-timber/boards/melamine-faced-board", "children": [] },
+            { "id": "supawood", "name": "Supawood", "slug": "supawood", "path": "boards-timber/boards/supawood", "children": [] },
+            { "id": "hardboard", "name": "Hardboard", "slug": "hardboard", "path": "boards-timber/boards/hardboard", "children": [] },
+            { "id": "softboard", "name": "Softboard", "slug": "softboard", "path": "boards-timber/boards/softboard", "children": [] },
+            { "id": "shutterboard", "name": "Shutterboard", "slug": "shutterboard", "path": "boards-timber/boards/shutterboard", "children": [] },
+            { "id": "oriented-strand-board", "name": "Oriented Strand Board", "slug": "oriented-strand-board", "path": "boards-timber/boards/oriented-strand-board", "children": [] },
+            { "id": "shelving-board", "name": "Shelving Board", "slug": "shelving-board", "path": "boards-timber/boards/shelving-board", "children": [] }
+          ]
+        },
+        {
+          "id": "timber",
+          "name": "Timber",
+          "slug": "timber",
+          "path": "boards-timber/timber",
+          "children": [
+            { "id": "decking-cladding", "name": "Decking & Cladding", "slug": "decking-cladding", "path": "boards-timber/timber/decking-cladding", "children": [] },
+            { "id": "mouldings-par-timber", "name": "Mouldings / PAR Timber", "slug": "mouldings-par-timber", "path": "boards-timber/timber/mouldings-par-timber", "children": [] },
+            { "id": "structural-timber", "name": "Structural Timber", "slug": "structural-timber", "path": "boards-timber/timber/structural-timber", "children": [] },
+            { "id": "par-timber", "name": "PAR Timber", "slug": "par-timber", "path": "boards-timber/timber/par-timber", "children": [] },
+            { "id": "crating-industrial", "name": "Crating & Industrial", "slug": "crating-industrial", "path": "boards-timber/timber/crating-industrial", "children": [] },
+            { "id": "poles-laths", "name": "Poles & Laths", "slug": "poles-laths", "path": "boards-timber/timber/poles-laths", "children": [] },
+            { "id": "exotic-timber", "name": "Exotic Timber", "slug": "exotic-timber", "path": "boards-timber/timber/exotic-timber", "children": [] }
+          ]
+        },
+        { "id": "postform-tops", "name": "Postform Tops", "slug": "postform-tops", "path": "boards-timber/postform-tops", "children": [] },
+        { "id": "postform-joiners", "name": "Postform Joiners", "slug": "postform-joiners", "path": "boards-timber/postform-joiners", "children": [] },
+        { "id": "edging", "name": "Edging", "slug": "edging", "path": "boards-timber/edging", "children": [] },
+        { "id": "pvc-foil-laminates", "name": "PVC Foil & Laminates", "slug": "pvc-foil-laminates", "path": "boards-timber/pvc-foil-laminates", "children": [] }
+      ]
+    },
+    {
+      "id": "building-materials",
+      "name": "Building Materials",
+      "slug": "building-materials",
+      "path": "building-materials",
+      "children": [
+        { "id": "bricks", "name": "Bricks", "slug": "bricks", "path": "building-materials/bricks", "children": [] },
+        { "id": "sand", "name": "Sand", "slug": "sand", "path": "building-materials/sand", "children": [] },
+        { "id": "stone", "name": "Stone", "slug": "stone", "path": "building-materials/stone", "children": [] },
+        { "id": "premixes", "name": "Premixes", "slug": "premixes", "path": "building-materials/premixes", "children": [] },
+        { "id": "lintels", "name": "Lintels", "slug": "lintels", "path": "building-materials/lintels", "children": [] },
+        { "id": "building-columns-cladding", "name": "Building Columns & Cladding", "slug": "building-columns-cladding", "path": "building-materials/building-columns-cladding", "children": [] },
+        { "id": "concrete-products", "name": "Concrete Products", "slug": "concrete-products", "path": "building-materials/concrete-products", "children": [] },
+        { "id": "structural-steel", "name": "Structural Steel", "slug": "structural-steel", "path": "building-materials/structural-steel", "children": [] },
+        { "id": "reinforcing-underlay", "name": "Reinforcing & Underlay", "slug": "reinforcing-underlay", "path": "building-materials/reinforcing-underlay", "children": [] },
+        { "id": "cast-iron", "name": "Cast Iron", "slug": "cast-iron", "path": "building-materials/cast-iron", "children": [] },
+        { "id": "joint-fillers", "name": "Joint Fillers", "slug": "joint-fillers", "path": "building-materials/joint-fillers", "children": [] },
+        { "id": "glass-panes", "name": "Glass Panes", "slug": "glass-panes", "path": "building-materials/glass-panes", "children": [] }
+      ]
+    },
+    {
+      "id": "cement-aggregates",
+      "name": "Cement & Aggregates",
+      "slug": "cement-aggregates",
+      "path": "cement-aggregates",
+      "children": [
+        {
+          "id": "cement",
+          "name": "Cement",
+          "slug": "cement",
+          "path": "cement-aggregates/cement",
+          "children": [
+            { "id": "portland-cement", "name": "Portland Cement", "slug": "portland-cement", "path": "cement-aggregates/cement/portland-cement", "children": [] },
+            { "id": "masonry-cement", "name": "Masonry Cement", "slug": "masonry-cement", "path": "cement-aggregates/cement/masonry-cement", "children": [] },
+            { "id": "rapid-hardening", "name": "Rapid Hardening", "slug": "rapid-hardening", "path": "cement-aggregates/cement/rapid-hardening", "children": [] },
+            { "id": "white-cement", "name": "White Cement", "slug": "white-cement", "path": "cement-aggregates/cement/white-cement", "children": [] }
+          ]
+        },
+        {
+          "id": "aggregates",
+          "name": "Aggregates",
+          "slug": "aggregates",
+          "path": "cement-aggregates/aggregates",
+          "children": [
+            { "id": "crusher-stone", "name": "Crusher Stone", "slug": "crusher-stone", "path": "cement-aggregates/aggregates/crusher-stone", "children": [] },
+            { "id": "river-sand", "name": "River Sand", "slug": "river-sand", "path": "cement-aggregates/aggregates/river-sand", "children": [] },
+            { "id": "plaster-sand", "name": "Plaster Sand", "slug": "plaster-sand", "path": "cement-aggregates/aggregates/plaster-sand", "children": [] },
+            { "id": "gravel", "name": "Gravel", "slug": "gravel", "path": "cement-aggregates/aggregates/gravel", "children": [] }
+          ]
+        },
+        { "id": "ready-mix", "name": "Ready Mix", "slug": "ready-mix", "path": "cement-aggregates/ready-mix", "children": [] }
+      ]
+    },
+    {
+      "id": "chemicals",
+      "name": "Chemicals",
+      "slug": "chemicals",
+      "path": "chemicals",
+      "children": [
+        {
+          "id": "construction-chemicals",
+          "name": "Construction Chemicals",
+          "slug": "construction-chemicals",
+          "path": "chemicals/construction-chemicals",
+          "children": [
+            { "id": "waterproofing", "name": "Waterproofing", "slug": "waterproofing", "path": "chemicals/construction-chemicals/waterproofing", "children": [] },
+            { "id": "concrete-admixtures", "name": "Concrete Admixtures", "slug": "concrete-admixtures", "path": "chemicals/construction-chemicals/concrete-admixtures", "children": [] },
+            { "id": "bonding-agents", "name": "Bonding Agents", "slug": "bonding-agents", "path": "chemicals/construction-chemicals/bonding-agents", "children": [] },
+            { "id": "crack-fillers", "name": "Crack Fillers", "slug": "crack-fillers", "path": "chemicals/construction-chemicals/crack-fillers", "children": [] }
+          ]
+        },
+        {
+          "id": "cleaning-chemicals",
+          "name": "Cleaning Chemicals",
+          "slug": "cleaning-chemicals",
+          "path": "chemicals/cleaning-chemicals",
+          "children": [
+            { "id": "degreasers", "name": "Degreasers", "slug": "degreasers", "path": "chemicals/cleaning-chemicals/degreasers", "children": [] },
+            { "id": "tile-cleaners", "name": "Tile Cleaners", "slug": "tile-cleaners", "path": "chemicals/cleaning-chemicals/tile-cleaners", "children": [] },
+            { "id": "solvents", "name": "Solvents", "slug": "solvents", "path": "chemicals/cleaning-chemicals/solvents", "children": [] }
+          ]
+        },
+        {
+          "id": "pool-chemicals",
+          "name": "Pool Chemicals",
+          "slug": "pool-chemicals",
+          "path": "chemicals/pool-chemicals",
+          "children": [
+            { "id": "chlorine", "name": "Chlorine", "slug": "chlorine", "path": "chemicals/pool-chemicals/chlorine", "children": [] },
+            { "id": "algaecides", "name": "Algaecides", "slug": "algaecides", "path": "chemicals/pool-chemicals/algaecides", "children": [] },
+            { "id": "ph-balancers", "name": "pH Balancers", "slug": "ph-balancers", "path": "chemicals/pool-chemicals/ph-balancers", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "design-plans",
+      "name": "Design & Plans",
+      "slug": "design-plans",
+      "path": "design-plans",
+      "children": [
+        {
+          "id": "house-plans",
+          "name": "House Plans",
+          "slug": "house-plans",
+          "path": "design-plans/house-plans",
+          "children": [
+            { "id": "2-bedroom", "name": "2 Bedroom", "slug": "2-bedroom", "path": "design-plans/house-plans/2-bedroom", "children": [] },
+            { "id": "3-bedroom", "name": "3 Bedroom", "slug": "3-bedroom", "path": "design-plans/house-plans/3-bedroom", "children": [] },
+            { "id": "duplex", "name": "Duplex", "slug": "duplex", "path": "design-plans/house-plans/duplex", "children": [] },
+            { "id": "multi-residential", "name": "Multi Residential", "slug": "multi-residential", "path": "design-plans/house-plans/multi-residential", "children": [] }
+          ]
+        },
+        {
+          "id": "commercial-plans",
+          "name": "Commercial Plans",
+          "slug": "commercial-plans",
+          "path": "design-plans/commercial-plans",
+          "children": [
+            { "id": "offices", "name": "Offices", "slug": "offices", "path": "design-plans/commercial-plans/offices", "children": [] },
+            { "id": "retail", "name": "Retail", "slug": "retail", "path": "design-plans/commercial-plans/retail", "children": [] },
+            { "id": "warehouses", "name": "Warehouses", "slug": "warehouses", "path": "design-plans/commercial-plans/warehouses", "children": [] }
+          ]
+        },
+        {
+          "id": "approval-services",
+          "name": "Approval Services",
+          "slug": "approval-services",
+          "path": "design-plans/approval-services",
+          "children": [
+            { "id": "council-submission", "name": "Council Submission", "slug": "council-submission", "path": "design-plans/approval-services/council-submission", "children": [] },
+            { "id": "3d-rendering", "name": "3D Rendering", "slug": "3d-rendering", "path": "design-plans/approval-services/3d-rendering", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "doors-windows",
+      "name": "Doors & Windows",
+      "slug": "doors-windows",
+      "path": "doors-windows",
+      "children": [
+        {
+          "id": "doors",
+          "name": "Doors",
+          "slug": "doors",
+          "path": "doors-windows/doors",
+          "children": [
+            { "id": "interior-doors", "name": "Interior Doors", "slug": "interior-doors", "path": "doors-windows/doors/interior-doors", "children": [] },
+            { "id": "exterior-doors", "name": "Exterior Doors", "slug": "exterior-doors", "path": "doors-windows/doors/exterior-doors", "children": [] },
+            { "id": "security-doors", "name": "Security Doors", "slug": "security-doors", "path": "doors-windows/doors/security-doors", "children": [] },
+            { "id": "sliding-doors", "name": "Sliding Doors", "slug": "sliding-doors", "path": "doors-windows/doors/sliding-doors", "children": [] }
+          ]
+        },
+        {
+          "id": "windows",
+          "name": "Windows",
+          "slug": "windows",
+          "path": "doors-windows/windows",
+          "children": [
+            { "id": "aluminium-windows", "name": "Aluminium Windows", "slug": "aluminium-windows", "path": "doors-windows/windows/aluminium-windows", "children": [] },
+            { "id": "wooden-windows", "name": "Wooden Windows", "slug": "wooden-windows", "path": "doors-windows/windows/wooden-windows", "children": [] },
+            { "id": "pvc-windows", "name": "PVC Windows", "slug": "pvc-windows", "path": "doors-windows/windows/pvc-windows", "children": [] },
+            { "id": "louvres", "name": "Louvres", "slug": "louvres", "path": "doors-windows/windows/louvres", "children": [] }
+          ]
+        },
+        { "id": "door-frames", "name": "Door Frames", "slug": "door-frames", "path": "doors-windows/door-frames", "children": [] },
+        { "id": "awnings", "name": "Awnings", "slug": "awnings", "path": "doors-windows/awnings", "children": [] }
+      ]
+    },
+    {
+      "id": "electrical",
+      "name": "Electrical",
+      "slug": "electrical",
+      "path": "electrical",
+      "children": [
+        { "id": "accessories", "name": "Accessories", "slug": "accessories", "path": "electrical/accessories", "children": [] },
+        { "id": "wire", "name": "Wire", "slug": "wire", "path": "electrical/wire", "children": [] },
+        { "id": "db-boxes-breakers", "name": "DB Boxes & Breakers", "slug": "db-boxes-breakers", "path": "electrical/db-boxes-breakers", "children": [] },
+        { "id": "plugs-extension-cords", "name": "Plugs & Extension Cords", "slug": "plugs-extension-cords", "path": "electrical/plugs-extension-cords", "children": [] },
+        { "id": "switches-cover-plates", "name": "Switches & Cover Plates", "slug": "switches-cover-plates", "path": "electrical/switches-cover-plates", "children": [] },
+        { "id": "conduit-accessories", "name": "Conduit & Accessories", "slug": "conduit-accessories", "path": "electrical/conduit-accessories", "children": [] },
+        { "id": "trunking-ducting", "name": "Trunking & Ducting", "slug": "trunking-ducting", "path": "electrical/trunking-ducting", "children": [] },
+        { "id": "batteries", "name": "Batteries", "slug": "batteries", "path": "electrical/batteries", "children": [] },
+        { "id": "meters-testers", "name": "Meters & Testers", "slug": "meters-testers", "path": "electrical/meters-testers", "children": [] },
+        { "id": "timers", "name": "Timers", "slug": "timers", "path": "electrical/timers", "children": [] }
+      ]
+    },
+    {
+      "id": "gardening-outdoor-living",
+      "name": "Gardening & Outdoor Living",
+      "slug": "gardening-outdoor-living",
+      "path": "gardening-outdoor-living",
+      "children": [
+        {
+          "id": "gardening",
+          "name": "Gardening",
+          "slug": "gardening",
+          "path": "gardening-outdoor-living/gardening",
+          "children": [
+            { "id": "tools", "name": "Tools", "slug": "tools", "path": "gardening-outdoor-living/gardening/tools", "children": [] },
+            { "id": "fertiliser", "name": "Fertiliser", "slug": "fertiliser", "path": "gardening-outdoor-living/gardening/fertiliser", "children": [] },
+            { "id": "seeds", "name": "Seeds", "slug": "seeds", "path": "gardening-outdoor-living/gardening/seeds", "children": [] },
+            { "id": "pots-planters", "name": "Pots & Planters", "slug": "pots-planters", "path": "gardening-outdoor-living/gardening/pots-planters", "children": [] }
+          ]
+        },
+        {
+          "id": "outdoor-living",
+          "name": "Outdoor Living",
+          "slug": "outdoor-living",
+          "path": "gardening-outdoor-living/outdoor-living",
+          "children": [
+            { "id": "patio-furniture", "name": "Patio Furniture", "slug": "patio-furniture", "path": "gardening-outdoor-living/outdoor-living/patio-furniture", "children": [] },
+            { "id": "braais-accessories", "name": "Braais & Accessories", "slug": "braais-accessories", "path": "gardening-outdoor-living/outdoor-living/braais-accessories", "children": [] },
+            { "id": "gazebos-umbrellas", "name": "Gazebos & Umbrellas", "slug": "gazebos-umbrellas", "path": "gardening-outdoor-living/outdoor-living/gazebos-umbrellas", "children": [] },
+            { "id": "pools-pool-care", "name": "Pools & Pool Care", "slug": "pools-pool-care", "path": "gardening-outdoor-living/outdoor-living/pools-pool-care", "children": [] }
+          ]
+        },
+        {
+          "id": "irrigation-tanks-pumps",
+          "name": "Irrigation, Tanks & Pumps",
+          "slug": "irrigation-tanks-pumps",
+          "path": "gardening-outdoor-living/irrigation-tanks-pumps",
+          "children": [
+            { "id": "drip-irrigation", "name": "Drip Irrigation", "slug": "drip-irrigation", "path": "gardening-outdoor-living/irrigation-tanks-pumps/drip-irrigation", "children": [] },
+            { "id": "sprinklers", "name": "Sprinklers", "slug": "sprinklers", "path": "gardening-outdoor-living/irrigation-tanks-pumps/sprinklers", "children": [] },
+            { "id": "water-tanks", "name": "Water Tanks", "slug": "water-tanks", "path": "gardening-outdoor-living/irrigation-tanks-pumps/water-tanks", "children": [] },
+            { "id": "pumps", "name": "Pumps", "slug": "pumps", "path": "gardening-outdoor-living/irrigation-tanks-pumps/pumps", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generators-power-solutions",
+      "name": "Generators & Power Solutions",
+      "slug": "generators-power-solutions",
+      "path": "generators-power-solutions",
+      "children": [
+        {
+          "id": "generators",
+          "name": "Generators",
+          "slug": "generators",
+          "path": "generators-power-solutions/generators",
+          "children": [
+            { "id": "petrol-generators", "name": "Petrol Generators", "slug": "petrol-generators", "path": "generators-power-solutions/generators/petrol-generators", "children": [] },
+            { "id": "diesel-generators", "name": "Diesel Generators", "slug": "diesel-generators", "path": "generators-power-solutions/generators/diesel-generators", "children": [] },
+            { "id": "silent-generators", "name": "Silent Generators", "slug": "silent-generators", "path": "generators-power-solutions/generators/silent-generators", "children": [] }
+          ]
+        },
+        {
+          "id": "inverters-ups",
+          "name": "Inverters & UPS",
+          "slug": "inverters-ups",
+          "path": "generators-power-solutions/inverters-ups",
+          "children": [
+            { "id": "inverters", "name": "Inverters", "slug": "inverters", "path": "generators-power-solutions/inverters-ups/inverters", "children": [] },
+            { "id": "ups-systems", "name": "UPS Systems", "slug": "ups-systems", "path": "generators-power-solutions/inverters-ups/ups-systems", "children": [] },
+            { "id": "inverter-batteries", "name": "Inverter Batteries", "slug": "inverter-batteries", "path": "generators-power-solutions/inverters-ups/inverter-batteries", "children": [] }
+          ]
+        },
+        {
+          "id": "power-accessories",
+          "name": "Power Accessories",
+          "slug": "power-accessories",
+          "path": "generators-power-solutions/power-accessories",
+          "children": [
+            { "id": "avr", "name": "AVR", "slug": "avr", "path": "generators-power-solutions/power-accessories/avr", "children": [] },
+            { "id": "change-over-switches", "name": "Change-over Switches", "slug": "change-over-switches", "path": "generators-power-solutions/power-accessories/change-over-switches", "children": [] },
+            { "id": "cables", "name": "Cables", "slug": "cables", "path": "generators-power-solutions/power-accessories/cables", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "geysers-heating",
+      "name": "Geysers & Heating",
+      "slug": "geysers-heating",
+      "path": "geysers-heating",
+      "children": [
+        {
+          "id": "electric-geysers",
+          "name": "Electric Geysers",
+          "slug": "electric-geysers",
+          "path": "geysers-heating/electric-geysers",
+          "children": [
+            { "id": "50l", "name": "50 Litre", "slug": "50l", "path": "geysers-heating/electric-geysers/50l", "children": [] },
+            { "id": "100l", "name": "100 Litre", "slug": "100l", "path": "geysers-heating/electric-geysers/100l", "children": [] },
+            { "id": "150l", "name": "150 Litre", "slug": "150l", "path": "geysers-heating/electric-geysers/150l", "children": [] },
+            { "id": "200l", "name": "200 Litre", "slug": "200l", "path": "geysers-heating/electric-geysers/200l", "children": [] }
+          ]
+        },
+        { "id": "gas-geysers", "name": "Gas Geysers", "slug": "gas-geysers", "path": "geysers-heating/gas-geysers", "children": [] },
+        { "id": "solar-geysers", "name": "Solar Geysers", "slug": "solar-geysers", "path": "geysers-heating/solar-geysers", "children": [] },
+        {
+          "id": "geyser-accessories",
+          "name": "Geyser Accessories",
+          "slug": "geyser-accessories",
+          "path": "geysers-heating/geyser-accessories",
+          "children": [
+            { "id": "elements", "name": "Elements", "slug": "elements", "path": "geysers-heating/geyser-accessories/elements", "children": [] },
+            { "id": "thermostats", "name": "Thermostats", "slug": "thermostats", "path": "geysers-heating/geyser-accessories/thermostats", "children": [] },
+            { "id": "valves", "name": "Valves", "slug": "valves", "path": "geysers-heating/geyser-accessories/valves", "children": [] },
+            { "id": "timers", "name": "Timers", "slug": "timers", "path": "geysers-heating/geyser-accessories/timers", "children": [] }
+          ]
+        },
+        {
+          "id": "space-heaters",
+          "name": "Space Heaters",
+          "slug": "space-heaters",
+          "path": "geysers-heating/space-heaters",
+          "children": [
+            { "id": "panel-heaters", "name": "Panel Heaters", "slug": "panel-heaters", "path": "geysers-heating/space-heaters/panel-heaters", "children": [] },
+            { "id": "gas-heaters", "name": "Gas Heaters", "slug": "gas-heaters", "path": "geysers-heating/space-heaters/gas-heaters", "children": [] },
+            { "id": "fireplaces", "name": "Fireplaces", "slug": "fireplaces", "path": "geysers-heating/space-heaters/fireplaces", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hardware-fasteners",
+      "name": "Hardware & Fasteners",
+      "slug": "hardware-fasteners",
+      "path": "hardware-fasteners",
+      "children": [
+        {
+          "id": "fasteners",
+          "name": "Fasteners",
+          "slug": "fasteners",
+          "path": "hardware-fasteners/fasteners",
+          "children": [
+            { "id": "screws", "name": "Screws", "slug": "screws", "path": "hardware-fasteners/fasteners/screws", "children": [] },
+            { "id": "nails", "name": "Nails", "slug": "nails", "path": "hardware-fasteners/fasteners/nails", "children": [] },
+            { "id": "bolts-nuts", "name": "Bolts & Nuts", "slug": "bolts-nuts", "path": "hardware-fasteners/fasteners/bolts-nuts", "children": [] },
+            { "id": "anchors-wall-plugs", "name": "Anchors & Wall Plugs", "slug": "anchors-wall-plugs", "path": "hardware-fasteners/fasteners/anchors-wall-plugs", "children": [] },
+            { "id": "washers", "name": "Washers", "slug": "washers", "path": "hardware-fasteners/fasteners/washers", "children": [] },
+            { "id": "rivets", "name": "Rivets", "slug": "rivets", "path": "hardware-fasteners/fasteners/rivets", "children": [] }
+          ]
+        },
+        {
+          "id": "adhesives-sealants",
+          "name": "Adhesives & Sealants",
+          "slug": "adhesives-sealants",
+          "path": "hardware-fasteners/adhesives-sealants",
+          "children": [
+            { "id": "wood-glue", "name": "Wood Glue", "slug": "wood-glue", "path": "hardware-fasteners/adhesives-sealants/wood-glue", "children": [] },
+            { "id": "contact-adhesive", "name": "Contact Adhesive", "slug": "contact-adhesive", "path": "hardware-fasteners/adhesives-sealants/contact-adhesive", "children": [] },
+            { "id": "silicone", "name": "Silicone", "slug": "silicone", "path": "hardware-fasteners/adhesives-sealants/silicone", "children": [] },
+            { "id": "tapes", "name": "Tapes", "slug": "tapes", "path": "hardware-fasteners/adhesives-sealants/tapes", "children": [] }
+          ]
+        },
+        {
+          "id": "ironmongery",
+          "name": "Ironmongery",
+          "slug": "ironmongery",
+          "path": "hardware-fasteners/ironmongery",
+          "children": [
+            { "id": "hinges", "name": "Hinges", "slug": "hinges", "path": "hardware-fasteners/ironmongery/hinges", "children": [] },
+            { "id": "door-handles", "name": "Door Handles", "slug": "door-handles", "path": "hardware-fasteners/ironmongery/door-handles", "children": [] },
+            { "id": "locks-locksets", "name": "Locks & Locksets", "slug": "locks-locksets", "path": "hardware-fasteners/ironmongery/locks-locksets", "children": [] },
+            { "id": "brackets", "name": "Brackets", "slug": "brackets", "path": "hardware-fasteners/ironmongery/brackets", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "home-decor",
+      "name": "Home Decor",
+      "slug": "home-decor",
+      "path": "home-decor",
+      "children": [
+        { "id": "curtains-blinds", "name": "Curtains & Blinds", "slug": "curtains-blinds", "path": "home-decor/curtains-blinds", "children": [] },
+        { "id": "mirrors", "name": "Mirrors", "slug": "mirrors", "path": "home-decor/mirrors", "children": [] },
+        { "id": "rugs-mats", "name": "Rugs & Mats", "slug": "rugs-mats", "path": "home-decor/rugs-mats", "children": [] },
+        { "id": "wallpaper-decor-foil", "name": "Wallpaper / Decor Foil", "slug": "wallpaper-decor-foil", "path": "home-decor/wallpaper-decor-foil", "children": [] },
+        { "id": "furniture", "name": "Furniture", "slug": "furniture", "path": "home-decor/furniture", "children": [] },
+        { "id": "wall-decor", "name": "Wall Decor", "slug": "wall-decor", "path": "home-decor/wall-decor", "children": [] },
+        { "id": "indoor-furniture", "name": "Indoor Furniture", "slug": "indoor-furniture", "path": "home-decor/indoor-furniture", "children": [] },
+        { "id": "decor-accessories", "name": "Decor Accessories", "slug": "decor-accessories", "path": "home-decor/decor-accessories", "children": [] }
+      ]
+    },
+    {
+      "id": "lighting",
+      "name": "Lighting",
+      "slug": "lighting",
+      "path": "lighting",
+      "children": [
+        { "id": "fittings-accessories", "name": "Fittings & Accessories", "slug": "fittings-accessories", "path": "lighting/fittings-accessories", "children": [] },
+        {
+          "id": "lights",
+          "name": "Lights",
+          "slug": "lights",
+          "path": "lighting/lights",
+          "children": [
+            { "id": "downlights", "name": "Downlights", "slug": "downlights", "path": "lighting/lights/downlights", "children": [] },
+            { "id": "floodlights", "name": "Floodlights", "slug": "floodlights", "path": "lighting/lights/floodlights", "children": [] },
+            { "id": "pendant-lights", "name": "Pendant Lights", "slug": "pendant-lights", "path": "lighting/lights/pendant-lights", "children": [] },
+            { "id": "wall-lights", "name": "Wall Lights", "slug": "wall-lights", "path": "lighting/lights/wall-lights", "children": [] }
+          ]
+        },
+        { "id": "globes", "name": "Globes", "slug": "globes", "path": "lighting/globes", "children": [] },
+        { "id": "lamps", "name": "Lamps", "slug": "lamps", "path": "lighting/lamps", "children": [] }
+      ]
+    },
+    {
+      "id": "paint",
+      "name": "Paint",
+      "slug": "paint",
+      "path": "paint",
+      "children": [
+        { "id": "prep", "name": "Preparation", "slug": "prep", "path": "paint/prep", "children": [] },
+        { "id": "primer-undercoat", "name": "Primer & Undercoat", "slug": "primer-undercoat", "path": "paint/primer-undercoat", "children": [] },
+        { "id": "pva", "name": "PVA", "slug": "pva", "path": "paint/pva", "children": [] },
+        { "id": "enamel", "name": "Enamel", "slug": "enamel", "path": "paint/enamel", "children": [] },
+        { "id": "roof-paint", "name": "Roof Paint", "slug": "roof-paint", "path": "paint/roof-paint", "children": [] },
+        { "id": "waterproofing", "name": "Waterproofing", "slug": "waterproofing", "path": "paint/waterproofing", "children": [] },
+        { "id": "wood-coatings", "name": "Wood Coatings", "slug": "wood-coatings", "path": "paint/wood-coatings", "children": [] },
+        { "id": "floor-paint", "name": "Floor Paint", "slug": "floor-paint", "path": "paint/floor-paint", "children": [] },
+        { "id": "metalcare", "name": "Metalcare", "slug": "metalcare", "path": "paint/metalcare", "children": [] },
+        { "id": "spray-paint", "name": "Spray Paint", "slug": "spray-paint", "path": "paint/spray-paint", "children": [] },
+        { "id": "colourants", "name": "Colourants", "slug": "colourants", "path": "paint/colourants", "children": [] },
+        {
+          "id": "accessories",
+          "name": "Accessories",
+          "slug": "accessories",
+          "path": "paint/accessories",
+          "children": [
+            { "id": "brushes-rollers-trays", "name": "Brushes, Rollers & Trays", "slug": "brushes-rollers-trays", "path": "paint/accessories/brushes-rollers-trays", "children": [] },
+            { "id": "solvents", "name": "Solvents", "slug": "solvents", "path": "paint/accessories/solvents", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "partitioning",
+      "name": "Partitioning",
+      "slug": "partitioning",
+      "path": "partitioning",
+      "children": [
+        {
+          "id": "drywall-systems",
+          "name": "Drywall Systems",
+          "slug": "drywall-systems",
+          "path": "partitioning/drywall-systems",
+          "children": [
+            { "id": "gypsum-board", "name": "Gypsum Board", "slug": "gypsum-board", "path": "partitioning/drywall-systems/gypsum-board", "children": [] },
+            { "id": "studs-tracks", "name": "Studs & Tracks", "slug": "studs-tracks", "path": "partitioning/drywall-systems/studs-tracks", "children": [] },
+            { "id": "jointing-compounds", "name": "Jointing Compounds", "slug": "jointing-compounds", "path": "partitioning/drywall-systems/jointing-compounds", "children": [] }
+          ]
+        },
+        { "id": "glass-partitioning", "name": "Glass Partitioning", "slug": "glass-partitioning", "path": "partitioning/glass-partitioning", "children": [] },
+        { "id": "aluminium-partitioning", "name": "Aluminium Partitioning", "slug": "aluminium-partitioning", "path": "partitioning/aluminium-partitioning", "children": [] },
+        { "id": "acoustic-panels", "name": "Acoustic Panels", "slug": "acoustic-panels", "path": "partitioning/acoustic-panels", "children": [] }
+      ]
+    },
+    {
+      "id": "plumbing",
+      "name": "Plumbing",
+      "slug": "plumbing",
+      "path": "plumbing",
+      "children": [
+        {
+          "id": "pipes-fittings",
+          "name": "Pipes & Fittings",
+          "slug": "pipes-fittings",
+          "path": "plumbing/pipes-fittings",
+          "children": [
+            { "id": "pvc-pipes", "name": "PVC Pipes", "slug": "pvc-pipes", "path": "plumbing/pipes-fittings/pvc-pipes", "children": [] },
+            { "id": "copper-pipes", "name": "Copper Pipes", "slug": "copper-pipes", "path": "plumbing/pipes-fittings/copper-pipes", "children": [] },
+            { "id": "hdpe-pipes", "name": "HDPE Pipes", "slug": "hdpe-pipes", "path": "plumbing/pipes-fittings/hdpe-pipes", "children": [] },
+            { "id": "fittings", "name": "Fittings", "slug": "fittings", "path": "plumbing/pipes-fittings/fittings", "children": [] }
+          ]
+        },
+        { "id": "waste-traps-gratings", "name": "Waste Traps & Gratings", "slug": "waste-traps-gratings", "path": "plumbing/waste-traps-gratings", "children": [] },
+        { "id": "drains", "name": "Drains", "slug": "drains", "path": "plumbing/drains", "children": [] },
+        { "id": "water-meters-boxes", "name": "Water Meters & Boxes", "slug": "water-meters-boxes", "path": "plumbing/water-meters-boxes", "children": [] },
+        { "id": "rainwater-goods", "name": "Rainwater Goods", "slug": "rainwater-goods", "path": "plumbing/rainwater-goods", "children": [] },
+        { "id": "toilet-spares", "name": "Toilet Spares", "slug": "toilet-spares", "path": "plumbing/toilet-spares", "children": [] },
+        { "id": "septic-tanks", "name": "Septic Tanks", "slug": "septic-tanks", "path": "plumbing/septic-tanks", "children": [] }
+      ]
+    },
+    {
+      "id": "pre-builds-shipping-containers",
+      "name": "Pre-builds & Shipping Containers",
+      "slug": "pre-builds-shipping-containers",
+      "path": "pre-builds-shipping-containers",
+      "children": [
+        {
+          "id": "containers",
+          "name": "Containers",
+          "slug": "containers",
+          "path": "pre-builds-shipping-containers/containers",
+          "children": [
+            { "id": "6m-containers", "name": "6m Containers", "slug": "6m-containers", "path": "pre-builds-shipping-containers/containers/6m-containers", "children": [] },
+            { "id": "12m-containers", "name": "12m Containers", "slug": "12m-containers", "path": "pre-builds-shipping-containers/containers/12m-containers", "children": [] },
+            { "id": "refrigerated", "name": "Refrigerated", "slug": "refrigerated", "path": "pre-builds-shipping-containers/containers/refrigerated", "children": [] }
+          ]
+        },
+        {
+          "id": "container-conversions",
+          "name": "Container Conversions",
+          "slug": "container-conversions",
+          "path": "pre-builds-shipping-containers/container-conversions",
+          "children": [
+            { "id": "offices", "name": "Offices", "slug": "offices", "path": "pre-builds-shipping-containers/container-conversions/offices", "children": [] },
+            { "id": "homes", "name": "Homes", "slug": "homes", "path": "pre-builds-shipping-containers/container-conversions/homes", "children": [] },
+            { "id": "ablutions", "name": "Ablutions", "slug": "ablutions", "path": "pre-builds-shipping-containers/container-conversions/ablutions", "children": [] },
+            { "id": "shops", "name": "Shops", "slug": "shops", "path": "pre-builds-shipping-containers/container-conversions/shops", "children": [] }
+          ]
+        },
+        {
+          "id": "pre-built-structures",
+          "name": "Pre-built Structures",
+          "slug": "pre-built-structures",
+          "path": "pre-builds-shipping-containers/pre-built-structures",
+          "children": [
+            { "id": "wendy-houses", "name": "Wendy Houses", "slug": "wendy-houses", "path": "pre-builds-shipping-containers/pre-built-structures/wendy-houses", "children": [] },
+            { "id": "guard-houses", "name": "Guard Houses", "slug": "guard-houses", "path": "pre-builds-shipping-containers/pre-built-structures/guard-houses", "children": [] },
+            { "id": "classrooms", "name": "Classrooms", "slug": "classrooms", "path": "pre-builds-shipping-containers/pre-built-structures/classrooms", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "roofing-ceiling",
+      "name": "Roofing & Ceiling",
+      "slug": "roofing-ceiling",
+      "path": "roofing-ceiling",
+      "children": [
+        {
+          "id": "roof-sheeting",
+          "name": "Roof Sheeting",
+          "slug": "roof-sheeting",
+          "path": "roofing-ceiling/roof-sheeting",
+          "children": [
+            { "id": "ibr", "name": "IBR", "slug": "ibr", "path": "roofing-ceiling/roof-sheeting/ibr", "children": [] },
+            { "id": "corrugated", "name": "Corrugated", "slug": "corrugated", "path": "roofing-ceiling/roof-sheeting/corrugated", "children": [] },
+            { "id": "concealed-fix", "name": "Concealed Fix", "slug": "concealed-fix", "path": "roofing-ceiling/roof-sheeting/concealed-fix", "children": [] }
+          ]
+        },
+        { "id": "roof-tiles", "name": "Roof Tiles", "slug": "roof-tiles", "path": "roofing-ceiling/roof-tiles", "children": [] },
+        { "id": "fascia-barge", "name": "Fascia & Barge", "slug": "fascia-barge", "path": "roofing-ceiling/fascia-barge", "children": [] },
+        { "id": "insulation-underlay", "name": "Insulation & Underlay", "slug": "insulation-underlay", "path": "roofing-ceiling/insulation-underlay", "children": [] },
+        { "id": "ventilators", "name": "Ventilators", "slug": "ventilators", "path": "roofing-ceiling/ventilators", "children": [] },
+        {
+          "id": "ceiling",
+          "name": "Ceiling",
+          "slug": "ceiling",
+          "path": "roofing-ceiling/ceiling",
+          "children": [
+            { "id": "gypsum-ceiling", "name": "Gypsum Ceiling", "slug": "gypsum-ceiling", "path": "roofing-ceiling/ceiling/gypsum-ceiling", "children": [] },
+            { "id": "pvc-ceiling", "name": "PVC Ceiling", "slug": "pvc-ceiling", "path": "roofing-ceiling/ceiling/pvc-ceiling", "children": [] },
+            { "id": "cornices", "name": "Cornices", "slug": "cornices", "path": "roofing-ceiling/ceiling/cornices", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "safety-security",
+      "name": "Safety & Security",
+      "slug": "safety-security",
+      "path": "safety-security",
+      "children": [
+        { "id": "site-safety", "name": "Site Safety", "slug": "site-safety", "path": "safety-security/site-safety", "children": [] },
+        { "id": "safety-wear", "name": "Safety Wear", "slug": "safety-wear", "path": "safety-security/safety-wear", "children": [] },
+        { "id": "fencing", "name": "Fencing", "slug": "fencing", "path": "safety-security/fencing", "children": [] },
+        { "id": "burglar-bars", "name": "Burglar Bars", "slug": "burglar-bars", "path": "safety-security/burglar-bars", "children": [] },
+        { "id": "security-gates-accessories", "name": "Security Gates & Accessories", "slug": "security-gates-accessories", "path": "safety-security/security-gates-accessories", "children": [] },
+        { "id": "padlocks", "name": "Padlocks", "slug": "padlocks", "path": "safety-security/padlocks", "children": [] },
+        { "id": "cctv-electronic-security", "name": "CCTV & Electronic Security", "slug": "cctv-electronic-security", "path": "safety-security/cctv-electronic-security", "children": [] },
+        { "id": "safes", "name": "Safes", "slug": "safes", "path": "safety-security/safes", "children": [] },
+        { "id": "personal-safety", "name": "Personal Safety", "slug": "personal-safety", "path": "safety-security/personal-safety", "children": [] }
+      ]
+    },
+    {
+      "id": "sanitaryware",
+      "name": "Sanitaryware",
+      "slug": "sanitaryware",
+      "path": "sanitaryware",
+      "children": [
+        { "id": "toilets", "name": "Toilets", "slug": "toilets", "path": "sanitaryware/toilets", "children": [] },
+        { "id": "basins", "name": "Basins", "slug": "basins", "path": "sanitaryware/basins", "children": [] },
+        { "id": "urinals", "name": "Urinals", "slug": "urinals", "path": "sanitaryware/urinals", "children": [] },
+        { "id": "bidets", "name": "Bidets", "slug": "bidets", "path": "sanitaryware/bidets", "children": [] },
+        {
+          "id": "accessories",
+          "name": "Accessories",
+          "slug": "accessories",
+          "path": "sanitaryware/accessories",
+          "children": [
+            { "id": "flush-mechanisms", "name": "Flush Mechanisms", "slug": "flush-mechanisms", "path": "sanitaryware/accessories/flush-mechanisms", "children": [] },
+            { "id": "seats", "name": "Seats", "slug": "seats", "path": "sanitaryware/accessories/seats", "children": [] },
+            { "id": "cisterns", "name": "Cisterns", "slug": "cisterns", "path": "sanitaryware/accessories/cisterns", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "solar-supplies",
+      "name": "Solar Supplies",
+      "slug": "solar-supplies",
+      "path": "solar-supplies",
+      "children": [
+        {
+          "id": "solar-panels",
+          "name": "Solar Panels",
+          "slug": "solar-panels",
+          "path": "solar-supplies/solar-panels",
+          "children": [
+            { "id": "monocrystalline", "name": "Monocrystalline", "slug": "monocrystalline", "path": "solar-supplies/solar-panels/monocrystalline", "children": [] },
+            { "id": "polycrystalline", "name": "Polycrystalline", "slug": "polycrystalline", "path": "solar-supplies/solar-panels/polycrystalline", "children": [] }
+          ]
+        },
+        {
+          "id": "solar-batteries",
+          "name": "Solar Batteries",
+          "slug": "solar-batteries",
+          "path": "solar-supplies/solar-batteries",
+          "children": [
+            { "id": "lithium", "name": "Lithium", "slug": "lithium", "path": "solar-supplies/solar-batteries/lithium", "children": [] },
+            { "id": "gel", "name": "Gel", "slug": "gel", "path": "solar-supplies/solar-batteries/gel", "children": [] }
+          ]
+        },
+        { "id": "solar-inverters", "name": "Solar Inverters", "slug": "solar-inverters", "path": "solar-supplies/solar-inverters", "children": [] },
+        { "id": "mounting-systems", "name": "Mounting Systems", "slug": "mounting-systems", "path": "solar-supplies/mounting-systems", "children": [] },
+        {
+          "id": "solar-accessories",
+          "name": "Solar Accessories",
+          "slug": "solar-accessories",
+          "path": "solar-supplies/solar-accessories",
+          "children": [
+            { "id": "charge-controllers", "name": "Charge Controllers", "slug": "charge-controllers", "path": "solar-supplies/solar-accessories/charge-controllers", "children": [] },
+            { "id": "cables-connectors", "name": "Cables & Connectors", "slug": "cables-connectors", "path": "solar-supplies/solar-accessories/cables-connectors", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelving-storage",
+      "name": "Shelving & Storage",
+      "slug": "shelving-storage",
+      "path": "shelving-storage",
+      "children": [
+        {
+          "id": "shelving",
+          "name": "Shelving",
+          "slug": "shelving",
+          "path": "shelving-storage/shelving",
+          "children": [
+            { "id": "wood-shelves", "name": "Wood Shelves", "slug": "wood-shelves", "path": "shelving-storage/shelving/wood-shelves", "children": [] },
+            { "id": "steel-shelving", "name": "Steel Shelving", "slug": "steel-shelving", "path": "shelving-storage/shelving/steel-shelving", "children": [] },
+            { "id": "brackets", "name": "Brackets", "slug": "brackets", "path": "shelving-storage/shelving/brackets", "children": [] }
+          ]
+        },
+        {
+          "id": "storage",
+          "name": "Storage",
+          "slug": "storage",
+          "path": "shelving-storage/storage",
+          "children": [
+            { "id": "storage-bins-totes", "name": "Storage Bins & Totes", "slug": "storage-bins-totes", "path": "shelving-storage/storage/storage-bins-totes", "children": [] },
+            { "id": "clear-storage", "name": "Clear Storage", "slug": "clear-storage", "path": "shelving-storage/storage/clear-storage", "children": [] },
+            { "id": "bulk-storage", "name": "Bulk Storage", "slug": "bulk-storage", "path": "shelving-storage/storage/bulk-storage", "children": [] },
+            { "id": "decorative-storage", "name": "Decorative Storage", "slug": "decorative-storage", "path": "shelving-storage/storage/decorative-storage", "children": [] }
+          ]
+        },
+        { "id": "hooks-bands", "name": "Hooks & Bands", "slug": "hooks-bands", "path": "shelving-storage/hooks-bands", "children": [] }
+      ]
+    },
+    {
+      "id": "steel-metal-products",
+      "name": "Steel & Metal Products",
+      "slug": "steel-metal-products",
+      "path": "steel-metal-products",
+      "children": [
+        {
+          "id": "structural-steel",
+          "name": "Structural Steel",
+          "slug": "structural-steel",
+          "path": "steel-metal-products/structural-steel",
+          "children": [
+            { "id": "i-beams", "name": "I-Beams", "slug": "i-beams", "path": "steel-metal-products/structural-steel/i-beams", "children": [] },
+            { "id": "channels", "name": "Channels", "slug": "channels", "path": "steel-metal-products/structural-steel/channels", "children": [] },
+            { "id": "angles", "name": "Angles", "slug": "angles", "path": "steel-metal-products/structural-steel/angles", "children": [] },
+            { "id": "tubing", "name": "Tubing", "slug": "tubing", "path": "steel-metal-products/structural-steel/tubing", "children": [] }
+          ]
+        },
+        {
+          "id": "reinforcing",
+          "name": "Reinforcing",
+          "slug": "reinforcing",
+          "path": "steel-metal-products/reinforcing",
+          "children": [
+            { "id": "rebar", "name": "Rebar", "slug": "rebar", "path": "steel-metal-products/reinforcing/rebar", "children": [] },
+            { "id": "mesh", "name": "Mesh", "slug": "mesh", "path": "steel-metal-products/reinforcing/mesh", "children": [] },
+            { "id": "spacers", "name": "Spacers", "slug": "spacers", "path": "steel-metal-products/reinforcing/spacers", "children": [] }
+          ]
+        },
+        {
+          "id": "sheet-metal",
+          "name": "Sheet Metal",
+          "slug": "sheet-metal",
+          "path": "steel-metal-products/sheet-metal",
+          "children": [
+            { "id": "galvanised-sheets", "name": "Galvanised Sheets", "slug": "galvanised-sheets", "path": "steel-metal-products/sheet-metal/galvanised-sheets", "children": [] },
+            { "id": "flat-bar", "name": "Flat Bar", "slug": "flat-bar", "path": "steel-metal-products/sheet-metal/flat-bar", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tiles-flooring",
+      "name": "Tiles & Flooring",
+      "slug": "tiles-flooring",
+      "path": "tiles-flooring",
+      "children": [
+        {
+          "id": "tiles",
+          "name": "Tiles",
+          "slug": "tiles",
+          "path": "tiles-flooring/tiles",
+          "children": [
+            { "id": "floor-tiles", "name": "Floor Tiles", "slug": "floor-tiles", "path": "tiles-flooring/tiles/floor-tiles", "children": [] },
+            { "id": "wall-tiles", "name": "Wall Tiles", "slug": "wall-tiles", "path": "tiles-flooring/tiles/wall-tiles", "children": [] },
+            { "id": "porcelain-tiles", "name": "Porcelain Tiles", "slug": "porcelain-tiles", "path": "tiles-flooring/tiles/porcelain-tiles", "children": [] },
+            { "id": "decor-mosaics", "name": "Decor & Mosaics", "slug": "decor-mosaics", "path": "tiles-flooring/tiles/decor-mosaics", "children": [] }
+          ]
+        },
+        {
+          "id": "flooring",
+          "name": "Flooring",
+          "slug": "flooring",
+          "path": "tiles-flooring/flooring",
+          "children": [
+            { "id": "laminate", "name": "Laminate", "slug": "laminate", "path": "tiles-flooring/flooring/laminate", "children": [] },
+            { "id": "vinyl", "name": "Vinyl", "slug": "vinyl", "path": "tiles-flooring/flooring/vinyl", "children": [] },
+            { "id": "engineered-wood", "name": "Engineered Wood", "slug": "engineered-wood", "path": "tiles-flooring/flooring/engineered-wood", "children": [] }
+          ]
+        },
+        { "id": "tile-adhesives-grouts", "name": "Tile Adhesives & Grouts", "slug": "tile-adhesives-grouts", "path": "tiles-flooring/tile-adhesives-grouts", "children": [] },
+        { "id": "tile-accessories", "name": "Tile Accessories", "slug": "tile-accessories", "path": "tiles-flooring/tile-accessories", "children": [] }
+      ]
+    },
+    {
+      "id": "tools-equipment",
+      "name": "Tools & Equipment",
+      "slug": "tools-equipment",
+      "path": "tools-equipment",
+      "children": [
+        {
+          "id": "power-tools",
+          "name": "Power Tools",
+          "slug": "power-tools",
+          "path": "tools-equipment/power-tools",
+          "children": [
+            { "id": "drills", "name": "Drills", "slug": "drills", "path": "tools-equipment/power-tools/drills", "children": [] },
+            { "id": "grinders", "name": "Grinders", "slug": "grinders", "path": "tools-equipment/power-tools/grinders", "children": [] },
+            { "id": "saws", "name": "Saws", "slug": "saws", "path": "tools-equipment/power-tools/saws", "children": [] },
+            { "id": "sanders", "name": "Sanders", "slug": "sanders", "path": "tools-equipment/power-tools/sanders", "children": [] },
+            { "id": "planers", "name": "Planers", "slug": "planers", "path": "tools-equipment/power-tools/planers", "children": [] },
+            { "id": "heat-guns", "name": "Heat Guns", "slug": "heat-guns", "path": "tools-equipment/power-tools/heat-guns", "children": [] }
+          ]
+        },
+        {
+          "id": "power-tool-accessories",
+          "name": "Power Tool Accessories",
+          "slug": "power-tool-accessories",
+          "path": "tools-equipment/power-tool-accessories",
+          "children": [
+            { "id": "drill-bits", "name": "Drill Bits", "slug": "drill-bits", "path": "tools-equipment/power-tool-accessories/drill-bits", "children": [] },
+            { "id": "grinder-discs", "name": "Grinder Discs", "slug": "grinder-discs", "path": "tools-equipment/power-tool-accessories/grinder-discs", "children": [] },
+            { "id": "saw-blades", "name": "Saw Blades", "slug": "saw-blades", "path": "tools-equipment/power-tool-accessories/saw-blades", "children": [] },
+            { "id": "batteries-chargers", "name": "Batteries & Chargers", "slug": "batteries-chargers", "path": "tools-equipment/power-tool-accessories/batteries-chargers", "children": [] }
+          ]
+        },
+        {
+          "id": "hand-tools",
+          "name": "Hand Tools",
+          "slug": "hand-tools",
+          "path": "tools-equipment/hand-tools",
+          "children": [
+            { "id": "hammers", "name": "Hammers", "slug": "hammers", "path": "tools-equipment/hand-tools/hammers", "children": [] },
+            { "id": "screwdrivers", "name": "Screwdrivers", "slug": "screwdrivers", "path": "tools-equipment/hand-tools/screwdrivers", "children": [] },
+            { "id": "pliers", "name": "Pliers", "slug": "pliers", "path": "tools-equipment/hand-tools/pliers", "children": [] },
+            { "id": "spanners", "name": "Spanners", "slug": "spanners", "path": "tools-equipment/hand-tools/spanners", "children": [] },
+            { "id": "chisels", "name": "Chisels", "slug": "chisels", "path": "tools-equipment/hand-tools/chisels", "children": [] },
+            { "id": "files", "name": "Files", "slug": "files", "path": "tools-equipment/hand-tools/files", "children": [] },
+            { "id": "utility-knives", "name": "Utility Knives", "slug": "utility-knives", "path": "tools-equipment/hand-tools/utility-knives", "children": [] },
+            { "id": "wrenches", "name": "Wrenches", "slug": "wrenches", "path": "tools-equipment/hand-tools/wrenches", "children": [] }
+          ]
+        },
+        {
+          "id": "building-tools",
+          "name": "Building Tools",
+          "slug": "building-tools",
+          "path": "tools-equipment/building-tools",
+          "children": [
+            { "id": "trowels", "name": "Trowels", "slug": "trowels", "path": "tools-equipment/building-tools/trowels", "children": [] },
+            { "id": "floats", "name": "Floats", "slug": "floats", "path": "tools-equipment/building-tools/floats", "children": [] },
+            { "id": "spirit-levels", "name": "Spirit Levels", "slug": "spirit-levels", "path": "tools-equipment/building-tools/spirit-levels", "children": [] },
+            { "id": "chalk-lines", "name": "Chalk Lines", "slug": "chalk-lines", "path": "tools-equipment/building-tools/chalk-lines", "children": [] },
+            { "id": "brick-jointer", "name": "Brick Jointer", "slug": "brick-jointer", "path": "tools-equipment/building-tools/brick-jointer", "children": [] }
+          ]
+        },
+        {
+          "id": "construction-equipment",
+          "name": "Construction Equipment",
+          "slug": "construction-equipment",
+          "path": "tools-equipment/construction-equipment",
+          "children": [
+            { "id": "concrete-mixers", "name": "Concrete Mixers", "slug": "concrete-mixers", "path": "tools-equipment/construction-equipment/concrete-mixers", "children": [] },
+            { "id": "plate-compactors", "name": "Plate Compactors", "slug": "plate-compactors", "path": "tools-equipment/construction-equipment/plate-compactors", "children": [] },
+            { "id": "generators", "name": "Generators", "slug": "generators", "path": "tools-equipment/construction-equipment/generators", "children": [] },
+            { "id": "scaffolding", "name": "Scaffolding", "slug": "scaffolding", "path": "tools-equipment/construction-equipment/scaffolding", "children": [] },
+            { "id": "wheelbarrows", "name": "Wheelbarrows", "slug": "wheelbarrows", "path": "tools-equipment/construction-equipment/wheelbarrows", "children": [] }
+          ]
+        },
+        {
+          "id": "measuring-marking-tools",
+          "name": "Measuring & Marking Tools",
+          "slug": "measuring-marking-tools",
+          "path": "tools-equipment/measuring-marking-tools",
+          "children": [
+            { "id": "tape-measures", "name": "Tape Measures", "slug": "tape-measures", "path": "tools-equipment/measuring-marking-tools/tape-measures", "children": [] },
+            { "id": "laser-levels", "name": "Laser Levels", "slug": "laser-levels", "path": "tools-equipment/measuring-marking-tools/laser-levels", "children": [] },
+            { "id": "squares", "name": "Squares", "slug": "squares", "path": "tools-equipment/measuring-marking-tools/squares", "children": [] },
+            { "id": "markers", "name": "Markers", "slug": "markers", "path": "tools-equipment/measuring-marking-tools/markers", "children": [] }
+          ]
+        },
+        {
+          "id": "tool-storage",
+          "name": "Tool Storage",
+          "slug": "tool-storage",
+          "path": "tools-equipment/tool-storage",
+          "children": [
+            { "id": "toolboxes", "name": "Toolboxes", "slug": "toolboxes", "path": "tools-equipment/tool-storage/toolboxes", "children": [] },
+            { "id": "tool-bags", "name": "Tool Bags", "slug": "tool-bags", "path": "tools-equipment/tool-storage/tool-bags", "children": [] },
+            { "id": "tool-chests", "name": "Tool Chests", "slug": "tool-chests", "path": "tools-equipment/tool-storage/tool-chests", "children": [] },
+            { "id": "wall-organizers", "name": "Wall Organizers", "slug": "wall-organizers", "path": "tools-equipment/tool-storage/wall-organizers", "children": [] }
+          ]
+        },
+        {
+          "id": "workshop-tools",
+          "name": "Workshop Tools",
+          "slug": "workshop-tools",
+          "path": "tools-equipment/workshop-tools",
+          "children": [
+            { "id": "bench-grinders", "name": "Bench Grinders", "slug": "bench-grinders", "path": "tools-equipment/workshop-tools/bench-grinders", "children": [] },
+            { "id": "drill-presses", "name": "Drill Presses", "slug": "drill-presses", "path": "tools-equipment/workshop-tools/drill-presses", "children": [] },
+            { "id": "vices-clamps", "name": "Vices & Clamps", "slug": "vices-clamps", "path": "tools-equipment/workshop-tools/vices-clamps", "children": [] },
+            { "id": "workbenches", "name": "Workbenches", "slug": "workbenches", "path": "tools-equipment/workshop-tools/workbenches", "children": [] }
+          ]
+        }
+      ]
+    }
+  ]
+};

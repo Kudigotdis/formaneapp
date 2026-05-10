@@ -1,0 +1,1158 @@
+[
+  {
+    "id": "gen-user-48",
+    "firstName": "Kealeboga",
+    "otherName": "Keke",
+    "surname": "Mokgothu",
+    "username": "kealeboga.m",
+    "dob": "1996-10-04",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "general_user",
+    "linkedBusiness": null,
+    "primaryTrade": null,
+    "subTrades": "",
+    "skills": ["Sewing", "Fashion Design", "Beadwork"],
+    "contacts": {
+      "mobiles": [{ "title": "Cell", "network": "Orange", "number": "+267 72001048" }],
+      "whatsapps": [{ "title": "Kea Fashion", "countryCode": "+267", "number": "72001048" }],
+      "email": "kealeboga.mokgothu@gmail.com",
+      "social": { "instagram": "https://instagram.com/kea_fashion" }
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 1 (Mmaraka)",
+      "gps": "https://maps.google.com/?q=-24.6545,25.9087"
+    },
+    "interests": ["Attire & Uniform", "Curtains & Blinds", "Upholsterer", "Home Decor"],
+    "businessInfo": null
+  },
+  {
+    "id": "gen-user-49",
+    "firstName": "Tshiamo",
+    "otherName": "T",
+    "surname": "Mokgethi",
+    "username": "tshiamo.mokgethi",
+    "dob": "1998-02-20",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "general_user",
+    "linkedBusiness": null,
+    "primaryTrade": null,
+    "subTrades": "",
+    "skills": ["Woodworking", "Furniture Making"],
+    "contacts": {
+      "mobiles": [{ "title": "Phone", "network": "Maseru", "number": "+267 72001049" }],
+      "whatsapps": [{ "title": "Tshiamo Wood", "countryCode": "+267", "number": "72001049" }],
+      "email": "tshiamo.mokgethi@outlook.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Block 6 (Extension 39)",
+      "gps": "https://maps.google.com/?q=-24.6410,25.9175"
+    },
+    "interests": ["Boards & Timber", "Shelving & Storage", "Tools & Equipment", "Home Decor"],
+    "businessInfo": null
+  },
+  {
+    "id": "gen-user-50",
+    "firstName": "Lesedi",
+    "otherName": "L",
+    "surname": "Motshegwa",
+    "username": "lesedi.motshegwa",
+    "dob": "1995-12-11",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "general_user",
+    "linkedBusiness": null,
+    "primaryTrade": null,
+    "subTrades": "",
+    "skills": ["Interior Decoration", "Space Planning"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 72001050" }],
+      "email": "lesedi.motshegwa@gmail.com",
+      "social": { "instagram": "https://instagram.com/lesedi_interiors" }
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 23 Maruapula",
+      "gps": "https://maps.google.com/?q=-24.6214,25.9073"
+    },
+    "interests": ["Home Decor", "Lighting", "Curtains & Blinds", "Paint", "Furniture"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-plumber2",
+    "firstName": "Oarabile",
+    "otherName": "Oara",
+    "surname": "Mogapi",
+    "username": "oarabile.plumb",
+    "dob": "1988-07-13",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Plumber",
+    "subTrades": "Burst Pipes, Geyser Install, Drain Unblocking",
+    "skills": ["Copper Soldering", "PVC Gluing", "Pressure Testing"],
+    "contacts": {
+      "mobiles": [{ "title": "Plumbing", "network": "Maseru", "number": "+267 73100083" }],
+      "whatsapps": [{ "title": "Oara Plumb", "countryCode": "+267", "number": "73100083" }],
+      "email": "oarabile.plumb@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 14",
+      "gps": "https://maps.google.com/?q=-24.6305,25.9006"
+    },
+    "interests": ["Plumbing", "Pipes & Fittings", "Geysers & Heating", "Toilet Spares"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-carpenter2",
+    "firstName": "Molebogeng",
+    "otherName": "Mole",
+    "surname": "Mokgokong",
+    "username": "mole.carpenter",
+    "dob": "1990-04-23",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Carpenter",
+    "subTrades": "Custom Furniture, Built-in Cupboards, Kitchen Units",
+    "skills": ["Cutting List", "Edge Banding", "Assembly"],
+    "contacts": {
+      "mobiles": [{ "title": "Workshop", "network": "Orange", "number": "+267 73100084" }],
+      "email": "mole.carpentry@yahoo.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 18 Broadhurst",
+      "gps": "https://maps.google.com/?q=-24.6378,25.9205"
+    },
+    "interests": ["Boards & Timber", "Shelving & Storage", "Kitchen", "Tools & Equipment"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-electrician2",
+    "firstName": "Kutlwano",
+    "otherName": "Kutlo",
+    "surname": "Rapoo",
+    "username": "kutlo.electric",
+    "dob": "1985-08-01",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Electrician",
+    "subTrades": "Rewiring, DB Box Upgrade, Outdoor Lighting",
+    "skills": ["Fault Finding", "Circuit Testing", "COC Issuing"],
+    "contacts": {
+      "mobiles": [{ "title": "Electrical", "network": "Maseru", "number": "+267 73100085" }],
+      "whatsapps": [{ "title": "Kutlo Electric", "countryCode": "+267", "number": "73100085" }],
+      "email": "kutlo.electric@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 15",
+      "gps": "https://maps.google.com/?q=-24.6330,25.9082"
+    },
+    "interests": ["Electrical", "Solar Supplies", "DB Boxes & Breakers", "Lighting"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-painter2",
+    "firstName": "Masego",
+    "otherName": "Mase",
+    "surname": "Makgalemele",
+    "username": "mase.painter",
+    "dob": "1992-09-09",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Painter / Decorator",
+    "subTrades": "Spray Painting, Wallpaper Hanging, Texture Coating",
+    "skills": ["Brush & Roller", "Spray Gun", "Color Mixing"],
+    "contacts": {
+      "mobiles": [{ "title": "Painting", "network": "Orange", "number": "+267 73100086" }],
+      "email": "mase.painter@outlook.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Broadhurst (Extension 16)",
+      "gps": "https://maps.google.com/?q=-24.6352,25.9190"
+    },
+    "interests": ["Paint", "Primer & Undercoat", "Wallpaper / Decor Foil", "Roof Paint"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-tiler2",
+    "firstName": "Bakang",
+    "otherName": "Baks",
+    "surname": "Mokgatlhe",
+    "username": "bakang.tiler",
+    "dob": "1989-03-29",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Tiler",
+    "subTrades": "Porcelain Tiles, Mosaic, Floor Levelling",
+    "skills": ["Tile Cutting", "Grouting", "Waterproofing Membrane"],
+    "contacts": {
+      "mobiles": [{ "title": "Tiling", "network": "Maseru", "number": "+267 73100087" }],
+      "whatsapps": [{ "title": "Bakang Tiles", "countryCode": "+267", "number": "73100087" }],
+      "email": "bakang.tiler@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 2",
+      "gps": "https://maps.google.com/?q=-24.6180,25.8930"
+    },
+    "interests": ["Tiles & Flooring", "Tile Adhesives & Grouts", "Floor Tiles", "Bathroom & Kitchen"],
+    "businessInfo": null
+  },
+  {
+    "id": "owner-biz45",
+    "firstName": "Onkabetse",
+    "otherName": "Onka",
+    "surname": "Mokgosi",
+    "username": "onka.steel",
+    "dob": "1975-06-06",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-45",
+    "skills": ["Steel Wholesale", "Cut to Size"],
+    "contacts": {
+      "mobiles": [{ "title": "Office", "network": "Orange", "number": "+267 74000044" }],
+      "whatsapps": [{ "title": "Onka Steel", "countryCode": "+267", "number": "74000044" }],
+      "email": "onka@onkassteel.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 10",
+      "gps": "https://maps.google.com/?q=-24.6280,25.9050"
+    },
+    "interests": ["Steel & Metal Products", "Structural Steel", "Sheet Metal", "Reinforcing"],
+    "businessInfo": {
+      "name": "Onka's Steel Centre",
+      "categories": ["Steel & Metal Products", "Structural Steel", "Sheet Metal", "Reinforcing", "Galvanised Products"],
+      "description": "Steel merchant with cutting and bending services.",
+      "locations": [{ "town": "Gaborone", "area": "Gaborone West Extension 10" }],
+      "subscription": "full"
+    }
+  },
+  {
+    "id": "owner-biz46",
+    "firstName": "Kaone",
+    "otherName": "Kaone",
+    "surname": "Bogatsu",
+    "username": "kaone.paint",
+    "dob": "1982-02-02",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-46",
+    "skills": ["Paint Wholesale", "Colour Lab"],
+    "contacts": {
+      "mobiles": [{ "title": "Shop", "network": "Maseru", "number": "+267 74000045" }],
+      "email": "kaone@paintmasters.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 6",
+      "gps": "https://maps.google.com/?q=-24.6267,25.9022"
+    },
+    "interests": ["Paint", "PVA", "Enamel", "Primer & Undercoat"],
+    "businessInfo": {
+      "name": "Paint Masters BW",
+      "categories": ["Paint", "PVA", "Enamel", "Primer & Undercoat", "Roof Paint", "Wood Coatings"],
+      "description": "Premium paints and colour matching specialists.",
+      "locations": [{ "town": "Gaborone", "area": "Gaborone West Extension 6" }],
+      "subscription": "free"
+    }
+  },
+  {
+    "id": "owner-biz47",
+    "firstName": "Kutlo",
+    "otherName": "Kut",
+    "surname": "Mokgethi",
+    "username": "kutlo.tools",
+    "dob": "1978-08-18",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-47",
+    "skills": ["Tool Sales", "Tool Hire"],
+    "contacts": {
+      "mobiles": [{ "title": "Store", "network": "Orange", "number": "+267 74000046" }],
+      "whatsapps": [{ "title": "Kutlo Tools", "countryCode": "+267", "number": "74000046" }],
+      "email": "info@kutlotools.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Block 3 (Extension 32)",
+      "gps": "https://maps.google.com/?q=-24.6425,25.9150"
+    },
+    "interests": ["Tools & Equipment", "Power Tools", "Hand Tools", "Construction Equipment"],
+    "businessInfo": {
+      "name": "Kutlo Tools & Hire",
+      "categories": ["Tools & Equipment", "Power Tools", "Hand Tools", "Construction Equipment", "Tool Storage"],
+      "description": "Sales, hire, and repair of quality tools.",
+      "locations": [{ "town": "Gaborone", "area": "Block 3 (Extension 32)" }],
+      "subscription": "full"
+    }
+  },
+  {
+    "id": "owner-biz48",
+    "firstName": "Lorato",
+    "otherName": "Lora",
+    "surname": "Mokgwathi",
+    "username": "lorato.plumbing",
+    "dob": "1979-12-12",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-48",
+    "skills": ["Plumbing Supplies", "Bathroom Renovation"],
+    "contacts": {
+      "mobiles": [{ "title": "Plumb Shop", "network": "Maseru", "number": "+267 74000047" }],
+      "email": "lorato@plumbexpress.co.bw",
+      "social": { "facebook": "https://facebook.com/PlumbExpressBW" }
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 16",
+      "gps": "https://maps.google.com/?q=-24.6340,25.9060"
+    },
+    "interests": ["Plumbing", "Pipes & Fittings", "Sanitaryware", "Geysers & Heating"],
+    "businessInfo": {
+      "name": "Plumb Express Botswana",
+      "categories": ["Plumbing", "Pipes & Fittings", "Waste Traps & Gratings", "Toilet Spares", "Rainwater Goods"],
+      "description": "Complete plumbing supplies for contractors and DIY.",
+      "locations": [{ "town": "Gaborone", "area": "Gaborone West Extension 16" }],
+      "subscription": "free"
+    }
+  },
+  {
+    "id": "owner-biz49",
+    "firstName": "Tebogo",
+    "otherName": "Tebs",
+    "surname": "Mokgosi",
+    "username": "tebogo.ceilings",
+    "dob": "1981-04-04",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-49",
+    "skills": ["Ceiling Supply", "Suspended Ceilings"],
+    "contacts": {
+      "mobiles": [{ "title": "Office", "network": "Orange", "number": "+267 74000048" }],
+      "whatsapps": [{ "title": "Tebogo Ceilings", "countryCode": "+267", "number": "74000048" }],
+      "email": "tebogo@ceilingsbw.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 22",
+      "gps": "https://maps.google.com/?q=-24.6400,25.8950"
+    },
+    "interests": ["Ceiling", "Partitioning", "Insulation & Underlay", "Drywall Systems"],
+    "businessInfo": {
+      "name": "Tebogo Ceiling Solutions",
+      "categories": ["Ceiling", "Gypsum Ceiling", "PVC Ceiling", "Suspended Ceiling", "Cornices"],
+      "description": "Ceiling boards, grid systems, and installation services.",
+      "locations": [{ "town": "Gaborone", "area": "Gaborone West Extension 22" }],
+      "subscription": "full"
+    }
+  },
+  {
+    "id": "owner-biz50",
+    "firstName": "Boitumelo",
+    "otherName": "Boitu",
+    "surname": "Mokgathi",
+    "username": "boitu.garden",
+    "dob": "1983-07-07",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-50",
+    "skills": ["Nursery", "Landscaping"],
+    "contacts": {
+      "mobiles": [{ "title": "Nursery", "network": "Maseru", "number": "+267 74000049" }],
+      "email": "info@boitumelogarden.co.bw",
+      "social": { "instagram": "https://instagram.com/boitu_garden" }
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Glen Valley",
+      "gps": "https://maps.google.com/?q=-24.5857,25.9550"
+    },
+    "interests": ["Gardening & Outdoor Living", "Landscaper", "Irrigation, Tanks & Pumps", "Seeds"],
+    "businessInfo": {
+      "name": "Boitumelo Garden Centre",
+      "categories": ["Gardening & Outdoor Living", "Gardening", "Landscaping", "Irrigation, Tanks & Pumps", "Seeds", "Fertiliser"],
+      "description": "Plants, trees, landscaping materials, and irrigation.",
+      "locations": [{ "town": "Gaborone", "area": "Glen Valley" }],
+      "subscription": "free"
+    }
+  },
+  {
+    "id": "staff-biz40-1",
+    "firstName": "Mpho",
+    "otherName": "Mph",
+    "surname": "Mokgokong",
+    "username": "mpho.paint",
+    "dob": "1994-01-18",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-40",
+    "roleContext": "Paint Mixing Specialist",
+    "skills": ["Colour Matching", "Tinting Machine", "Stock Control"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 74000055" }],
+      "email": "mpho@phatsimopaint.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 10 Boitshoko",
+      "gps": "https://maps.google.com/?q=-24.6310,25.9100"
+    },
+    "interests": ["Paint", "Home Decor", "Accessories"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz41-1",
+    "firstName": "Tshepo",
+    "otherName": "Tshep",
+    "surname": "Modise",
+    "username": "tshepo.hardware",
+    "dob": "1992-11-11",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-41",
+    "roleContext": "Hardware Counter Sales",
+    "skills": ["Fasteners Knowledge", "Customer Service", "Pricing"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Maseru", "number": "+267 74000056" }],
+      "email": "tshepo@hardwareexpress.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Block 8 (Extension 35)",
+      "gps": "https://maps.google.com/?q=-24.6468,25.9124"
+    },
+    "interests": ["Hardware & Fasteners", "Tools & Equipment", "Ironmongery"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz42-1",
+    "firstName": "Kago",
+    "otherName": "Kags",
+    "surname": "Mokgethi",
+    "username": "kago.timber",
+    "dob": "1993-03-03",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-42",
+    "roleContext": "Timber Yard Assistant",
+    "skills": ["Timber Grading", "Cutting", "Loading"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 74000057" }],
+      "email": "kago@masegotimber.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 21",
+      "gps": "https://maps.google.com/?q=-24.6399,25.9015"
+    },
+    "interests": ["Boards & Timber", "Building Materials", "Tools & Equipment"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz43-1",
+    "firstName": "Nametsego",
+    "otherName": "Nam",
+    "surname": "Mokgosi",
+    "username": "nam.lighting",
+    "dob": "1995-05-05",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-43",
+    "roleContext": "Lighting Consultant",
+    "skills": ["Lumen Calculation", "LED Selection", "Showroom Display"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Maseru", "number": "+267 74000058" }],
+      "email": "nam@tshegolighting.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 15",
+      "gps": "https://maps.google.com/?q=-24.6330,25.9082"
+    },
+    "interests": ["Lighting", "Home Decor", "Electrical"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz44-1",
+    "firstName": "Obakeng",
+    "otherName": "Oba",
+    "surname": "Mokgathi",
+    "username": "oba.pool",
+    "dob": "1990-06-15",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-44",
+    "roleContext": "Pool Technician",
+    "skills": ["Pool Pump Repair", "Filter Cleaning", "Chemical Balancing"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 74000059" }],
+      "email": "obakeng@kagisopools.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Phakalane (Extension 97)",
+      "gps": "https://maps.google.com/?q=-24.5877,25.9380"
+    },
+    "interests": ["Pools & Pool Care", "Pool Chemicals", "Pumps"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz45-1",
+    "firstName": "Kefilwe",
+    "otherName": "Kefi",
+    "surname": "Mokgokong",
+    "username": "kefi.steel",
+    "dob": "1996-09-09",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-45",
+    "roleContext": "Admin & Sales",
+    "skills": ["Invoicing", "Quotations", "Customer Service"],
+    "contacts": {
+      "mobiles": [{ "title": "Office", "network": "Maseru", "number": "+267 74000060" }],
+      "email": "kefilwe@onkassteel.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 10",
+      "gps": "https://maps.google.com/?q=-24.6280,25.9050"
+    },
+    "interests": ["Steel & Metal Products", "Office Admin"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz46-1",
+    "firstName": "Phenyo",
+    "otherName": "Phen",
+    "surname": "Mokgethi",
+    "username": "phenyo.paint",
+    "dob": "1994-04-04",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-46",
+    "roleContext": "Paint Mixer / Sales",
+    "skills": ["Paint Mixing", "Shake Machine", "Stock Replenishment"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 74000061" }],
+      "email": "phenyo@paintmasters.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 6",
+      "gps": "https://maps.google.com/?q=-24.6267,25.9022"
+    },
+    "interests": ["Paint", "Home Decor", "Tools & Equipment"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz47-1",
+    "firstName": "Tlotlo",
+    "otherName": "Tlot",
+    "surname": "Mokgosi",
+    "username": "tlotlo.tools",
+    "dob": "1991-10-10",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-47",
+    "roleContext": "Tool Repair Technician",
+    "skills": ["Power Tool Diagnostics", "Parts Replacement", "Testing"],
+    "contacts": {
+      "mobiles": [{ "title": "Repairs", "network": "Maseru", "number": "+267 74000062" }],
+      "email": "tlotlo@kutlotools.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Block 3 (Extension 32)",
+      "gps": "https://maps.google.com/?q=-24.6425,25.9150"
+    },
+    "interests": ["Tools & Equipment", "Electrical", "Generators"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz48-1",
+    "firstName": "Masego",
+    "otherName": "Mase",
+    "surname": "Mokgwathi",
+    "username": "mase.plumb",
+    "dob": "1993-07-07",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-48",
+    "roleContext": "Plumbing Counter Sales",
+    "skills": ["Pipe Fittings Knowledge", "Quote Generation", "Customer Advice"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 74000063" }],
+      "email": "mase@plumbexpress.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 16",
+      "gps": "https://maps.google.com/?q=-24.6340,25.9060"
+    },
+    "interests": ["Plumbing", "Sanitaryware", "Toilet Spares"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz49-1",
+    "firstName": "Olorato",
+    "otherName": "Olo",
+    "surname": "Mokgethi",
+    "username": "olo.ceil",
+    "dob": "1992-12-12",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-49",
+    "roleContext": "Ceiling Installer",
+    "skills": ["Suspended Ceiling Grid", "Gypsum Fixing", "Cornice Installation"],
+    "contacts": {
+      "mobiles": [{ "title": "Field", "network": "Maseru", "number": "+267 74000064" }],
+      "email": "olorato@ceilingsbw.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 22",
+      "gps": "https://maps.google.com/?q=-24.6400,25.8950"
+    },
+    "interests": ["Ceiling", "Partitioning", "Drywall Systems"],
+    "businessInfo": null
+  },
+  {
+    "id": "staff-biz50-1",
+    "firstName": "Gofaone",
+    "otherName": "Gofa",
+    "surname": "Mokgathi",
+    "username": "gofa.garden",
+    "dob": "1995-08-08",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-50",
+    "roleContext": "Nursery Assistant",
+    "skills": ["Plant Care", "Potting", "Customer Advice"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 74000065" }],
+      "email": "gofa@boitumelogarden.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Glen Valley",
+      "gps": "https://maps.google.com/?q=-24.5857,25.9550"
+    },
+    "interests": ["Gardening & Outdoor Living", "Seeds", "Fertiliser"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-gardener",
+    "firstName": "Molebogeng",
+    "otherName": "Mole",
+    "surname": "Mokgethi",
+    "username": "mole.garden",
+    "dob": "1988-05-05",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Gardener / Landscaper",
+    "subTrades": "Lawn Mowing, Hedge Trimming, Garden Cleanup",
+    "skills": ["Lawn Care", "Pruning", "Weeding"],
+    "contacts": {
+      "mobiles": [{ "title": "Garden", "network": "Maseru", "number": "+267 73100088" }],
+      "whatsapps": [{ "title": "Mole Garden", "countryCode": "+267", "number": "73100088" }],
+      "email": "mole.gardener@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 21",
+      "gps": "https://maps.google.com/?q=-24.6399,25.9015"
+    },
+    "interests": ["Gardening & Outdoor Living", "Landscaper", "Seeds", "Tools & Equipment"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-poolclean",
+    "firstName": "Kagiso",
+    "otherName": "Kag",
+    "surname": "Mokgosi",
+    "username": "kagiso.poolclean",
+    "dob": "1991-11-11",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Pool Cleaning & Maintenance",
+    "subTrades": "Vacuuming, Chemical Balancing, Filter Backwash",
+    "skills": ["Pool Chemistry", "Vacuuming", "Pump Operation"],
+    "contacts": {
+      "mobiles": [{ "title": "Pool", "network": "Orange", "number": "+267 73100089" }],
+      "email": "kagiso.poolcare@outlook.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Phakalane (Extension 97)",
+      "gps": "https://maps.google.com/?q=-24.5877,25.9380"
+    },
+    "interests": ["Pools & Pool Care", "Pool Chemicals", "Pumps"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-couchclean",
+    "firstName": "Masego",
+    "otherName": "Mase",
+    "surname": "Mokgatlhe",
+    "username": "mase.couch",
+    "dob": "1993-01-01",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Upholstery & Carpet Cleaner",
+    "subTrades": "Steam Cleaning, Stain Removal, Mattress Cleaning",
+    "skills": ["Extraction Machine", "Spot Treatment", "Drying"],
+    "contacts": {
+      "mobiles": [{ "title": "Clean", "network": "Maseru", "number": "+267 73100090" }],
+      "whatsapps": [{ "title": "Mase Clean", "countryCode": "+267", "number": "73100090" }],
+      "email": "mase.carpetclean@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 18 Broadhurst",
+      "gps": "https://maps.google.com/?q=-24.6378,25.9205"
+    },
+    "interests": ["Cleaning Chemicals", "Upholsterer", "Home Decor"],
+    "businessInfo": null
+  },
+  {
+    "id": "gen-user-51",
+    "firstName": "Tlotlo",
+    "otherName": "T",
+    "surname": "Mokgethi",
+    "username": "tlotlo.m",
+    "dob": "1998-06-06",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "general_user",
+    "linkedBusiness": null,
+    "primaryTrade": null,
+    "subTrades": "",
+    "skills": ["Photography", "Drone Piloting"],
+    "contacts": {
+      "mobiles": [{ "title": "Cell", "network": "Orange", "number": "+267 72001051" }],
+      "email": "tlotlo.m@gmail.com",
+      "social": { "instagram": "https://instagram.com/tlotlo_aerial" }
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 1 (Mmaraka)",
+      "gps": "https://maps.google.com/?q=-24.6545,25.9087"
+    },
+    "interests": ["Design Plans", "Home Decor", "Real Estate"],
+    "businessInfo": null
+  },
+  {
+    "id": "gen-user-52",
+    "firstName": "Ontiretse",
+    "otherName": "Onti",
+    "surname": "Mokgokong",
+    "username": "onti.m",
+    "dob": "1995-02-02",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "general_user",
+    "linkedBusiness": null,
+    "primaryTrade": null,
+    "subTrades": "",
+    "skills": ["Baking", "Cake Decorating"],
+    "contacts": {
+      "mobiles": [{ "title": "Home", "network": "Maseru", "number": "+267 72001052" }],
+      "whatsapps": [{ "title": "Onti Cakes", "countryCode": "+267", "number": "72001052" }],
+      "email": "onti.bakes@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Broadhurst (Extension 17)",
+      "gps": "https://maps.google.com/?q=-24.6360,25.9200"
+    },
+    "interests": ["Mobile Catering", "Kitchen", "Events & Catering"],
+    "businessInfo": null
+  },
+  {
+    "id": "gen-user-53",
+    "firstName": "Kutlwano",
+    "otherName": "Kutl",
+    "surname": "Mokgwathi",
+    "username": "kutlwano.m",
+    "dob": "1997-10-10",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "general_user",
+    "linkedBusiness": null,
+    "primaryTrade": null,
+    "subTrades": "",
+    "skills": ["Car Detailing", "Polishing"],
+    "contacts": {
+      "mobiles": [{ "title": "Mobile", "network": "Orange", "number": "+267 72001053" }],
+      "email": "kutlwano.detail@outlook.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 11",
+      "gps": "https://maps.google.com/?q=-24.6295,25.9085"
+    },
+    "interests": ["Automotive & Logistics", "Cleaning Chemicals", "Tools & Equipment"],
+    "businessInfo": null
+  },
+  {
+    "id": "gen-user-54",
+    "firstName": "Refilwe",
+    "otherName": "Refi",
+    "surname": "Mokgethi",
+    "username": "refilwe.m",
+    "dob": "1994-04-04",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "general_user",
+    "linkedBusiness": null,
+    "primaryTrade": null,
+    "subTrades": "",
+    "skills": ["Event Planning", "Floristry"],
+    "contacts": {
+      "mobiles": [{ "title": "Cell", "network": "Maseru", "number": "+267 72001054" }],
+      "whatsapps": [{ "title": "Refi Events", "countryCode": "+267", "number": "72001054" }],
+      "email": "refilwe.events@gmail.com",
+      "social": { "instagram": "https://instagram.com/refi_events" }
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 9 Phologolo",
+      "gps": "https://maps.google.com/?q=-24.6360,25.9145"
+    },
+    "interests": ["Events & Catering", "Tent & Decor", "Flowers & Silk"],
+    "businessInfo": null
+  },
+  {
+    "id": "gen-user-55",
+    "firstName": "Tshepiso",
+    "otherName": "Tshep",
+    "surname": "Mokgosi",
+    "username": "tshepiso.m",
+    "dob": "1992-08-08",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "general_user",
+    "linkedBusiness": null,
+    "primaryTrade": null,
+    "subTrades": "",
+    "skills": ["Fencing", "Gate Installation"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 72001055" }],
+      "email": "tshepiso.fence@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 18",
+      "gps": "https://maps.google.com/?q=-24.6380,25.8990"
+    },
+    "interests": ["Safety & Security", "Fencing", "Gate Motor/Intercom"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-windowtint",
+    "firstName": "Kagiso",
+    "otherName": "Kags",
+    "surname": "Mokgatlhe",
+    "username": "kagiso.tint",
+    "dob": "1987-07-07",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Window Tinting Specialist",
+    "subTrades": "Car Tint, Building Window Film, Privacy Film",
+    "skills": ["Heat Shrinking", "Squeegee", "Cutting"],
+    "contacts": {
+      "mobiles": [{ "title": "Tint", "network": "Maseru", "number": "+267 73100091" }],
+      "whatsapps": [{ "title": "Kagiso Tint", "countryCode": "+267", "number": "73100091" }],
+      "email": "kagiso.tinting@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 13",
+      "gps": "https://maps.google.com/?q=-24.6315,25.9040"
+    },
+    "interests": ["Glass Panes", "Automotive & Logistics", "Home Decor"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-buildclean",
+    "firstName": "Mpho",
+    "otherName": "Mph",
+    "surname": "Mokgethi",
+    "username": "mpho.buildclean",
+    "dob": "1990-03-03",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Post-Construction Cleaning",
+    "subTrades": "Dust Removal, Window Wash, Debris Collection",
+    "skills": ["High Pressure Wash", "Scaffold Clean", "Waste Disposal"],
+    "contacts": {
+      "mobiles": [{ "title": "Clean", "network": "Orange", "number": "+267 73100092" }],
+      "email": "mpho.buildclean@outlook.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Block 8 (Extension 36)",
+      "gps": "https://maps.google.com/?q=-24.6450,25.9135"
+    },
+    "interests": ["Cleaning Chemicals", "Building Materials", "Construction Equipment"],
+    "businessInfo": null
+  },
+  {
+    "id": "tradesperson-cabinet2",
+    "firstName": "Boitumelo",
+    "otherName": "Boitu",
+    "surname": "Mokgokong",
+    "username": "boitu.cabinet",
+    "dob": "1986-06-06",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "service_provider",
+    "linkedBusiness": null,
+    "primaryTrade": "Cabinet Maker / Joiner",
+    "subTrades": "Kitchen Units, Wardrobes, Office Desks",
+    "skills": ["CNC Operation", "Edge Banding", "Assembly"],
+    "contacts": {
+      "mobiles": [{ "title": "Workshop", "network": "Maseru", "number": "+267 73100093" }],
+      "email": "boitu.cabinet@gmail.com"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 18 Broadhurst",
+      "gps": "https://maps.google.com/?q=-24.6378,25.9205"
+    },
+    "interests": ["Boards & Timber", "Kitchen", "Shelving & Storage", "Tools & Equipment"],
+    "businessInfo": null
+  },
+  {
+    "id": "owner-biz51",
+    "firstName": "Molebogeng",
+    "otherName": "Mole",
+    "surname": "Mokgosi",
+    "username": "molebogeng.tools",
+    "dob": "1977-09-09",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-51",
+    "skills": ["Tool Retail", "Workshop Supplies"],
+    "contacts": {
+      "mobiles": [{ "title": "Shop", "network": "Orange", "number": "+267 74000066" }],
+      "whatsapps": [{ "title": "Mole Tools", "countryCode": "+267", "number": "74000066" }],
+      "email": "mole@toolexpress.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 4",
+      "gps": "https://maps.google.com/?q=-24.6180,25.8930"
+    },
+    "interests": ["Tools & Equipment", "Power Tools", "Hand Tools", "Measuring Tools"],
+    "businessInfo": {
+      "name": "Tool Express Botswana",
+      "categories": ["Tools & Equipment", "Power Tools", "Hand Tools", "Measuring & Marking Tools", "Tool Storage"],
+      "description": "Wide range of tools for professionals and DIY.",
+      "locations": [{ "town": "Gaborone", "area": "Gaborone West Extension 4" }],
+      "subscription": "full"
+    }
+  },
+  {
+    "id": "owner-biz52",
+    "firstName": "Kutlwano",
+    "otherName": "Kutl",
+    "surname": "Mokgwathi",
+    "username": "kutlwano.lumber",
+    "dob": "1980-05-05",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-52",
+    "skills": ["Lumber Trading", "Import/Export"],
+    "contacts": {
+      "mobiles": [{ "title": "Yard", "network": "Maseru", "number": "+267 74000067" }],
+      "email": "info@kutlwanolumber.co.bw"
+    },
+    "location": {
+      "town": "Francistown",
+      "area": "Block 008",
+      "gps": "https://maps.google.com/?q=-21.1720,27.5130"
+    },
+    "interests": ["Boards & Timber", "Structural Timber", "Decking & Cladding", "Mouldings"],
+    "businessInfo": {
+      "name": "Kutlwano Lumber",
+      "categories": ["Boards & Timber", "Timber", "Structural Timber", "Decking & Cladding", "Exotic Timber"],
+      "description": "Quality lumber for construction and furniture.",
+      "locations": [{ "town": "Francistown", "area": "Block 008" }],
+      "subscription": "free"
+    }
+  },
+  {
+    "id": "owner-biz53",
+    "firstName": "Pabalelo",
+    "otherName": "Pabz",
+    "surname": "Mokgethi",
+    "username": "pabalelo.paint",
+    "dob": "1984-08-08",
+    "gender": "Female",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-53",
+    "skills": ["Paint Retail", "Spray Painting Services"],
+    "contacts": {
+      "mobiles": [{ "title": "Office", "network": "Orange", "number": "+267 74000068" }],
+      "whatsapps": [{ "title": "Pabz Paint", "countryCode": "+267", "number": "74000068" }],
+      "email": "pabalelo@pabzpaint.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Extension 10 Boitshoko",
+      "gps": "https://maps.google.com/?q=-24.6310,25.9100"
+    },
+    "interests": ["Paint", "Spray Paint", "Primer & Undercoat", "Accessories"],
+    "businessInfo": {
+      "name": "Pabz Paint Centre",
+      "categories": ["Paint", "PVA", "Enamel", "Spray Paint", "Floor Paint", "Accessories"],
+      "description": "Quality paints and spray painting services.",
+      "locations": [{ "town": "Gaborone", "area": "Extension 10 Boitshoko" }],
+      "subscription": "full"
+    }
+  },
+  {
+    "id": "owner-biz54",
+    "firstName": "Omphile",
+    "otherName": "Omph",
+    "surname": "Mokgokong",
+    "username": "omphile.plumb",
+    "dob": "1976-02-02",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "business_owner",
+    "linkedBusiness": "biz-54",
+    "skills": ["Plumbing Wholesale", "Bathroom Showroom"],
+    "contacts": {
+      "mobiles": [{ "title": "Showroom", "network": "Maseru", "number": "+267 74000069" }],
+      "email": "omphile@plumbworld.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 9",
+      "gps": "https://maps.google.com/?q=-24.6290,25.9068"
+    },
+    "interests": ["Plumbing", "Sanitaryware", "Bathroom & Kitchen", "Geysers & Heating"],
+    "businessInfo": {
+      "name": "Plumb World Botswana",
+      "categories": ["Plumbing", "Pipes & Fittings", "Sanitaryware", "Geysers & Heating", "Toilet Spares"],
+      "description": "Complete plumbing and bathroom solutions.",
+      "locations": [{ "town": "Gaborone", "area": "Gaborone West Extension 9" }],
+      "subscription": "free"
+    }
+  },
+  {
+    "id": "staff-biz51-1",
+    "firstName": "Kago",
+    "otherName": "Kago",
+    "surname": "Mokgethi",
+    "username": "kago.tools",
+    "dob": "1995-12-12",
+    "gender": "Male",
+    "nationality": "Motswana",
+    "race": "African",
+    "role": "staff",
+    "linkedBusiness": "biz-51",
+    "roleContext": "Tool Sales Assistant",
+    "skills": ["Product Knowledge", "Power Tool Demo", "Stock Control"],
+    "contacts": {
+      "mobiles": [{ "title": "Work", "network": "Orange", "number": "+267 74000070" }],
+      "email": "kago@toolexpress.co.bw"
+    },
+    "location": {
+      "town": "Gaborone",
+      "area": "Gaborone West Extension 4",
+      "gps": "https://maps.google.com/?q=-24.6180,25.8930"
+    },
+    "interests": ["Tools & Equipment", "Hardware & Fasteners"],
+    "businessInfo": null
+  }
+]
