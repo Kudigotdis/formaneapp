@@ -572,19 +572,18 @@
   </div>
 
   <!-- ── ADD ITEM MODAL (Accordion-based, WIROG-1) ── -->
-  <div class="modal-overlay" id="item-modal">
+  <div class="modal-overlay" id="add-item-modal">
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title">Add Item to Catalogue</span>
-        <button class="modal-close" onclick="closeModal('item-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+        <button class="modal-close" onclick="closeModal('add-item-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
       </div>
       <div class="modal-body">
 
         <!-- ═══ SECTION 1: DESCRIPTION ═══ -->
-        <div class="accordion open" id="item-section-identity">
-          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('item-section-identity')">
+        <div class="accordion open" id="add-item-section-description">
+          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('add-item-section-description')">
             <span style="color:var(--orange);">1. Description</span>
-            <span class="chevron">&#9660;</span>
           </div>
           <div class="accordion-body">
             <label>Item Title</label>
@@ -610,10 +609,9 @@
         </div>
 
         <!-- ═══ SECTION 2: COST SETTINGS ═══ -->
-        <div class="accordion" id="item-section-money">
-          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('item-section-money')">
+        <div class="accordion" id="add-item-section-cost">
+          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('add-item-section-cost')">
             <span style="color:var(--orange);">2. Cost Settings</span>
-            <span class="chevron">&#9660;</span>
           </div>
           <div class="accordion-body">
             <label>Base Price (P)</label>
@@ -666,10 +664,9 @@
         </div>
 
         <!-- ═══ SECTION 3: VISIBILITY & SCHEDULING ═══ -->
-        <div class="accordion" id="item-section-visibility">
-          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('item-section-visibility')">
+        <div class="accordion" id="add-item-section-visibility">
+          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('add-item-section-visibility')">
             <span style="color:var(--orange);">3. Visibility & Scheduling</span>
-            <span class="chevron">&#9660;</span>
           </div>
           <div class="accordion-body">
             <label>Region</label>
@@ -711,12 +708,11 @@
         </div>
 
         <!-- ═══ SECTION 4: PROMO (always visible) ═══ -->
-        <div class="accordion open" id="item-section-promo">
-          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('item-section-promo')">
-            <span style="color:var(--orange);">4. Promote Item</span>
-            <span class="chevron">&#9660;</span>
+        <div id="add-item-promo" style="margin-top:6px;">
+          <div style="background:var(--orange-light);padding:10px;border-radius:8px;border:1px solid var(--orange);margin-bottom:8px;">
+            <strong style="color:var(--orange);">4. Promote Item</strong>
           </div>
-          <div class="accordion-body">
+          <div>
             <p style="font-size:13px;color:var(--text-sub);margin-bottom:10px;">Boost this item to the Promos feed. <span id="item-free-promo-status" style="color:#2e7d32;font-weight:600;"></span></p>
 
             <label>Promo Duration</label>
@@ -752,10 +748,13 @@
               </div>
             </div>
 
-            <button class="btn" onclick="saveItem()" id="item-save-btn">
-              Save Item &amp; Submit to Promos
-            </button>
-            <p style="font-size:11px;color:var(--grey-dark);text-align:center;margin-top:8px;" id="item-save-subtext">Item will be saved to your catalogue and boosted to the Promos feed.</p>
+            <!-- Save / Delete row (always visible) -->
+            <div style="display:flex;gap:8px;margin-top:6px;margin-bottom:8px;">
+              <button class="btn" onclick="saveAddItem()" id="add-item-save-btn" style="flex:1;">Save Item</button>
+              <button class="btn btn-outline" onclick="deleteAddItem()" id="add-item-delete-btn" style="flex:1;color:#e74c3c;border-color:#e74c3c;">Delete</button>
+            </div>
+
+            <p style="font-size:11px;color:var(--grey-dark);text-align:center;margin-top:8px;" id="add-item-subtext">Save the item to your catalogue. Promo options unlock after adding to a catalogue.</p>
           </div>
         </div>
 
@@ -930,11 +929,36 @@
         </div>
         <p style="font-size:13px;font-weight:600;margin-bottom:8px;">Pay via:</p>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button class="btn-outline" onclick="payNotesBTC()" style="justify-content:center;font-size:14px;">BTC Smega</button>
-          <button class="btn-outline" onclick="payNotesMascom()" style="justify-content:center;font-size:14px;">Mascom Myzaka</button>
-          <button class="btn-outline" onclick="payNotesOrange()" style="justify-content:center;font-size:14px;">Orange Money</button>
+          <button class="btn-outline" onclick="openPaymentProofModal('BTC','25','Notes top-up')" style="justify-content:flex-start;display:flex;align-items:center;gap:8px;font-size:14px;">
+            <img src="assets/logos/btc_logo.png" style="width:28px;height:28px;object-fit:contain;"> BTC Smega — WhatsApp / Upload Proof
+          </button>
+          <button class="btn-outline" onclick="openPaymentProofModal('Mascom','25','Notes top-up')" style="justify-content:flex-start;display:flex;align-items:center;gap:8px;font-size:14px;">
+            <img src="assets/logos/mascom_logo.png" style="width:28px;height:28px;object-fit:contain;"> Mascom Myzaka — WhatsApp / Upload Proof
+          </button>
+          <button class="btn-outline" onclick="openPaymentProofModal('Orange','25','Notes top-up')" style="justify-content:flex-start;display:flex;align-items:center;gap:8px;font-size:14px;">
+            <img src="assets/logos/orange_logo.png" style="width:28px;height:28px;object-fit:contain;"> Orange Money — WhatsApp / Upload Proof
+          </button>
         </div>
         <p style="font-size:11px;color:var(--grey-mid);text-align:center;margin-top:16px;">After payment, your notes will be credited automatically.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAYMENT PROOF / WHATSAPP MODAL ── -->
+  <div class="modal-overlay" id="payment-proof-modal" style="display:none;">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Send Proof of Payment</span>
+        <button class="modal-close" onclick="closeModal('payment-proof-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+      </div>
+      <div class="modal-body">
+        <p id="payment-proof-instructions" style="font-size:13px;color:var(--grey-dark);margin-bottom:12px;"></p>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+          <input type="file" id="payment-proof-input" accept="image/*" onchange="handleProofFileInput(this.files)">
+          <button class="btn" onclick="sendPaymentWhatsApp()" id="payment-whatsapp-btn">Open WhatsApp</button>
+        </div>
+        <div id="payment-proof-preview" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;"><button class="btn" onclick="submitPaymentProof()">Submit Proof</button><button class="btn btn-outline" onclick="closeModal('payment-proof-modal')">Cancel</button></div>
       </div>
     </div>
   </div>
@@ -1014,5 +1038,6 @@
   <script src="items.js"></script>
   <script src="blogs.js"></script>
   <script src="app.js"></script>
+  <script src="account-views.js"></script>
 </body>
 </html>

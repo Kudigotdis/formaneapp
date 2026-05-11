@@ -399,6 +399,134 @@ function setPrimaryMobile(id) {
   showToast('Primary updated');
 }
 
+// ─── PAYMENT PROOF / PROMO REQUESTS ───
+window._paymentProofPending = null;
+
+function openPaymentProofModal(method, amount, purpose) {
+  const modal = document.getElementById('payment-proof-modal');
+  if (!modal) return;
+  document.getElementById('payment-proof-instructions').textContent = `Pay P${amount} via ${method}. After payment, either send proof via WhatsApp or upload an image below.`;
+  modal.style.display = 'block';
+  window._paymentProofPending = { method, amount: Number(amount), purpose };
+}
+
+function handleProofFileInput(files) {
+  if (!files || files.length === 0) return;
+  const f = files[0];
+  const reader = new FileReader();
+  reader.onload = e => {
+    const imgData = e.target.result;
+    const preview = document.getElementById('payment-proof-preview');
+    preview.innerHTML = '';
+    const img = document.createElement('img'); img.src = imgData; img.style.width = '140px'; img.style.height = '140px'; img.style.objectFit = 'cover'; img.style.borderRadius = '6px';
+    preview.appendChild(img);
+    window._paymentProofPending.image = imgData;
+  };
+  reader.readAsDataURL(f);
+}
+
+function sendPaymentWhatsApp() {
+  if (!window._paymentProofPending) return showToast('No payment selected');
+  const { method, amount, purpose } = window._paymentProofPending;
+  const text = `I have paid P${amount} via ${method} for ${purpose}. User ID: ${UserState.id}`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  showToast('WhatsApp opened. Send proof message to Wirog.');
+}
+
+function submitPaymentProof() {
+  if (!window._paymentProofPending) return showToast('No payment to submit');
+  const payload = {
+    id: genId(),
+    userId: UserState.id,
+    method: window._paymentProofPending.method,
+    amount: window._paymentProofPending.amount,
+    purpose: window._paymentProofPending.purpose,
+    image: window._paymentProofPending.image || null,
+    status: 'pending',
+    createdAt: Date.now()
+  };
+  const reqs = JSON.parse(localStorage.getItem('wirog_payment_requests') || '[]');
+  reqs.push(payload);
+  localStorage.setItem('wirog_payment_requests', JSON.stringify(reqs));
+  window._paymentProofPending = null;
+  document.getElementById('payment-proof-preview').innerHTML = '';
+  closeModal('payment-proof-modal');
+  showToast('Payment proof submitted. Pending admin review.');
+  // If admin view is open, refresh
+  try { window.renderPromoRequestsList && window.renderPromoRequestsList(); } catch(e){}
+}
+
+function createPromoRequest(obj) {
+  const reqs = JSON.parse(localStorage.getItem('wirog_promo_requests') || '[]');
+  const payload = Object.assign({ id: genId(), status: 'pending', createdAt: Date.now() }, obj);
+  reqs.push(payload);
+  localStorage.setItem('wirog_promo_requests', JSON.stringify(reqs));
+  showToast('Promo request submitted. Pending admin review.');
+}
+
+function renderPromoRequestsList() {
+  const container = document.getElementById('promo-requests-list');
+  if (!container) return;
+  const reqs = JSON.parse(localStorage.getItem('wirog_promo_requests') || '[]');
+  const paymentReqs = JSON.parse(localStorage.getItem('wirog_payment_requests') || '[]');
+  const all = reqs.concat(paymentReqs);
+  if (all.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--grey-dark);">No requests</div>';
+    return;
+  }
+  container.innerHTML = all.map(r => {
+    const date = new Date(r.createdAt).toLocaleString();
+    const img = r.image ? `<img src="${r.image}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;">` : '';
+    return `<div style="border-bottom:1px solid var(--grey-light);padding:12px;display:flex;gap:12px;align-items:flex-start;">
+      <div style="flex:1;">
+        <div style="font-weight:700;">${r.purpose || r.method || 'Payment'}</div>
+        <div style="font-size:13px;color:var(--grey-dark);">User: ${r.userId} · P ${r.amount || ''} · ${r.status}</div>
+        <div style="font-size:12px;color:var(--grey-mid);margin-top:6px;">${date}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">${img}<div style="display:flex;gap:6px;">
+        <button class="btn" onclick="approveRequest('${r.id}')">Approve</button>
+        <button class="btn btn-outline" onclick="rejectRequestPrompt('${r.id}')">Reject</button>
+      </div></div>
+    </div>`;
+  }).join('');
+}
+
+function approveRequest(id) {
+  const prs = JSON.parse(localStorage.getItem('wirog_promo_requests') || '[]');
+  const pidx = prs.findIndex(p=>p.id===id);
+  if (pidx !== -1) { prs[pidx].status = 'approved'; localStorage.setItem('wirog_promo_requests', JSON.stringify(prs)); showToast('Promo request approved'); renderPromoRequestsList(); return; }
+  const pays = JSON.parse(localStorage.getItem('wirog_payment_requests') || '[]');
+  const p2 = pays.findIndex(p=>p.id===id);
+  if (p2 !== -1) { pays[p2].status = 'approved'; localStorage.setItem('wirog_payment_requests', JSON.stringify(pays)); showToast('Payment approved'); renderPromoRequestsList(); return; }
+  showToast('Request not found');
+}
+
+function rejectRequestPrompt(id) {
+  const reason = prompt('Enter rejection reason:');
+  if (!reason) return;
+  rejectRequest(id, reason);
+}
+
+function rejectRequest(id, reason) {
+  const prs = JSON.parse(localStorage.getItem('wirog_promo_requests') || '[]');
+  const pidx = prs.findIndex(p=>p.id===id);
+  if (pidx !== -1) { prs[pidx].status = 'rejected'; prs[pidx].reason = reason; localStorage.setItem('wirog_promo_requests', JSON.stringify(prs)); showToast('Promo request rejected'); renderPromoRequestsList(); return; }
+  const pays = JSON.parse(localStorage.getItem('wirog_payment_requests') || '[]');
+  const p2 = pays.findIndex(p=>p.id===id);
+  if (p2 !== -1) { pays[p2].status = 'rejected'; pays[p2].reason = reason; localStorage.setItem('wirog_payment_requests', JSON.stringify(pays)); showToast('Payment rejected'); renderPromoRequestsList(); return; }
+  showToast('Request not found');
+}
+
+window.openPaymentProofModal = openPaymentProofModal;
+window.handleProofFileInput = handleProofFileInput;
+window.sendPaymentWhatsApp = sendPaymentWhatsApp;
+window.submitPaymentProof = submitPaymentProof;
+window.createPromoRequest = createPromoRequest;
+window.renderPromoRequestsList = renderPromoRequestsList;
+window.approveRequest = approveRequest;
+window.rejectRequestPrompt = rejectRequestPrompt;
+
+
 function updateMobileField(id, field, value) {
   const m = UserState.contacts.mobiles.find(x => x.id === id);
   if (m) { m[field] = value; UserState._persistContacts(); }
