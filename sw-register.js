@@ -36,8 +36,9 @@ async function registerWirogSW() {
         if (window.SyncQueue && typeof window.SyncQueue === 'object') {
           const host = location.hostname;
           if (host === 'localhost' || host === '127.0.0.1') {
-            window.SyncQueue.syncEndpoint = 'http://localhost:3000/sync/commit';
-            console.log('SyncQueue.syncEndpoint set to http://localhost:3000/sync/commit for local testing');
+            // Use same-origin relative endpoint; dev-server proxies /sync/commit to mock server for testing
+            window.SyncQueue.syncEndpoint = '/sync/commit';
+            console.log('SyncQueue.syncEndpoint set to /sync/commit for local testing (proxied)');
           }
         }
       } catch(e) {}

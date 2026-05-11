@@ -565,7 +565,9 @@ function updateAccountHero() {
   const avatar = document.getElementById('acct-avatar');
   avatar.style.background = color;
 
-  if (isGuest || isAdmin) {
+  if (isGuest) {
+    avatar.innerHTML = '<img src="assets/images/company_logos_dummy/new_wirog_logo22.webp" style="width:82px;height:82px;border-radius:50%;object-fit:cover;display:block;">';
+  } else if (isAdmin) {
     avatar.innerHTML = initials;
   } else {
     const demoAcc = window.DEMO_ACCOUNTS.find(a => a.id === s.id);
@@ -836,6 +838,9 @@ function updateAccountUI() {
   const adminDash = document.getElementById('admin-dashboard-entry');
   if (adminDash) adminDash.style.display = isAdmin ? 'block' : 'none';
 
+  var delRow = document.getElementById('delete-account-row');
+  if (delRow) delRow.style.display = (isGuest || isAdmin) ? 'none' : '';
+
   if (isGuest) {
     if (guestCta) guestCta.style.display = 'block';
     resetBusinessCard();
@@ -966,6 +971,81 @@ function updateSubStatus() {
   el.textContent = labels[sub] || 'Free Plan';
 }
 
+// ─── SETTINGS FUNCTIONS ───
+function installApp() {
+  var prompt = window._installPrompt;
+  if (prompt) {
+    prompt.prompt();
+    prompt.userChoice.then(function(result) {
+      if (result.outcome === 'accepted') showToast('App installed!');
+      else showToast('Install cancelled');
+      window._installPrompt = null;
+    });
+  } else {
+    showToast('App already installed or not supported');
+  }
+}
+
+async function clearAppCache() {
+  try {
+    var stores = ['users','businesses','items','promos','notes','kpi','filters','profiles','credentials'];
+    for (var i = 0; i < stores.length; i++) {
+      if (WirogDB.db && WirogDB.db.objectStoreNames.contains(stores[i])) {
+        await WirogDB.clear(stores[i]);
+      }
+    }
+  } catch(e) { console.warn('Failed to clear some IndexedDB stores:', e); }
+
+  try {
+    var cacheKeys = await caches.keys();
+    for (var j = 0; j < cacheKeys.length; j++) {
+      await caches.delete(cacheKeys[j]);
+    }
+  } catch(e) { console.warn('Failed to clear caches:', e); }
+
+  localStorage.clear();
+  UserState.clear();
+  showToast('Cache cleared');
+}
+
+function deleteAccount() {
+  var isReal = window.Auth && window.Auth.isRealUser();
+  if (!isReal) {
+    showToast('Guest and demo accounts cannot be deleted');
+    return;
+  }
+  openModal('delete-account-modal');
+}
+
+async function confirmDeleteAccount() {
+  closeModal('delete-account-modal');
+
+  try {
+    var stores = ['users','businesses','items','promos','notes','kpi','filters','profiles','credentials'];
+    for (var i = 0; i < stores.length; i++) {
+      if (WirogDB.db && WirogDB.db.objectStoreNames.contains(stores[i])) {
+        await WirogDB.clear(stores[i]);
+      }
+    }
+  } catch(e) { console.warn('Failed to clear stores:', e); }
+
+  try {
+    var cacheKeys = await caches.keys();
+    for (var j = 0; j < cacheKeys.length; j++) {
+      await caches.delete(cacheKeys[j]);
+    }
+  } catch(e) { console.warn('Failed to clear caches:', e); }
+
+  localStorage.clear();
+  UserState.clear();
+  showToast('Account deleted');
+
+  document.getElementById('view-welcome')?.classList.add('active');
+  var activeView = document.querySelector('.view.active');
+  if (activeView) activeView.classList.remove('active');
+  if (window.manageUI) manageUI('view-welcome');
+}
+
 // ─── WINDOW EXPORTS ───
 window.openSwitcher = openSwitcher;
 window.closeSwitcher = closeSwitcher;
@@ -1006,3 +1086,7 @@ window.removeFavourite = removeFavourite;
 window.toggleInterestCheckbox = toggleInterestCheckbox;
 window.toggleAllInterests = toggleAllInterests;
 window.toggleCategoryChildren = toggleCategoryChildren;
+window.installApp = installApp;
+window.clearAppCache = clearAppCache;
+window.deleteAccount = deleteAccount;
+window.confirmDeleteAccount = confirmDeleteAccount;

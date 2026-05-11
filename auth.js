@@ -31,6 +31,7 @@ const Auth = {
     updateAccountUI();
     reloadNotesForUser();
     enterApp();
+    renderPromos();
     showToast('Browsing as Guest');
   },
 
@@ -171,6 +172,7 @@ const Auth = {
     updateAccountUI();
     reloadNotesForUser();
     enterApp();
+    renderPromos();
   },
 
   adminLogin() {
@@ -196,6 +198,7 @@ const Auth = {
     updateKPI();
     updateAccountUI();
     enterApp();
+    renderPromos();
     showToast('Welcome Admin');
   },
 

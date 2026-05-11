@@ -77,7 +77,7 @@ function renderPromoTags(tags) {
     tags.map(function(t, i) {
       return '<span class="promo-tag' + (i >= maxTags ? ' promo-tag-hidden' : '') + '">' + t + '</span>';
     }).join('') +
-    (overflow > 0 ? '<span class="promo-tag promo-tag-more" onclick="this.parentElement.classList.toggle(\'expanded\');this.style.display=\'none\'">+' + overflow + '</span>' : '') +
+    (overflow > 0 ? '<span class="promo-tag promo-tag-more" onclick="this.parentElement.classList.toggle(\'expanded\')">+' + overflow + '</span>' : '') +
     '</div>';
 }
 
@@ -144,7 +144,6 @@ function renderPromos() {
       '<div class="promo-img-wrap" onclick="trackPromoView(\'' + p.id + '\'); togglePromo(\'' + p.id + '\')">' +
         imgHtml +
         statusBadge +
-        '<div class="promo-tap-hint">Tap for details</div>' +
       '</div>' +
       '<div class="promo-details">' +
         '<div class="promo-supplier" onclick="openBizFromPromo(\'' + p.businessId + '\',\'' + p.businessName.replace(/'/g,"\\'") + '\')">' +
@@ -176,12 +175,12 @@ function renderPromos() {
 
         (_isGuest ? '' :
         '<div class="promo-actions">' +
-          '<button class="action-btn" onclick="addToNote(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="width:14px;height:14px;vertical-align:middle;"> Add to Note</button>' +
-          '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes.svg" style="width:14px;height:14px;vertical-align:middle;"></button>' +
+          '<button class="action-btn" onclick="addToNote(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
+          '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
           (isOwnPromo || window.Auth?.isAdmin() ?
-          '<button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/brands/facebook-f.svg" style="width:14px;height:14px;vertical-align:middle;"></button>' : '') +
+          '<button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
           (isOwnPromo ? '' :
-          '<button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\')">' +
+          '<button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
             '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
           '</button>') +
         '</div>') +
@@ -244,11 +243,11 @@ function changeQty(promoId, delta, basePrice) {
   }
 }
 
-async function toggleLike(id) {
+async function toggleLike(id, btnEl) {
   const p = window._promos.find(x => String(x.id) === String(id));
   if (!p) return;
   p.liked = !p.liked;
-  const btn = document.getElementById('like-' + id);
+  const btn = btnEl || document.getElementById('like-' + id);
   if (!btn) return;
   btn.className = 'action-btn' + (p.liked ? ' liked' : '');
   btn.innerHTML = '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">';
@@ -262,7 +261,6 @@ async function toggleLike(id) {
   }
 
   try { await WirogDB.put('promos', p); } catch(e) { console.error('Failed to save like to DB:', e); }
-  // Enqueue like change for background sync
   try {
     if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
       await window.SyncQueue.enqueue('promos_update', { id: p.id, liked: p.liked, kpi: p.kpi }, { clientId: UserState.id });
@@ -270,7 +268,6 @@ async function toggleLike(id) {
     }
   } catch(e) { console.warn('Failed to enqueue promo like update:', e); }
   updateKPI();
-  showToast(p.liked ? '\u2764\ufe0f Liked!' : 'Removed like');
 }
 
 async function addToNote(promoId) {

@@ -157,6 +157,39 @@ main::-webkit-scrollbar {
 .promo-filter-chip.active {
   background: var(--orange); color: white;
 }
+/* Business Profile Card Nav (bottom of promos/catalogue views) */
+.biz-profile-card-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #2a2a2a;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.biz-profile-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.2);
+  object-fit: cover;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+#view-business-promos.active,
+#view-business-catalogue.active {
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 0;
+}
+
 /* Bottom Nav */
 nav#bottom-nav {
   height: var(--nav-h);
@@ -248,12 +281,6 @@ label { font-size: 12px; font-weight: 600; color: var(--orange); text-transform:
   width: 100%; aspect-ratio: 16 / 9; object-fit: cover;
   display: block; background: var(--grey-light);
 }
-.promo-tap-hint {
-  position: absolute; bottom: 8px; right: 10px;
-  background: rgba(0,0,0,0.55); color: white;
-  font-size: 11px; padding: 3px 8px; border-radius: 10px;
-  pointer-events: none;
-}
 .promo-details { display: none; padding: 14px 16px; }
 .promo-card.open .promo-details { display: block; animation: fadeUp 0.2s ease; }
 .promo-supplier { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
@@ -265,11 +292,11 @@ label { font-size: 12px; font-weight: 600; color: var(--orange); text-transform:
   flex-shrink: 0;
 }
 .avatar-square {
-  width: 40px; height: 40px; border-radius: 8px;
+  width: 44px; height: 44px; border-radius: 2px;
   background: var(--orange); color: white;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-head); font-size: 16px; font-weight: 700;
-  flex-shrink: 0;
+  font-family: var(--font-head); font-size: 18px; font-weight: 700;
+  flex-shrink: 0; border: 3px solid rgba(128,128,128,0.25);
 }
 .promo-cat { font-size: 11px; color: var(--grey-dark); margin-bottom: 4px; }
 .promo-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
@@ -344,13 +371,6 @@ label { font-size: 12px; font-weight: 600; color: var(--orange); text-transform:
 /* ─── NOTES ─── */
 .notes-header { background: var(--orange); color: white; padding: 14px 16px; }
 .note-card { background: white; padding: 14px 16px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--grey-light); cursor: pointer; }
-.note-accordion { background: white; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; box-shadow: var(--card-shadow); }
-.note-accordion-header { display: flex; align-items: center; padding: 12px 14px; cursor: pointer; gap: 8px; }
-.note-accordion-arrow { font-size: 10px; color: var(--grey-mid); transition: transform 0.2s; }
-.note-accordion.open .note-accordion-arrow { transform: rotate(180deg); }
-.note-accordion-body { display: none; padding: 0 14px 12px; }
-.note-accordion.open .note-accordion-body { display: block; animation: fadeUp 0.15s ease; }
-.note-accordion-item { display: flex; align-items: center; padding: 10px 0; border-top: 1px solid var(--grey-light); gap: 10px; }
 .note-meta { font-size: 12px; color: var(--grey-dark); margin-top: 3px; }
 .wa-btn { width: 40px; height: 40px; border-radius: 50%; background: #25D366; border: none; color: white; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .note-detail-header { background: var(--text-main); color: white; padding: 16px; text-align: center; position: relative; }
@@ -389,6 +409,95 @@ label { font-size: 12px; font-weight: 600; color: var(--orange); text-transform:
 .biz-promo-card { background: white; border: 3px solid rgba(200,200,200,0.25); border-radius: 2px; padding: 14px 16px; margin-bottom: 8px; }
 .biz-categories { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 12px; justify-content: center; }
 .biz-bottom-bar { position: sticky; bottom: 0; display: flex; justify-content: space-evenly; align-items: center; padding: 10px 16px; background: white; border-top: 1px solid var(--grey-light); }
+
+/* ─── SETTINGS ─── */
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--grey-light);
+  cursor: pointer;
+  font-size: 14px;
+}
+.settings-row:active { opacity: 0.6; }
+.settings-row:last-child { border-bottom: none; }
+
+/* ─── BLOG ─── */
+.blog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.blog-thumb-btn {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  border: 2px solid rgba(200,200,200,0.2);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+.blog-thumb-overlay {
+  width: 100%;
+  padding: 6px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+.blog-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.blog-carousel::-webkit-scrollbar { display: none; }
+.blog-carousel-img {
+  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  scroll-snap-align: start;
+}
+.blog-social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 12px 16px;
+  justify-items: center;
+}
+.blog-social-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  object-fit: contain;
+}
+.blog-bottom-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: white;
+  border-top: 1px solid var(--grey-light);
+  flex-shrink: 0;
+}
+
+#view-blog.active,
+#view-blog-content.active {
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 0;
+}
 
 /* ─── ACCOUNT ─── */
 .profile-hero { text-align: center; padding: 24px 16px 16px; }
@@ -592,8 +701,7 @@ label { font-size: 12px; font-weight: 600; color: var(--orange); text-transform:
   display: block;
 }
 .carousel-dots {
-  display: flex; justify-content: center; gap: 6px; padding: 8px 0;
-  position: absolute; bottom: 4px; left: 0; right: 0; pointer-events: none;
+  display: flex; justify-content: center; gap: 6px; padding: 8px 0 4px;
 }
 .carousel-dot {
   width: 8px; height: 8px; border-radius: 50%;
@@ -624,14 +732,14 @@ label { font-size: 12px; font-weight: 600; color: var(--orange); text-transform:
 /* ─── PROMO TAGS ─── */
 .promo-tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
 .promo-tag {
-  font-size: 11px; background: var(--grey-light);
-  color: var(--text-main); padding: 3px 10px;
+  font-size: 13px; background: var(--grey-light);
+  color: var(--text-main); padding: 3px 12px;
   border-radius: 10px; font-weight: 600;
   white-space: nowrap;
 }
 .promo-tag-hidden { display: none; }
 .promo-tags.expanded .promo-tag-hidden { display: inline-flex; }
-.promo-tag-more { background: var(--grey-light); color: var(--grey-dark); cursor: pointer; }
+.promo-tag-more { background: var(--orange); color: white; cursor: pointer; border-radius: 10px; }
 
 /* ─── PROMO COST INFO ─── */
 .promo-cost-info {

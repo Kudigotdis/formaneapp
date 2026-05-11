@@ -3,6 +3,9 @@ const ASSETS = [
   '/',
   '/index.html',
   '/css/styles.css',
+  '/manifest.json',
+  '/assets/icons/pwa/icon-192.png',
+  '/assets/icons/pwa/icon-512.png',
   '/data.js',
   '/demo-data.js',
   '/demo-profiles.js',
@@ -39,7 +42,18 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      caches.match(e.request).then(r => r || caches.match('/index.html') || fetch(e.request)).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).catch(() => new Response('Offline', { status: 503 })))
+    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+      const copy = res.clone();
+      caches.open(CACHE).then(cache => cache.put(e.request, copy));
+      return res;
+    }).catch(() => caches.match('/index.html')))
   );
 });

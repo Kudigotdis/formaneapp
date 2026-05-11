@@ -3,30 +3,27 @@
    ════════════════════════════════════════════════════════ */
 
 let dirMode = 'companies';
-let dirCategory = '';
 
-function toggleDirMode() {
-  dirMode = dirMode === 'companies' ? 'pros' : 'companies';
-  document.getElementById('dir-type-btn').textContent = dirMode === 'companies' ? 'Companies' : 'Pros';
-  document.getElementById('dir-cat-filter').style.display = dirMode === 'companies' ? 'flex' : 'none';
+const DIR_TYPES = ['Companies', 'Pros', 'Council & Public'];
+
+function openDirTypeModal() {
+  const container = document.getElementById('dir-type-options');
+  container.innerHTML = DIR_TYPES.map(type => {
+    const isSelected = type === dirModeLabels[dirMode];
+    return '<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); font-size:15px; cursor:pointer;' + (isSelected ? ' background:var(--orange-light); font-weight:600; color:var(--orange);' : '') + '" onclick="selectDirType(\'' + type + '\')">' + type + (isSelected ? ' <img src="assets/icons/solid/check-2_orange.webp" style="width:16px;height:16px;float:right;">' : '') + '</div>';
+  }).join('');
+  openModal('dir-type-modal');
+}
+
+function selectDirType(label) {
+  const modeMap = { 'Companies': 'companies', 'Pros': 'pros', 'Council & Public': 'council' };
+  dirMode = modeMap[label] || 'companies';
+  document.getElementById('dir-type-btn').textContent = label;
+  closeModal('dir-type-modal');
   renderDirectory();
 }
 
-function filterDirCategory(btn, cat) {
-  dirCategory = cat;
-  document.querySelectorAll('#dir-cat-filter .promo-filter-chip').forEach(c => c.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  renderDirectory();
-}
-
-function renderDirCatFilters() {
-  const container = document.getElementById('dir-cat-filter');
-  if (!container) return;
-  const cats = [...new Set(window.SAMPLE_BUSINESSES.map(b => b.category).filter(Boolean))].sort();
-  container.innerHTML =
-    '<button class="promo-filter-chip' + (dirCategory === '' ? ' active' : '') + '" data-cat="" onclick="filterDirCategory(this,\'\')">All</button>' +
-    cats.map(c => '<button class="promo-filter-chip' + (dirCategory === c ? ' active' : '') + '" data-cat="' + c.replace(/"/g,'&quot;') + '" onclick="filterDirCategory(this,\'' + c.replace(/'/g,"\\'") + '\')">' + c + '</button>').join('');
-}
+const dirModeLabels = { 'companies': 'Companies', 'pros': 'Pros', 'council': 'Council & Public' };
 
 function renderDirectory() {
   const el = document.getElementById('directory-list');
@@ -38,7 +35,11 @@ function renderDirectory() {
     return;
   }
 
-  renderDirCatFilters();
+  if (dirMode === 'council') {
+    el.innerHTML = '<div style="text-align:center;padding:48px 16px;color:var(--grey-dark);"><i class="fas fa-building" style="font-size:40px;margin-bottom:12px;display:block;color:var(--grey-mid);"></i><p style="font-size:15px;font-weight:600;margin-bottom:4px;">No Council & Public accounts yet</p><p style="font-size:13px;">Register your organisation to appear here.</p></div>';
+    if (alphaNav) alphaNav.innerHTML = '';
+    return;
+  }
 
   let businesses = [...window.SAMPLE_BUSINESSES];
 
@@ -58,10 +59,6 @@ function renderDirectory() {
       isUserBiz: true,
       subscription: biz.subscription || 'free'
     });
-  }
-
-  if (dirCategory) {
-    businesses = businesses.filter(b => b.category === dirCategory);
   }
 
   if (businesses.length === 0) {
@@ -297,78 +294,140 @@ function openProProfile(proId) {
 function openBizPromos(bizId, businessName) {
   const promos = window._promos.filter(p => p.businessId === bizId || p.businessName === businessName);
   const biz = window.SAMPLE_BUSINESSES.find(b => b.id === bizId || b.name === businessName);
-  const content = document.getElementById('biz-promos-content');
-  if (!content) return;
+  const view = document.getElementById('view-business-promos');
+  if (!view) return;
 
   const isOwner = bizId === 'biz_user';
+  const loc = biz ? biz.location : '';
+  const init = biz ? biz.initials : '?';
+  const color = biz ? biz.color : '#999';
 
-  let html = `
-    <div style="background:#2a2a2a; padding:16px; color:white;">
-      <button onclick="goBack()" style="background:none;border:none;color:white;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;margin-bottom:10px;">
-        <img src="assets/icons/solid/chevron-left_white.webp" style="width:16px;height:16px;"> Back
-      </button>
-      <h2 style="font-family:var(--font-head);font-size:20px;font-weight:700;margin:0;">${businessName}</h2>
-      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:4px 0 0 0;">${biz ? biz.location : ''}</p>
-      <p style="font-size:13px;color:var(--orange);margin:8px 0 0 0;font-weight:600;">${promos.length} Active Promo${promos.length !== 1 ? 's' : ''}</p>
-    </div>
-    <div style="padding:12px;">
-  `;
+  let promoHtml = '';
 
   if (promos.length === 0) {
-    html += '<p style="text-align:center;padding:32px;color:var(--grey-dark);font-size:14px;">No active promos for this business.</p>';
+    promoHtml = '<p style="text-align:center;padding:32px;color:var(--grey-dark);font-size:14px;">No active promos for this business.</p>';
   } else {
     promos.forEach(p => {
-      const status = p.promo ? (function(){ var n=new Date(),e=new Date(p.promo.expiresAt);return n>=e?'Ended':Math.ceil((e-n)/(86400000))+'d remaining';})() : 'Active';
-      const kpi = p.kpi || {};
-      const tags = p.tags || [];
-      const tagHtml = tags.length > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0;">' + tags.slice(0,3).map(function(t){return '<span style="font-size:10px;background:var(--grey-light);padding:2px 8px;border-radius:8px;">'+t+'</span>';}).join('') + (tags.length>3?'<span style="font-size:10px;color:var(--grey-dark);">+'+(tags.length-3)+'</span>':'') + '</div>' : '';
+      const promoStatus = p.promo ? getPromoRemaining(p.promo.expiresAt) : { text: 'Active', expired: false };
+      let statusBadge = '';
+      if (isOwner) {
+        if (promoStatus.expired) {
+          statusBadge = '<div class="promo-status-badge ended">Ended</div>';
+        } else {
+          statusBadge = '<div class="promo-status-badge active">' + promoStatus.text + '</div>';
+        }
+      }
 
-      html +=
-        '<div class="biz-promo-card">' +
-          '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
-            '<div>' +
-              '<div style="font-size:15px;font-weight:600;">' + (p.emoji || '') + ' ' + p.title + '</div>' +
-              '<div style="font-size:11px;color:var(--grey-dark);margin-top:2px;">' + (p.category || '') + '</div>' +
-              tagHtml +
-            '</div>' +
-            '<div style="text-align:right;">' +
-              '<div style="font-size:18px;font-weight:800;color:var(--orange);">P ' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</div>' +
-              '<div style="font-size:11px;color:var(--grey-dark);">' + (p.unit || 'each') + '</div>' +
-            '</div>' +
+      let imgHtml;
+      if (p.images && p.images.length > 1) {
+        imgHtml = '<div class="promo-carousel" id="carousel-' + p.id + '">';
+        p.images.forEach(function(img) {
+          imgHtml += '<img src="' + img + '" class="promo-img" alt="' + p.title + '" onerror="this.parentElement.removeChild(this)">';
+        });
+        imgHtml += '</div>' +
+          '<div class="carousel-dots" id="dots-' + p.id + '">';
+        p.images.forEach(function(_, i) {
+          imgHtml += '<span class="carousel-dot' + (i === 0 ? ' active' : '') + '" onclick="scrollCarouselTo(\'' + p.id + '\',' + i + ')"></span>';
+        });
+        imgHtml += '</div>';
+      } else if (p.images && p.images.length === 1) {
+        imgHtml = '<img src="' + p.images[0] + '" class="promo-img" alt="' + p.title + '" onerror="this.style.display=\'none\'">';
+      } else {
+        imgHtml = '<div class="promo-img-ph ' + (p.bg || 'img-amber') + '"><span class="promo-img-emoji">' + (p.emoji || '\ud83d\udce6') + '</span></div>';
+      }
+
+      const tagsHtml = window.renderPromoTags ? renderPromoTags(p.tags) : '';
+      const kpi = p.kpi || {};
+      const kpiHtml = '<div class="promo-kpi"><span><span class="kpi-icon">\ud83d\udc41</span> ' + (kpi.views||0) + '</span><span><span class="kpi-icon">\u2764\ufe0f</span> ' + (kpi.likes||0) + '</span><span><span class="kpi-icon">\ud83d\udccb</span> ' + (kpi.addedToNotes||0) + '</span></div>';
+
+      promoHtml +=
+        '<div class="promo-card" id="bizp-' + p.id + '">' +
+          '<div class="promo-img-wrap" onclick="trackPromoView(\'' + p.id + '\'); toggleBizPromo(\'' + p.id + '\')">' +
+            imgHtml +
+            statusBadge +
           '</div>' +
-          (isOwner && p.promo ? '<div style="font-size:11px;color:var(--grey-dark);margin-top:4px;">Cost: P ' + (p.promo.cost || 0).toFixed(2) + ' | ' + status + '</div>' : '') +
-          (isOwner ? '<div style="display:flex;gap:12px;font-size:11px;color:var(--grey-dark);margin-top:4px;"><span>\ud83d\udc41 ' + (kpi.views||0) + '</span><span>\u2764\ufe0f ' + (kpi.likes||0) + '</span><span>\ud83d\udccb ' + (kpi.addedToNotes||0) + '</span></div>' : '') +
-          '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--grey-light);">' +
-            '<div style="display:flex;align-items:center;gap:10px;">' +
-              '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ')">\u2212</button>' +
-              '<span style="min-width:20px;text-align:center;font-weight:600;">' + (p.qty || 1) + '</span>' +
-              '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ')">+</button>' +
+          '<div class="promo-details">' +
+            '<div class="promo-supplier" onclick="goBack()">' +
+              '<div class="avatar-square" style="background:' + (p.businessColor || '#999') + ';">' + (p.businessInit || '?') + '</div>' +
+              '<div>' +
+                '<div style="font-size:14px;">' + (p.businessName || businessName) + '</div>' +
+                '<div style="font-size:11px;color:var(--grey-dark);font-weight:400;">' + (p.location || (biz ? biz.location : '')) + '</div>' +
+              '</div>' +
             '</div>' +
-            '<button class="btn btn-sm" onclick="addToNote(\'' + p.id + '\')">Add to Note</button>' +
+            (isOwner ? '<div style="font-size:10px;color:var(--orange);font-weight:600;margin-bottom:4px;">Your Promo</div>' : '') +
+            '<div class="promo-cat">' + (p.category || 'General') + '</div>' +
+            '<div class="promo-title">' + p.title + '</div>' +
+            '<div class="promo-desc">' + (p.desc || '') + '</div>' +
+            tagsHtml +
+            '<div class="qty-row">' +
+              '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--grey-dark);">' + (p.unit || 'each') + '</span></div>' +
+              '<div class="qty-controls">' +
+                '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ')">\u2212</button>' +
+                '<span class="qv" style="min-width:20px;text-align:center;font-weight:600;">' + (p.qty || 1) + '</span>' +
+                '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ')">+</button>' +
+              '</div>' +
+            '</div>' +
+            (isOwner ? kpiHtml : '') +
+            (isOwner && p.promo ? '<div class="promo-cost-info">Cost: P ' + (p.promo.cost || 0).toFixed(2) + '</div>' : '') +
+            '<div class="promo-actions">' +
+              '<button class="action-btn" onclick="addToNote(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
+              '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
+              (isOwner || window.Auth?.isAdmin() ?
+              '<button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
+              (isOwner ? '' :
+              '<button class="action-btn' + (p.liked ? ' liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
+                '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
+              '</button>') +
+            '</div>' +
           '</div>' +
         '</div>';
     });
   }
 
-  html += '</div>';
-  content.innerHTML = html;
+  view.innerHTML = `
+    <div id="biz-promos-content" style="flex:1;overflow-y:auto;padding:12px;">
+      ${promoHtml}
+    </div>
+    <div class="biz-profile-card-nav" onclick="goTo('view-business')">
+      <div class="biz-profile-thumb" style="background:${color};">${init}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${businessName}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc}</div>
+        <div style="font-size:12px;color:var(--orange);font-weight:600;">${promos.length} Active Promo${promos.length !== 1 ? 's' : ''}</div>
+      </div>
+      <span style="font-size:20px;color:rgba(255,255,255,0.3);margin-left:8px;">›</span>
+    </div>
+  `;
+
   goTo('view-business-promos');
 }
 
 function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
-  const content = document.getElementById('biz-catalogue-content');
-  if (!content) return;
+  const view = document.getElementById('view-business-catalogue');
+  if (!view) return;
 
   let biz = window.SAMPLE_BUSINESSES.find(b => b.id === bizId || b.name === businessName);
   const isOwner = bizId === 'biz_user' || (biz && biz.id === 'biz_user');
-
   const categories = biz && biz.categories ? biz.categories : [];
   const cataloguePublic = biz && biz.cataloguePublic !== undefined ? biz.cataloguePublic : true;
+  const loc = location || (biz ? biz.location : '');
+
+  const navHtml = `
+    <div class="biz-profile-card-nav" onclick="goTo('view-business')">
+      <div class="biz-profile-thumb" style="background:${color};">${init}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${businessName}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc}</div>
+        <div style="font-size:12px;color:var(--orange);font-weight:600;">Catalogue</div>
+      </div>
+      <span style="font-size:20px;color:rgba(255,255,255,0.3);margin-left:8px;">›</span>
+    </div>
+  `;
 
   if (!cataloguePublic && !isOwner) {
     const nameEsc = (businessName || '').replace(/'/g, "\\'");
-    content.innerHTML = `
-      <div style="padding:16px;">
+    view.innerHTML = `
+      <div style="flex:1;overflow-y:auto;padding:16px;">
         <button onclick="goBack()" class="back-btn" style="margin-bottom:16px;"><i class="fas fa-arrow-left"></i> Back</button>
         <div style="text-align:center; padding:32px 16px;">
           <div style="font-size:48px; margin-bottom:16px;">\ud83d\udd12</div>
@@ -383,31 +442,14 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
           </button>
         </div>
       </div>
+      ${navHtml}
     `;
     goTo('view-business-catalogue');
     return;
   }
 
   const nameEsc = (businessName || '').replace(/'/g, "\\'");
-  const backAction = isOwner ? "goTo('view-account')" : 'goBack()';
-
-  const totalItems = biz && biz.categories ? biz.categories.length : 0;
-
-  let html = `
-    <div style="background:#2a2a2a;padding:16px;color:white;position:sticky;top:0;z-index:10;">
-      <button onclick="${backAction}" style="background:none;border:none;color:white;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;margin-bottom:10px;">
-        <img src="assets/icons/solid/chevron-left_white.webp" style="width:16px;height:16px;"> Back
-      </button>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div class="avatar-square" style="width:48px;height:48px;font-size:18px;background:${color};">${init}</div>
-        <div>
-          <h2 style="font-family:var(--font-head);font-size:18px;font-weight:700;margin:0;">${nameEsc}</h2>
-          <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:2px 0 0 0;">${totalItems} categor${totalItems !== 1 ? 'ies' : 'y'}</p>
-        </div>
-      </div>
-    </div>
-    <div style="padding:12px;">
-  `;
+  let contentHtml = '';
 
   if (isOwner) {
     const userItems = window._userItems || [];
@@ -421,11 +463,11 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
     });
     const catKeys = Object.keys(catMap);
     if (catKeys.length === 0) {
-      html += '<div style="text-align:center;padding:40px 16px;color:var(--grey-dark);"><div style="font-size:40px;margin-bottom:12px;">📦</div><p style="font-size:14px;font-weight:600;">Your catalogue is empty</p><p style="font-size:12px;margin-top:4px;">Add items to showcase your products.</p></div>';
+      contentHtml = '<div style="text-align:center;padding:40px 16px;color:var(--grey-dark);"><div style="font-size:40px;margin-bottom:12px;">📦</div><p style="font-size:14px;font-weight:600;">Your catalogue is empty</p><p style="font-size:12px;margin-top:4px;">Add items to showcase your products.</p></div>';
     } else {
       catKeys.forEach(cat => {
         const catItems = catMap[cat];
-        html += `
+        contentHtml += `
           <div style="margin-bottom:16px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
               <span style="font-size:15px;font-weight:700;color:var(--orange);">${cat}</span>
@@ -455,14 +497,14 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
         `;
       });
     }
-    html += '<button class="btn" style="margin-top:8px;width:100%;" onclick="openItemModal()">+ Add to Catalogue</button>';
+    contentHtml += '<button class="btn" style="margin-top:8px;width:100%;" onclick="openItemModal()">+ Add to Catalogue</button>';
   } else {
     let promos = window._promos.filter(p => p.businessId === bizId || p.businessName === businessName);
     const realBizId = biz && biz.id;
     const demoItems = (window.DEMO_CATALOGUE_ITEMS || []).filter(it => it.businessId === realBizId || it.businessName === businessName);
     const allItems = promos.concat(demoItems);
     if (categories.length === 0 && allItems.length === 0) {
-      html += '<div style="text-align:center;padding:40px 16px;color:var(--grey-dark);"><div style="font-size:40px;margin-bottom:12px;">📦</div><p style="font-size:14px;font-weight:600;">No catalogue items yet</p><p style="font-size:12px;margin-top:4px;">Check back later or contact the business.</p></div>';
+      contentHtml = '<div style="text-align:center;padding:40px 16px;color:var(--grey-dark);"><div style="font-size:40px;margin-bottom:12px;">📦</div><p style="font-size:14px;font-weight:600;">No catalogue items yet</p><p style="font-size:12px;margin-top:4px;">Check back later or contact the business.</p></div>';
     } else {
       const catMap = {};
       const catsToUse = categories.length > 0 ? categories : [...new Set(allItems.map(i => i.category || 'Other'))];
@@ -474,7 +516,7 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
       });
       Object.keys(catMap).forEach(cat => {
         const catItems = catMap[cat];
-        html += `
+        contentHtml += `
           <div style="margin-bottom:16px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
               <span style="font-size:15px;font-weight:700;color:var(--orange);">${cat}</span>
@@ -503,8 +545,13 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
     }
   }
 
-  html += '</div>';
-  content.innerHTML = html;
+  view.innerHTML = `
+    <div id="biz-catalogue-content" style="flex:1;overflow-y:auto;padding:12px;">
+      ${contentHtml}
+    </div>
+    ${navHtml}
+  `;
+
   goTo('view-business-catalogue');
 }
 
@@ -562,6 +609,16 @@ function toggleFavDir(btn, id) {
   }
 }
 
+function toggleBizPromo(id) {
+  const container = document.getElementById('view-business-promos');
+  if (!container) return;
+  const current = container.querySelector('#bizp-' + id);
+  if (!current) return;
+  const wasOpen = current.classList.contains('open');
+  container.querySelectorAll('.promo-card.open').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) current.classList.add('open');
+}
+
 window.renderAlphaNav = renderAlphaNav;
 window.renderDirectory = renderDirectory;
 window.openBizProfile = openBizProfile;
@@ -576,6 +633,7 @@ window.openMaps = openMaps;
 window.shareBusiness = shareBusiness;
 window.toggleFavDir = toggleFavDir;
 window.toggleFavBiz = toggleFavBiz;
-window.toggleDirMode = toggleDirMode;
+window.openDirTypeModal = openDirTypeModal;
+window.selectDirType = selectDirType;
+window.toggleBizPromo = toggleBizPromo;
 window.openProProfile = openProProfile;
-window.filterDirCategory = filterDirCategory;

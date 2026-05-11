@@ -165,6 +165,11 @@ async function loadProductCategories() {
 window.addEventListener('online', () => showToast('Back online'));
 window.addEventListener('offline', () => showToast('Offline - data saved locally'));
 
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  window._installPrompt = e;
+});
+
 document.addEventListener('click', e => {
   if (e.target.closest('.btn') && navigator.vibrate) {
     navigator.vibrate(20);

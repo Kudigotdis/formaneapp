@@ -72,34 +72,15 @@ function renderNotes() {
     const total = note.items.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
     const count = note.items.reduce((sum, item) => sum + (item.qty || 1), 0);
     const emoji = note.items.length > 0 ? (note.items[0].emoji || '\ud83d\udccb') : '\ud83d\udccb';
-    const itemsHtml = note.items.map((item, idx) => `
-      <div class="note-accordion-item">
-        <div class="note-accordion-item-icon">${item.emoji || '\ud83d\udce6'}</div>
-        <div class="ni-info"><h4>${item.title}</h4><p>P ${item.price.toFixed(2)} ${item.unit} &middot; ${item.business}</p></div>
-        <div class="qty-controls">
-          <button class="qty-btn" onclick="event.stopPropagation();updateNoteItemQty('${note.id}',${idx},-1)">\u2212</button>
-          <span class="ni-qty" style="min-width:20px;text-align:center;font-weight:600;">${item.qty || 1}</span>
-          <button class="qty-btn" onclick="event.stopPropagation();updateNoteItemQty('${note.id}',${idx},1)">+</button>
-        </div>
-      </div>
-    `).join('');
     return `
-      <div class="note-accordion" onclick="toggleNoteAccordion(this)" id="note-acc-${note.id}">
-        <div class="note-accordion-header">
-          <div style="display:flex;gap:14px;align-items:center;flex:1;">
-            <div style="font-size:26px;">${emoji}</div>
-            <div><h3 style="font-size:15px;">${note.title}</h3><p class="note-meta">${count} items for P ${total.toFixed(2)}</p></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <img src="assets/icons/whatsApp_icon_on.png" style="width:36px;height:36px;cursor:pointer;" onclick="event.stopPropagation(); shareNoteWhatsApp('${note.id}')">
-            <img src="assets/icons/solid/pen-to-square.svg" style="width:18px;height:18px;cursor:pointer;opacity:0.5;" onclick="event.stopPropagation();editNoteTitle('${note.id}')">
-            <img src="assets/icons/solid/trash.svg" style="width:16px;height:16px;cursor:pointer;opacity:0.4;" onclick="event.stopPropagation();deleteNote('${note.id}')">
-            <span class="note-accordion-arrow">&#9660;</span>
-          </div>
+      <div class="note-card" onclick="openNote('${note.id}')">
+        <div style="display:flex;gap:14px;align-items:center;flex:1;">
+          <div style="font-size:26px;">${emoji}</div>
+          <div><h3 style="font-size:15px;">${note.title}</h3><p class="note-meta">${count} items for P ${total.toFixed(2)}</p></div>
         </div>
-        <div class="note-accordion-body">
-          ${itemsHtml}
-          ${note.items.length === 0 ? '<div style="padding:16px;text-align:center;font-size:13px;color:var(--grey-dark);">No items yet. Tap promos to save items.</div>' : ''}
+        <div style="display:flex;align-items:center;gap:8px;">
+          <img src="assets/icons/whatsApp_icon_on.png" style="width:36px;height:36px;cursor:pointer;" onclick="event.stopPropagation();shareNoteWhatsApp('${note.id}')">
+          <span style="font-size:18px;color:var(--grey-mid);">\u203A</span>
         </div>
       </div>
     `;
@@ -135,7 +116,7 @@ function openNote(noteId) {
   if (note.items.length === 0) {
     list.innerHTML = '<div class="note-empty-state">' +
       '<p>Tap on Promos to find products and services you can add to your note.</p>' +
-      '<img src="assets/icons/solid/bullhorn-2_orange.webp" class="note-empty-icon">' +
+      '<img src="assets/icons/solid/bullhorn-2_orange.webp" class="note-empty-icon" style="cursor:pointer;" onclick="navTab(\'view-promos\',\'nav-promos\')">' +
       '</div>';
   } else {
     list.innerHTML = note.items.map((item, idx) => `
@@ -263,18 +244,6 @@ function saveNoteBody() {
   }, 500);
 }
 
-function toggleNoteAccordion(el) {
-  el.classList.toggle('open');
-}
-
-function deleteNote(noteId) {
-  if (!confirm('Delete this note and all its items?')) return;
-  const idx = window._notes.findIndex(n => n.id === noteId);
-  if (idx === -1) return;
-  window._notes.splice(idx, 1);
-  renderNotes();
-}
-
 function deleteCurrentNote() {
   if (!confirm('Delete this note and all its items?')) return;
   const idx = window._notes.findIndex(n => n.id === window._currentNoteId);
@@ -306,7 +275,8 @@ function payNotesOrange() {
 }
 
 function shareNoteWhatsApp(noteId) {
-  const note = noteId ? window._notes.find(n => n.id === noteId) : window._notes[0];
+  const id = noteId || window._currentNoteId;
+  const note = window._notes.find(n => n.id === id);
   if (!note) { showToast('No notes to share'); return; }
 
   const total = note.items.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
@@ -330,8 +300,6 @@ window.deleteCurrentNote = deleteCurrentNote;
 window.saveNoteBody = saveNoteBody;
 window.seedDemoNotes = seedDemoNotes;
 window.reloadNotesForUser = reloadNotesForUser;
-window.toggleNoteAccordion = toggleNoteAccordion;
-window.deleteNote = deleteNote;
 window.payNotesBTC = payNotesBTC;
 window.payNotesMascom = payNotesMascom;
 window.payNotesOrange = payNotesOrange;

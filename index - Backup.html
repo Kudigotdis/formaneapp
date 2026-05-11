@@ -56,6 +56,9 @@
       <div style="padding: 12px 12px 4px 12px;">
         <div class="section-title">Directory</div>
       </div>
+      <div id="dir-cat-filter" class="promo-filter-scroll" style="padding:6px 12px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;">
+        <button class="promo-filter-chip active" data-cat="" onclick="filterDirCategory(this,'')">All</button>
+      </div>
       <div id="directory-list"></div>
       <div class="alpha-nav" id="alpha-nav"></div>
     </div>
@@ -139,19 +142,6 @@
         </div>
         <div class="accordion-body" id="personal-details-body">
           <p style="font-size:13px; color:var(--grey-dark); padding-top:8px;">Loading...</p>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAcc(this)">
-          <span><i class="fas fa-sticky-note" style="color:var(--orange); margin-right:8px;"></i> Notes</span>
-        </div>
-        <div class="accordion-body">
-          <div style="padding-top:8px;display:flex;flex-direction:column;gap:8px;">
-            <button class="btn btn-sm" onclick="navTab('view-notes','nav-notes')">View Notes</button>
-            <button class="btn btn-sm" onclick="openModal('buy-notes-modal')">Buy Notes</button>
-          </div>
         </div>
       </div>
 
@@ -275,42 +265,6 @@
         </div>
       </div>
 
-      <!-- Settings -->
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAcc(this)">
-          <span><i class="fas fa-cog" style="color:var(--orange); margin-right:8px;"></i> Settings</span>
-        </div>
-        <div class="accordion-body">
-          <div style="padding-top:8px;">
-            <div class="settings-row" onclick="installApp()">
-              <i class="fas fa-download" style="color:var(--orange);width:20px;"></i>
-              <span>Install App</span>
-              <span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
-            </div>
-            <div class="settings-row" onclick="renderBlogList();goTo('view-blog')">
-              <i class="fas fa-blog" style="color:var(--orange);width:20px;"></i>
-              <span>Blog</span>
-              <span style="margin-left:auto;color:var(--grey-dark);font-size:11px;">v2.0.0 <i class="fas fa-chevron-right" style="margin-left:4px;"></i></span>
-            </div>
-            <div class="settings-row" onclick="openModal('about-wirog-modal')">
-              <i class="fas fa-info-circle" style="color:var(--orange);width:20px;"></i>
-              <span>About Wirog</span>
-              <span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
-            </div>
-            <div class="settings-row" onclick="clearAppCache()">
-              <i class="fas fa-trash-alt" style="color:var(--orange);width:20px;"></i>
-              <span>Clear Cache</span>
-              <span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
-            </div>
-            <div class="settings-row" id="delete-account-row" style="color:#e74c3c;" onclick="deleteAccount()">
-              <i class="fas fa-user-minus" style="color:#e74c3c;width:20px;"></i>
-              <span>Delete Account</span>
-              <span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Switch Account -->
       <div style="padding:16px; text-align:center;">
         <button class="btn" onclick="openSwitcher()" style="width:100%;">
@@ -318,35 +272,6 @@
         </button>
       </div>
 
-    </div>
-
-    <!-- ═══ BLOG ═══ -->
-    <div id="view-blog" class="view no-pad">
-      <div style="padding:12px;flex-shrink:0;">
-        <h2 style="font-size:18px;font-weight:700;margin:0;">Blog</h2>
-      </div>
-      <div id="blog-list" style="flex:1;overflow-y:auto;padding:0 12px 12px;"></div>
-      <div class="blog-bottom-strip">
-        <button class="biz-back-round" onclick="goTo('view-account')"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
-        <span></span>
-      </div>
-    </div>
-
-    <!-- ═══ BLOG CONTENT ═══ -->
-    <div id="view-blog-content" class="view no-pad">
-      <div id="blog-content-image-section" style="flex-shrink:0;">
-        <img src="assets/media/wirog_place_holder_image_blog_image_placeholder.webp" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;">
-      </div>
-      <div id="blog-content-body" style="flex:1;overflow-y:auto;padding:0;"></div>
-      <div class="blog-bottom-strip">
-        <button class="biz-back-round" onclick="goTo('view-blog')"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
-        <div style="display:flex;align-items:center;gap:16px;">
-          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="toggleBlogLike(this)">
-            <img src="assets/icons/heart_inactive_icon.png" style="width:24px;height:24px;">
-          </div>
-          <img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:22px;height:22px;cursor:pointer;" onclick="shareBlog()">
-        </div>
-      </div>
     </div>
 
     <!-- ═══ FAVOURITE SUPPLIERS PAGE ═══ -->
@@ -513,41 +438,6 @@
         <div id="admin-pw-error" style="color:#c00;font-size:12px;margin-bottom:8px;display:none;"></div>
         <button class="btn" onclick="Auth.adminLogin()">Enter Admin Panel</button>
         <p style="text-align:center;margin-top:8px;font-size:12px;color:var(--grey-mid);cursor:pointer;" onclick="closeModal('admin-pw-modal')">Cancel</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── ABOUT WIROG MODAL ── -->
-  <div class="modal-overlay" id="about-wirog-modal">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <span class="modal-title">About Wirog</span>
-        <button class="modal-close" onclick="closeModal('about-wirog-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
-      </div>
-      <div class="modal-body" style="text-align:center;">
-        <img src="assets/images/company_logos_dummy/new_wirog_logo_12.jpg" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;">
-        <h3 style="font-family:var(--font-head);font-size:18px;font-weight:700;margin:0 0 4px;">Wirog Supply Solutions</h3>
-        <p style="font-size:12px;color:var(--grey-dark);margin-bottom:12px;">Version 2.0.0</p>
-        <p style="font-size:13px;line-height:1.6;margin-bottom:12px;">Botswana's premier supply solutions ecosystem connecting businesses, tradespeople, and customers. Browse building materials, compare prices, save notes, and share via WhatsApp.</p>
-        <p style="font-size:12px;color:var(--grey-dark);margin-bottom:4px;">&copy; 2026 Wirog Investments</p>
-        <p style="font-size:12px;color:var(--grey-dark);">Game City, Gaborone, Botswana</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── DELETE ACCOUNT CONFIRMATION MODAL ── -->
-  <div class="modal-overlay" id="delete-account-modal">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <span class="modal-title">Delete Account</span>
-        <button class="modal-close" onclick="closeModal('delete-account-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
-      </div>
-      <div class="modal-body" style="text-align:center;">
-        <div style="font-size:48px;margin-bottom:12px;">&#9888;&#65039;</div>
-        <p style="font-size:15px;font-weight:600;margin-bottom:8px;">Are you sure?</p>
-        <p style="font-size:13px;color:var(--grey-dark);margin-bottom:16px;">This will permanently delete your account and all saved data. This action cannot be undone.</p>
-        <button class="btn" style="background:#e74c3c;color:white;" onclick="confirmDeleteAccount()">Delete My Account</button>
-        <p style="text-align:center;margin-top:8px;font-size:12px;color:var(--grey-mid);cursor:pointer;" onclick="closeModal('delete-account-modal')">Cancel</p>
       </div>
     </div>
   </div>
@@ -1012,7 +902,6 @@
   <script src="account.js"></script>
   <script src="admin.js"></script>
   <script src="items.js"></script>
-  <script src="blogs.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

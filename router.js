@@ -73,6 +73,9 @@ function manageUI(viewId) {
   const promoTypeRow = document.getElementById('promo-type-row');
   if (promoTypeRow) promoTypeRow.style.display = viewId === 'view-promos' ? '' : 'none';
 
+  const bizTypeRow = document.getElementById('business-type-filter-row');
+  if (bizTypeRow) bizTypeRow.style.display = viewId === 'view-directory' ? '' : 'none';
+
   if (viewId === 'view-directory') {
     renderDirectory();
   }
