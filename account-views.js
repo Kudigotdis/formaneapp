@@ -167,6 +167,8 @@
   document.addEventListener('DOMContentLoaded', function(){
     // Try to load external locations.json into window.LOCATIONS for use
     fetch('locations.json').then(r=>r.json()).then(json=>{ window.LOCATIONS = json; populateTownSelects(); }).catch(()=>{});
+    // Populate boost counter
+    try { const b = parseInt(localStorage.getItem('wirog_boosts_remaining') || '12',10); const el = document.getElementById('boost-counter'); if(el) el.textContent = String(b); } catch(e){}
   });
 
   // Exports for console/debug

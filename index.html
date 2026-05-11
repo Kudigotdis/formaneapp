@@ -207,6 +207,17 @@
             <p style="font-size:10px; color:var(--grey-dark);">Unlimited duration &middot; Unlimited items</p>
           </div>
 
+          <!-- Quick actions for business users -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <button class="btn btn-sm" onclick="openAddItemModal()">+ Add Item</button>
+            <button class="btn btn-sm" onclick="openArtworkSubmission()">Submit Artwork (Boost)</button>
+            <button class="btn btn-sm" onclick="renderPromoRequests()">Promo Requests</button>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+              <div style="font-size:12px;color:var(--grey-dark);">Boosts remaining</div>
+              <div id="boost-counter" style="background:var(--orange);color:white;padding:6px 10px;border-radius:20px;font-weight:700;">12</div>
+            </div>
+          </div>
+
           <div style="border:2px solid var(--orange); border-radius:var(--radius); padding:12px; margin-bottom:8px; background:var(--orange-light); position:relative;">
             <div style="position:absolute; top:-8px; right:8px; background:var(--orange); color:white; font-size:10px; font-weight:700; padding:2px 10px; border-radius:8px;">POPULAR</div>
             <p style="font-size:13px; font-weight:700;">Directory &amp; Boost</p>
