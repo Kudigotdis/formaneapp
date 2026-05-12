@@ -148,6 +148,16 @@ const Auth = {
 
       closeModal('register-modal');
       this.switchToProfile(profile);
+
+      // If Drive is signed in, create user's Drive folder
+      try {
+        if (window.DriveAPI && typeof window.DriveAPI.isSignedIn === 'function' && window.DriveAPI.isSignedIn()) {
+          window.DriveAPI.ensureUserFolder(profile.id).catch(function(e) {
+            console.warn('Failed to create Drive user folder:', e);
+          });
+        }
+      } catch(e) { console.warn('Drive folder creation error:', e); }
+
       showToast('Profile created! Welcome to Wirog!');
     } catch (e) {
       console.error('Registration error:', e);
@@ -165,6 +175,15 @@ const Auth = {
     UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0 };
     UserState.business = null;
     UserState.interests = [];
+
+    // If Drive is signed in, ensure Drive folders exist
+    try {
+      if (window.DriveAPI && typeof window.DriveAPI.isSignedIn === 'function' && window.DriveAPI.isSignedIn()) {
+        window.DriveAPI.ensureUserFolder(profile.id).catch(function(e) {
+          console.warn('Failed to ensure Drive user folder:', e);
+        });
+      }
+    } catch(e) { console.warn('Drive folder error:', e); }
 
     updateAccountHero();
     resetBusinessCard();

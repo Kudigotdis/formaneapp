@@ -569,6 +569,47 @@ window.SAMPLE_BUSINESSES = [
   }
 ];
 
+window.BUSINESS_ASSOCIATIONS = {
+  // ── Owner associations ──
+  'supplier':     { businessId: 'biz-1', role: 'owner' },
+  'user-william': { businessId: 'biz-1', role: 'owner' },
+  'user-robert':  { businessId: 'biz-1', role: 'owner' },
+  'owner-biz2':   { businessId: 'biz-2', role: 'owner' },
+  'owner-biz3':   { businessId: 'biz-3', role: 'owner' },
+  'owner-biz4':   { businessId: 'biz-4', role: 'owner' },
+  'user-gerald':  { businessId: 'biz-1', role: 'owner' },
+  // 2 owners per biz-5 … biz-28
+  'owner-biz5':  { businessId: 'biz-5', role: 'owner' },  'owner-biz29': { businessId: 'biz-5', role: 'owner' },
+  'owner-biz6':  { businessId: 'biz-6', role: 'owner' },  'owner-biz30': { businessId: 'biz-6', role: 'owner' },
+  'owner-biz7':  { businessId: 'biz-7', role: 'owner' },  'owner-biz31': { businessId: 'biz-7', role: 'owner' },
+  'owner-biz8':  { businessId: 'biz-8', role: 'owner' },  'owner-biz32': { businessId: 'biz-8', role: 'owner' },
+  'owner-biz9':  { businessId: 'biz-9', role: 'owner' },  'owner-biz33': { businessId: 'biz-9', role: 'owner' },
+  'owner-biz10': { businessId: 'biz-10', role: 'owner' }, 'owner-biz34': { businessId: 'biz-10', role: 'owner' },
+  'owner-biz11': { businessId: 'biz-11', role: 'owner' }, 'owner-biz35': { businessId: 'biz-11', role: 'owner' },
+  'owner-biz12': { businessId: 'biz-12', role: 'owner' }, 'owner-biz36': { businessId: 'biz-12', role: 'owner' },
+  'owner-biz13': { businessId: 'biz-13', role: 'owner' }, 'owner-biz37': { businessId: 'biz-13', role: 'owner' },
+  'owner-biz14': { businessId: 'biz-14', role: 'owner' }, 'owner-biz38': { businessId: 'biz-14', role: 'owner' },
+  'owner-biz15': { businessId: 'biz-15', role: 'owner' }, 'owner-biz39': { businessId: 'biz-15', role: 'owner' },
+  'owner-biz16': { businessId: 'biz-16', role: 'owner' }, 'owner-biz40': { businessId: 'biz-16', role: 'owner' },
+  'owner-biz17': { businessId: 'biz-17', role: 'owner' }, 'owner-biz41': { businessId: 'biz-17', role: 'owner' },
+  'owner-biz18': { businessId: 'biz-18', role: 'owner' }, 'owner-biz42': { businessId: 'biz-18', role: 'owner' },
+  'owner-biz19': { businessId: 'biz-19', role: 'owner' }, 'owner-biz43': { businessId: 'biz-19', role: 'owner' },
+  'owner-biz20': { businessId: 'biz-20', role: 'owner' }, 'owner-biz44': { businessId: 'biz-20', role: 'owner' },
+  'owner-biz21': { businessId: 'biz-21', role: 'owner' }, 'owner-biz45': { businessId: 'biz-21', role: 'owner' },
+  'owner-biz22': { businessId: 'biz-22', role: 'owner' }, 'owner-biz46': { businessId: 'biz-22', role: 'owner' },
+  'owner-biz23': { businessId: 'biz-23', role: 'owner' }, 'owner-biz47': { businessId: 'biz-23', role: 'owner' },
+  'owner-biz24': { businessId: 'biz-24', role: 'owner' }, 'owner-biz48': { businessId: 'biz-24', role: 'owner' },
+  'owner-biz25': { businessId: 'biz-25', role: 'owner' }, 'owner-biz49': { businessId: 'biz-25', role: 'owner' },
+  'owner-biz26': { businessId: 'biz-26', role: 'owner' }, 'owner-biz50': { businessId: 'biz-26', role: 'owner' },
+  'owner-biz27': { businessId: 'biz-27', role: 'owner' }, 'owner-biz51': { businessId: 'biz-27', role: 'owner' },
+  'owner-biz28': { businessId: 'biz-28', role: 'owner' }, 'owner-biz52': { businessId: 'biz-28', role: 'owner' },
+  // ── Staff associations ──
+  'staff-kudi':     { businessId: 'biz-1', role: 'staff' },
+  'staff-mark':     { businessId: 'biz-1', role: 'staff' },
+  'staff-smokey':   { businessId: 'biz-1', role: 'staff' },
+  'staff-tshepang': { businessId: 'biz-1', role: 'staff' }
+};
+
 window.SAMPLE_PROFESSIONALS = [
   {
     "id": "trade-1",

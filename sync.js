@@ -1,7 +1,6 @@
 /* SyncQueue — lightweight IndexedDB queue for offline->online sync
    Uses a dedicated IndexedDB database `wirog-sync` with store `queue`.
-   The page owns the flush logic (fetch to configured endpoint) so we don't
-   couple the SW and window scopes more than necessary.
+   Supports both server (POST) and Drive (DriveAPI) flush targets.
 */
 
 class SyncQueue {
@@ -127,6 +126,73 @@ class SyncQueue {
     this.flushInProgress = false;
     return { ok:true, processed };
   }
+
+  /* ─── Drive flush ─── */
+  async flushToDrive(options = {}) {
+    if (this.flushInProgress) return;
+    if (!window.DriveAPI || typeof window.DriveAPI.isSignedIn !== 'function' || !window.DriveAPI.isSignedIn()) {
+      console.warn('SyncQueue: Drive not signed in, skipping Drive flush');
+      return { ok: false, reason: 'not_signed_in' };
+    }
+    var all = await this.getAll();
+    if (!all || all.length === 0) return { ok: true, processed: 0 };
+
+    this.flushInProgress = true;
+    var processed = 0;
+
+    for (var i = 0; i < all.length; i++) {
+      var item = all[i];
+      try {
+        item.attempts = (item.attempts || 0) + 1;
+
+        var userId = item.meta && item.meta.clientId;
+        var folderId = null;
+
+        if (item.type === 'profiles' || item.type === 'credentials' ||
+            item.type === 'notes' || item.type === 'kpi' || item.type === 'filters') {
+          if (!userId && item.payload && item.payload.id) userId = item.payload.id;
+          if (userId) {
+            var userFolder = await window.DriveAPI.ensureUserFolder(userId);
+            folderId = userFolder.id;
+          }
+        } else if (item.type === 'businesses' || item.type === 'promos') {
+          var bizId = item.meta && item.meta.bizId;
+          if (!bizId && item.payload && item.payload.businessId) bizId = item.payload.businessId;
+          if (bizId) {
+            var bizFolder = await window.DriveAPI.ensureBusinessFolder(bizId);
+            folderId = bizFolder.id;
+          }
+        }
+
+        if (!folderId) {
+          console.warn('SyncQueue: cannot determine folder for item', item.id);
+          continue;
+        }
+
+        var fileName = item.type + '.json';
+        await window.DriveAPI.upsertJSON(folderId, fileName, item.payload);
+        await this.remove(item.id);
+        processed++;
+      } catch (err) {
+        console.warn('SyncQueue: Drive flush error on item', item.id, err);
+        var delay = this.retryDelayBase * Math.pow(2, Math.min((item.attempts || 1) - 1, 6));
+        setTimeout(function() { this.flushToDrive(options); }.bind(this), delay);
+        break;
+      }
+    }
+
+    this.flushInProgress = false;
+    return { ok: true, processed: processed };
+  }
+
+  /* ─── Hybrid: try Drive first, fall back to POST ─── */
+  async flushAll(options) {
+    if (window.DriveAPI && typeof window.DriveAPI.isSignedIn === 'function' && window.DriveAPI.isSignedIn()) {
+      var driveResult = await this.flushToDrive(options);
+      if (driveResult && driveResult.ok && driveResult.reason !== 'not_signed_in') return driveResult;
+    }
+    return await this.flush(options);
+  }
 }
 
 // Instantiate and expose
@@ -146,8 +212,8 @@ if (navigator.serviceWorker && navigator.serviceWorker.controller) {
     try {
       const d = msg.data || {};
       if (d && d.type === 'run-sync') {
-        // Attempt to flush; registration may be handled by SW
-        window.SyncQueue.flush().then(res => console.log('Sync flush result', res)).catch(e=>console.error('Flush error', e));
+        // Attempt to flush (Drive first if available, then POST)
+        window.SyncQueue.flushAll().then(res => console.log('Sync flush result', res)).catch(e=>console.error('Flush error', e));
       }
     } catch(e) {}
   });
@@ -171,8 +237,8 @@ window.requestBackgroundSync = requestBackgroundSync;
 // Flush when browser regains connectivity
 window.addEventListener('online', function() {
   try {
-    if (window.SyncQueue && typeof window.SyncQueue.flush === 'function') {
-      window.SyncQueue.flush().then(r => console.log('Online: sync flush result', r)).catch(e => console.warn('Online flush failed', e));
+    if (window.SyncQueue && typeof window.SyncQueue.flushAll === 'function') {
+      window.SyncQueue.flushAll().then(r => console.log('Online: sync flush result', r)).catch(e => console.warn('Online flush failed', e));
     }
   } catch(e) {}
 });

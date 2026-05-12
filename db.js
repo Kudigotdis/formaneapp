@@ -5,7 +5,7 @@
 const WirogDB = {
   db: null,
   DB_NAME: 'wirog-supply-solutions',
-  DB_VERSION: 2,
+  DB_VERSION: 3,
 
   async init() {
     return new Promise((resolve, reject) => {
@@ -57,6 +57,9 @@ const WirogDB = {
         if (!db.objectStoreNames.contains('credentials')) {
           const credStore = db.createObjectStore('credentials', { keyPath: 'id' });
           credStore.createIndex('credential', 'credential', { unique: true });
+        }
+        if (!db.objectStoreNames.contains('mediaCache')) {
+          db.createObjectStore('mediaCache', { keyPath: 'url' });
         }
       };
     });

@@ -56,9 +56,6 @@
       <div style="padding: 12px 12px 4px 12px;">
         <div class="section-title">Directory</div>
       </div>
-      <div id="dir-cat-filter" class="promo-filter-scroll" style="padding:6px 12px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;">
-        <button class="promo-filter-chip active" data-cat="" onclick="filterDirCategory(this,'')">All</button>
-      </div>
       <div id="directory-list"></div>
       <div class="alpha-nav" id="alpha-nav"></div>
     </div>
@@ -145,6 +142,19 @@
         </div>
       </div>
 
+      <!-- Notes -->
+      <div class="accordion">
+        <div class="accordion-header" onclick="toggleAcc(this)">
+          <span><i class="fas fa-sticky-note" style="color:var(--orange); margin-right:8px;"></i> Notes</span>
+        </div>
+        <div class="accordion-body">
+          <div style="padding-top:8px;display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-sm" onclick="navTab('view-notes','nav-notes')">View Notes</button>
+            <button class="btn btn-sm" onclick="openModal('buy-notes-modal')">Buy Notes</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Admin Dashboard -->
       <div class="accordion" id="admin-dashboard-entry" style="display:none;">
         <div class="accordion-header" onclick="renderAdmin();goTo('view-admin')">
@@ -195,6 +205,17 @@
             <p style="font-size:11px; color:var(--grey-dark);">Basic directory listing &middot; Private catalogue &middot; 50MB image storage</p>
             <p style="font-size:20px; font-weight:800; color:var(--orange); margin-top:6px;">P0.00</p>
             <p style="font-size:10px; color:var(--grey-dark);">Unlimited duration &middot; Unlimited items</p>
+          </div>
+
+          <!-- Quick actions for business users -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <button class="btn btn-sm" onclick="openAddItemModal()">+ Add Item</button>
+            <button class="btn btn-sm" onclick="openArtworkSubmission()">Submit Artwork (Boost)</button>
+            <button class="btn btn-sm" onclick="renderPromoRequests()">Promo Requests</button>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+              <div style="font-size:12px;color:var(--grey-dark);">Boosts remaining</div>
+              <div id="boost-counter" style="background:var(--orange);color:white;padding:6px 10px;border-radius:20px;font-weight:700;">12</div>
+            </div>
           </div>
 
           <div style="border:2px solid var(--orange); border-radius:var(--radius); padding:12px; margin-bottom:8px; background:var(--orange-light); position:relative;">
@@ -265,6 +286,42 @@
         </div>
       </div>
 
+      <!-- Settings -->
+      <div class="accordion">
+        <div class="accordion-header" onclick="toggleAcc(this)">
+          <span><i class="fas fa-cog" style="color:var(--orange); margin-right:8px;"></i> Settings</span>
+        </div>
+        <div class="accordion-body">
+          <div style="padding-top:8px;">
+            <div class="settings-row" onclick="installApp()">
+              <i class="fas fa-download" style="color:var(--orange);width:20px;"></i>
+              <span>Install App</span>
+              <span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="settings-row" onclick="renderBlogList();goTo('view-blog')">
+              <i class="fas fa-blog" style="color:var(--orange);width:20px;"></i>
+              <span>Blog</span>
+              <span style="margin-left:auto;color:var(--grey-dark);font-size:11px;">v2.0.0 <i class="fas fa-chevron-right" style="margin-left:4px;"></i></span>
+            </div>
+            <div class="settings-row" onclick="openModal('about-wirog-modal')">
+              <i class="fas fa-info-circle" style="color:var(--orange);width:20px;"></i>
+              <span>About Wirog</span>
+              <span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="settings-row" onclick="clearAppCache()">
+              <i class="fas fa-trash-alt" style="color:var(--orange);width:20px;"></i>
+              <span>Clear Cache</span>
+              <span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="settings-row" id="delete-account-row" style="color:#e74c3c;" onclick="deleteAccount()">
+              <i class="fas fa-user-minus" style="color:#e74c3c;width:20px;"></i>
+              <span>Delete Account</span>
+              <span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Switch Account -->
       <div style="padding:16px; text-align:center;">
         <button class="btn" onclick="openSwitcher()" style="width:100%;">
@@ -272,6 +329,35 @@
         </button>
       </div>
 
+    </div>
+
+    <!-- ═══ BLOG ═══ -->
+    <div id="view-blog" class="view no-pad">
+      <div style="padding:12px;flex-shrink:0;">
+        <h2 style="font-size:18px;font-weight:700;margin:0;">Blog</h2>
+      </div>
+      <div id="blog-list" style="flex:1;overflow-y:auto;padding:0 12px 12px;"></div>
+      <div class="blog-bottom-strip">
+        <button class="biz-back-round" onclick="goTo('view-account')"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
+        <span></span>
+      </div>
+    </div>
+
+    <!-- ═══ BLOG CONTENT ═══ -->
+    <div id="view-blog-content" class="view no-pad">
+      <div id="blog-content-image-section" style="flex-shrink:0;">
+        <img src="assets/media/wirog_place_holder_image_blog_image_placeholder.webp" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;">
+      </div>
+      <div id="blog-content-body" style="flex:1;overflow-y:auto;padding:0;"></div>
+      <div class="blog-bottom-strip">
+        <button class="biz-back-round" onclick="goTo('view-blog')"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="toggleBlogLike(this)">
+            <img src="assets/icons/heart_inactive_icon.png" style="width:24px;height:24px;">
+          </div>
+          <img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:22px;height:22px;cursor:pointer;" onclick="shareBlog()">
+        </div>
+      </div>
     </div>
 
     <!-- ═══ FAVOURITE SUPPLIERS PAGE ═══ -->
@@ -442,6 +528,41 @@
     </div>
   </div>
 
+  <!-- ── ABOUT WIROG MODAL ── -->
+  <div class="modal-overlay" id="about-wirog-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">About Wirog</span>
+        <button class="modal-close" onclick="closeModal('about-wirog-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <img src="assets/images/company_logos_dummy/new_wirog_logo_12.jpg" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;">
+        <h3 style="font-family:var(--font-head);font-size:18px;font-weight:700;margin:0 0 4px;">Wirog Supply Solutions</h3>
+        <p style="font-size:12px;color:var(--grey-dark);margin-bottom:12px;">Version 2.0.0</p>
+        <p style="font-size:13px;line-height:1.6;margin-bottom:12px;">Botswana's premier supply solutions ecosystem connecting businesses, tradespeople, and customers. Browse building materials, compare prices, save notes, and share via WhatsApp.</p>
+        <p style="font-size:12px;color:var(--grey-dark);margin-bottom:4px;">&copy; 2026 Wirog Investments</p>
+        <p style="font-size:12px;color:var(--grey-dark);">Game City, Gaborone, Botswana</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DELETE ACCOUNT CONFIRMATION MODAL ── -->
+  <div class="modal-overlay" id="delete-account-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Delete Account</span>
+        <button class="modal-close" onclick="closeModal('delete-account-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="font-size:48px;margin-bottom:12px;">&#9888;&#65039;</div>
+        <p style="font-size:15px;font-weight:600;margin-bottom:8px;">Are you sure?</p>
+        <p style="font-size:13px;color:var(--grey-dark);margin-bottom:16px;">This will permanently delete your account and all saved data. This action cannot be undone.</p>
+        <button class="btn" style="background:#e74c3c;color:white;" onclick="confirmDeleteAccount()">Delete My Account</button>
+        <p style="text-align:center;margin-top:8px;font-size:12px;color:var(--grey-mid);cursor:pointer;" onclick="closeModal('delete-account-modal')">Cancel</p>
+      </div>
+    </div>
+  </div>
+
   <!-- ── CREATE BUSINESS MODAL ── -->
   <div class="modal-overlay" id="biz-modal">
     <div class="modal-sheet">
@@ -462,19 +583,18 @@
   </div>
 
   <!-- ── ADD ITEM MODAL (Accordion-based, WIROG-1) ── -->
-  <div class="modal-overlay" id="item-modal">
+  <div class="modal-overlay" id="add-item-modal">
     <div class="modal-sheet">
       <div class="modal-header">
         <span class="modal-title">Add Item to Catalogue</span>
-        <button class="modal-close" onclick="closeModal('item-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+        <button class="modal-close" onclick="closeModal('add-item-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
       </div>
       <div class="modal-body">
 
         <!-- ═══ SECTION 1: DESCRIPTION ═══ -->
-        <div class="accordion open" id="item-section-identity">
-          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('item-section-identity')">
+        <div class="accordion open" id="add-item-section-description">
+          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('add-item-section-description')">
             <span style="color:var(--orange);">1. Description</span>
-            <span class="chevron">&#9660;</span>
           </div>
           <div class="accordion-body">
             <label>Item Title</label>
@@ -500,10 +620,9 @@
         </div>
 
         <!-- ═══ SECTION 2: COST SETTINGS ═══ -->
-        <div class="accordion" id="item-section-money">
-          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('item-section-money')">
+        <div class="accordion" id="add-item-section-cost">
+          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('add-item-section-cost')">
             <span style="color:var(--orange);">2. Cost Settings</span>
-            <span class="chevron">&#9660;</span>
           </div>
           <div class="accordion-body">
             <label>Base Price (P)</label>
@@ -556,10 +675,9 @@
         </div>
 
         <!-- ═══ SECTION 3: VISIBILITY & SCHEDULING ═══ -->
-        <div class="accordion" id="item-section-visibility">
-          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('item-section-visibility')">
+        <div class="accordion" id="add-item-section-visibility">
+          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('add-item-section-visibility')">
             <span style="color:var(--orange);">3. Visibility & Scheduling</span>
-            <span class="chevron">&#9660;</span>
           </div>
           <div class="accordion-body">
             <label>Region</label>
@@ -601,12 +719,11 @@
         </div>
 
         <!-- ═══ SECTION 4: PROMO (always visible) ═══ -->
-        <div class="accordion open" id="item-section-promo">
-          <div class="accordion-header" style="background:var(--orange-light);" onclick="toggleItemSection('item-section-promo')">
-            <span style="color:var(--orange);">4. Promote Item</span>
-            <span class="chevron">&#9660;</span>
+        <div id="add-item-promo" style="margin-top:6px;">
+          <div style="background:var(--orange-light);padding:10px;border-radius:8px;border:1px solid var(--orange);margin-bottom:8px;">
+            <strong style="color:var(--orange);">4. Promote Item</strong>
           </div>
-          <div class="accordion-body">
+          <div>
             <p style="font-size:13px;color:var(--text-sub);margin-bottom:10px;">Boost this item to the Promos feed. <span id="item-free-promo-status" style="color:#2e7d32;font-weight:600;"></span></p>
 
             <label>Promo Duration</label>
@@ -642,10 +759,13 @@
               </div>
             </div>
 
-            <button class="btn" onclick="saveItem()" id="item-save-btn">
-              Save Item &amp; Submit to Promos
-            </button>
-            <p style="font-size:11px;color:var(--grey-dark);text-align:center;margin-top:8px;" id="item-save-subtext">Item will be saved to your catalogue and boosted to the Promos feed.</p>
+            <!-- Save / Delete row (always visible) -->
+            <div style="display:flex;gap:8px;margin-top:6px;margin-bottom:8px;">
+              <button class="btn" onclick="saveAddItem()" id="add-item-save-btn" style="flex:1;">Save Item</button>
+              <button class="btn btn-outline" onclick="deleteAddItem()" id="add-item-delete-btn" style="flex:1;color:#e74c3c;border-color:#e74c3c;">Delete</button>
+            </div>
+
+            <p style="font-size:11px;color:var(--grey-dark);text-align:center;margin-top:8px;" id="add-item-subtext">Save the item to your catalogue. Promo options unlock after adding to a catalogue.</p>
           </div>
         </div>
 
@@ -820,11 +940,36 @@
         </div>
         <p style="font-size:13px;font-weight:600;margin-bottom:8px;">Pay via:</p>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button class="btn-outline" onclick="payNotesBTC()" style="justify-content:center;font-size:14px;">BTC Smega</button>
-          <button class="btn-outline" onclick="payNotesMascom()" style="justify-content:center;font-size:14px;">Mascom Myzaka</button>
-          <button class="btn-outline" onclick="payNotesOrange()" style="justify-content:center;font-size:14px;">Orange Money</button>
+          <button class="btn-outline" onclick="openPaymentProofModal('BTC','25','Notes top-up')" style="justify-content:flex-start;display:flex;align-items:center;gap:8px;font-size:14px;">
+            <img src="assets/logos/btc_logo.png" style="width:28px;height:28px;object-fit:contain;"> BTC Smega — WhatsApp / Upload Proof
+          </button>
+          <button class="btn-outline" onclick="openPaymentProofModal('Mascom','25','Notes top-up')" style="justify-content:flex-start;display:flex;align-items:center;gap:8px;font-size:14px;">
+            <img src="assets/logos/mascom_logo.png" style="width:28px;height:28px;object-fit:contain;"> Mascom Myzaka — WhatsApp / Upload Proof
+          </button>
+          <button class="btn-outline" onclick="openPaymentProofModal('Orange','25','Notes top-up')" style="justify-content:flex-start;display:flex;align-items:center;gap:8px;font-size:14px;">
+            <img src="assets/logos/orange_logo.png" style="width:28px;height:28px;object-fit:contain;"> Orange Money — WhatsApp / Upload Proof
+          </button>
         </div>
         <p style="font-size:11px;color:var(--grey-mid);text-align:center;margin-top:16px;">After payment, your notes will be credited automatically.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAYMENT PROOF / WHATSAPP MODAL ── -->
+  <div class="modal-overlay" id="payment-proof-modal" style="display:none;">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Send Proof of Payment</span>
+        <button class="modal-close" onclick="closeModal('payment-proof-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+      </div>
+      <div class="modal-body">
+        <p id="payment-proof-instructions" style="font-size:13px;color:var(--grey-dark);margin-bottom:12px;"></p>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+          <input type="file" id="payment-proof-input" accept="image/*" onchange="handleProofFileInput(this.files)">
+          <button class="btn" onclick="sendPaymentWhatsApp()" id="payment-whatsapp-btn">Open WhatsApp</button>
+        </div>
+        <div id="payment-proof-preview" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;"><button class="btn" onclick="submitPaymentProof()">Submit Proof</button><button class="btn btn-outline" onclick="closeModal('payment-proof-modal')">Cancel</button></div>
       </div>
     </div>
   </div>
@@ -902,6 +1047,8 @@
   <script src="account.js"></script>
   <script src="admin.js"></script>
   <script src="items.js"></script>
+  <script src="blogs.js"></script>
   <script src="app.js"></script>
+  <script src="account-views.js"></script>
 </body>
 </html>

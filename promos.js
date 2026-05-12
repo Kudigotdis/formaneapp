@@ -126,7 +126,9 @@ function renderPromos() {
     if (p.images && p.images.length > 1) {
       imgHtml = '<div class="promo-carousel" id="carousel-' + p.id + '">';
       p.images.forEach(function(img) {
-        imgHtml += '<img src="' + img + '" class="promo-img" alt="' + p.title + '" onerror="this.parentElement.removeChild(this)">';
+        var src = WIROG_IMG_MODE.getImgSrc(img);
+        imgHtml += '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'"' +
+          (WIROG_IMG_MODE.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
       });
       imgHtml += '</div>' +
         '<div class="carousel-dots" id="dots-' + p.id + '">';
@@ -135,7 +137,10 @@ function renderPromos() {
       });
       imgHtml += '</div>';
     } else if (p.images && p.images.length === 1) {
-      imgHtml = '<img src="' + p.images[0] + '" class="promo-img" alt="' + p.title + '" onerror="this.style.display=\'none\'">';
+      var img = p.images[0];
+      var src = WIROG_IMG_MODE.getImgSrc(img);
+      imgHtml = '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'"' +
+        (WIROG_IMG_MODE.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
     } else {
       imgHtml = '<div class="promo-img-ph ' + (p.bg || 'img-amber') + '"><span class="promo-img-emoji">' + (p.emoji || '\ud83d\udce6') + '</span></div>';
     }
@@ -187,6 +192,22 @@ function renderPromos() {
       '</div>';
 
     feed.appendChild(card);
+
+    // Phase 2: async resolve saved-mode images
+    if (card.querySelector('[data-original-url]')) {
+      (function(c) {
+        setTimeout(function() {
+          var imgs = c.querySelectorAll('.promo-img[data-original-url]');
+          for (var j = 0; j < imgs.length; j++) {
+            (function(img) {
+              WIROG_IMG_MODE.resolve(img.getAttribute('data-original-url')).then(function(resolved) {
+                if (resolved) img.src = resolved;
+              });
+            })(imgs[j]);
+          }
+        }, 0);
+      })(card);
+    }
   });
 }
 
@@ -353,36 +374,14 @@ window.renderPromos = renderPromos;
 window.trackPromoView = trackPromoView;
 window.checkPromoStatuses = checkPromoStatuses;
 
-/* ─── FACEBOOK PROMO ─── */
+/* ─── FACEBOOK PROMO → redirects to new artwork submission ─── */
 function openFbPromo(promoId) {
-  const p = window._promos.find(x => String(x.id) === String(promoId));
-  if (!p) return;
-  const preview = document.getElementById('fb-promo-preview');
-  if (!preview) return;
-  preview.innerHTML =
-    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">' +
-      '<div class="avatar-square" style="background:' + (p.businessColor || '#999') + ';width:36px;height:36px;font-size:14px;">' + (p.businessInit || '?') + '</div>' +
-      '<div><strong>' + (p.businessName || 'Business') + '</strong><br><span style="font-size:11px;color:var(--grey-dark);">' + (p.location || '') + '</span></div>' +
-    '</div>' +
-    '<div style="font-size:15px;font-weight:700;margin-bottom:4px;">' + (p.title || '') + '</div>' +
-    '<div style="font-size:12px;color:var(--grey-dark);margin-bottom:4px;">' + (p.desc || '') + '</div>' +
-    '<div style="font-size:14px;font-weight:700;color:var(--orange);">P ' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + ' ' + (p.unit || 'each') + '</div>';
-  document.getElementById('fb-promo-message').value = '';
-  window._fbPromoId = promoId;
-  openModal('fb-promo-modal');
+  openArtworkSubmission();
 }
 
 function submitFbPromo() {
-  const p = window._promos.find(x => String(x.id) === String(window._fbPromoId));
-  if (!p) { showToast('Promo not found'); return; }
-  const msg = document.getElementById('fb-promo-message').value.trim();
-  const text = msg
-    ? msg + '\n\n' + p.title + ' - P' + ((p.basePrice || p.price || 0)).toFixed(2) + ' ' + (p.unit || 'each') + ' from ' + p.businessName + ' on Wirog Supply Solutions!'
-    : p.title + ' - P' + ((p.basePrice || p.price || 0)).toFixed(2) + ' ' + (p.unit || 'each') + ' from ' + p.businessName + '\n\nAvailable on Wirog Supply Solutions. Download the app or visit wirog.co.bw';
-  const url = 'https://www.facebook.com/sharer/sharer.php?quote=' + encodeURIComponent(text) + '&u=' + encodeURIComponent('https://wirog.co.bw');
-  closeModal('fb-promo-modal');
-  window.open(url, '_blank');
-  showToast('Opened Facebook share dialog');
+  // Legacy — redirect to artwork submission
+  openArtworkSubmission();
 }
 
 window.openFbPromo = openFbPromo;

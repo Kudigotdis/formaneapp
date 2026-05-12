@@ -56,13 +56,18 @@ function renderNotes() {
   const used = userNotes.length;
   const remaining = Math.max(0, maxFree - used);
 
+  const counterEl = document.getElementById('notes-remaining-counter');
+  if (counterEl) {
+    counterEl.textContent = remaining + ' of ' + maxFree + ' free notes remaining' +
+      (used > maxFree ? ' — ' + (used - maxFree) + ' bonus' : '');
+  }
+
   if (userNotes.length === 0) {
     el.innerHTML = `
       <div style="text-align:center;padding:40px 16px;color:var(--grey-dark);">
         <i class="fas fa-clipboard-list" style="font-size:36px;margin-bottom:10px;display:block;color:var(--grey-mid);"></i>
         <p style="font-size:14px;font-weight:600;margin-bottom:4px;">No notes yet</p>
         <p style="font-size:12px;">Create a note to start saving items from the Promos feed.</p>
-        <div style="font-size:11px;color:var(--grey-mid);margin-top:12px;">${remaining} of ${maxFree} free notes remaining</div>
       </div>
     `;
     return;
@@ -84,10 +89,7 @@ function renderNotes() {
         </div>
       </div>
     `;
-  }).join('') +
-  '<div style="font-size:11px;color:var(--grey-mid);text-align:center;margin-top:8px;">' + remaining + ' of ' + maxFree + ' free notes remaining' +
-  (used > maxFree ? '<br><span style="color:var(--orange);">You have ' + (used - maxFree) + ' bonus notes</span>' : '') +
-  '</div>';
+  }).join('');
 }
 
 function openNote(noteId) {
@@ -101,13 +103,16 @@ function openNote(noteId) {
 
   const img = document.getElementById('note-thumbnail-img');
   const placeholder = document.getElementById('note-thumbnail-placeholder');
+  const container = document.getElementById('note-thumbnail');
   if (note.thumbnail) {
     img.src = note.thumbnail;
     img.style.display = 'block';
     placeholder.style.display = 'none';
+    container.classList.remove('empty');
   } else {
     img.style.display = 'none';
     placeholder.style.display = 'flex';
+    container.classList.add('empty');
   }
 
   document.getElementById('note-body-input').textContent = note.body || '';
@@ -121,14 +126,16 @@ function openNote(noteId) {
   } else {
     list.innerHTML = note.items.map((item, idx) => `
       <div class="note-item-row">
-        <div class="note-item-icon">${item.emoji || '\ud83d\udce6'}</div>
-        <div class="ni-info"><h4>${item.title}</h4><p>P ${item.price.toFixed(2)} ${item.unit} \u00b7 ${item.business}</p></div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <div class="qty-controls">
-            <button class="qty-btn" onclick="updateNoteItemQty('${noteId}',${idx},1)">+</button>
-            <span class="ni-qty" style="min-width:20px; text-align:center;">${item.qty || 1}</span>
-            <button class="qty-btn" onclick="updateNoteItemQty('${noteId}',${idx},-1)">\u2212</button>
-          </div>
+        <div class="note-item-icon" onclick="openNoteItemView('${noteId}',${idx})" style="cursor:pointer;">${item.emoji || '\ud83d\udce6'}</div>
+        <div class="ni-info">
+          <h4>${item.title}</h4>
+          <p class="ni-cost">P ${item.price.toFixed(2)} ${item.unit} \u00d7 ${item.qty || 1}</p>
+          <p class="ni-business">${item.business}</p>
+        </div>
+        <div class="qty-controls">
+          <button class="qty-btn" onclick="updateNoteItemQty('${noteId}',${idx},1)">+</button>
+          <span class="ni-qty" style="min-width:20px;text-align:center;">${item.qty || 1}</span>
+          <button class="qty-btn" onclick="updateNoteItemQty('${noteId}',${idx},-1)">\u2212</button>
         </div>
       </div>
     `).join('');
@@ -142,43 +149,52 @@ async function updateNoteItemQty(noteId, itemIdx, delta) {
   const note = window._notes.find(n => n.id === noteId);
   if (!note || !note.items[itemIdx]) return;
 
-  note.items[itemIdx].qty = Math.max(0, (note.items[itemIdx].qty || 1) + delta);
+  const item = note.items[itemIdx];
+  const oldQty = item.qty || 1;
+  const newQty = Math.max(0, oldQty + delta);
 
-  if (note.items[itemIdx].qty === 0) {
-    if (confirm('Remove this item from the note?')) {
-      note.items.splice(itemIdx, 1);
-    } else {
-      note.items[itemIdx].qty = 1;
-    }
+  if (newQty === 0) {
+    if (!confirm('Remove this item from the note?')) return;
+    note.items.splice(itemIdx, 1);
+    try {
+      await WirogDB.put('notes', note);
+      if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
+        await window.SyncQueue.enqueue('notes', note, { clientId: UserState.id });
+        if (window.requestBackgroundSync) window.requestBackgroundSync().catch(()=>{});
+      }
+    } catch(e) {}
+    if (window.currentView === 'view-note-open') openNote(noteId);
+    else renderNotes();
+    return;
   }
+
+  item.qty = newQty;
 
   try {
     await WirogDB.put('notes', note);
-  } catch(e) {
-    console.error('Failed to update note in DB:', e);
-  }
-
-  try {
     if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
       await window.SyncQueue.enqueue('notes', note, { clientId: UserState.id });
       if (window.requestBackgroundSync) window.requestBackgroundSync().catch(()=>{});
     }
-  } catch(e) { console.warn('Failed to enqueue note update for sync:', e); }
+  } catch(e) {}
 
-  if (window.currentView === 'view-note-open') {
-    openNote(noteId);
-  } else {
-    renderNotes();
+  const row = document.querySelector(`#note-items-list .note-item-row:nth-child(${itemIdx + 1})`);
+  if (row) {
+    const qtySpan = row.querySelector('.ni-qty');
+    if (qtySpan) qtySpan.textContent = newQty;
+    const costEl = row.querySelector('.ni-cost');
+    if (costEl) costEl.textContent = `P ${item.price.toFixed(2)} ${item.unit} \u00d7 ${newQty}`;
   }
+
+  const newTotal = note.items.reduce((sum, i) => sum + (i.price * (i.qty || 1)), 0);
+  const totalEl = document.getElementById('note-total-val');
+  if (totalEl) totalEl.textContent = 'P ' + newTotal.toFixed(2);
 }
 
 async function createNote() {
-  const title = prompt('Enter note name:');
-  if (!title) return;
-
   const note = {
     id: 'note_' + Date.now(),
-    title: title,
+    title: 'New Note',
     thumbnail: '',
     body: '',
     userId: UserState.id,
@@ -190,7 +206,6 @@ async function createNote() {
   } catch(e) {
     console.error('Failed to save note to DB:', e);
   }
-  // Enqueue new note for sync
   try {
     if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
       await window.SyncQueue.enqueue('notes', note, { clientId: UserState.id });
@@ -198,7 +213,7 @@ async function createNote() {
     }
   } catch(e) { console.warn('Failed to enqueue new note for sync:', e); }
   renderNotes();
-  showToast('\u2705 Note created!');
+  openNote(note.id);
 }
 
 function editNoteTitle(noteId) {
@@ -217,15 +232,27 @@ function editNoteTitle(noteId) {
 function changeNoteThumbnail() {
   const note = window._notes.find(n => n.id === window._currentNoteId);
   if (!note) return;
-  const url = prompt('Enter image URL for note thumbnail:', note.thumbnail || '');
-  if (url && url.trim()) {
-    note.thumbnail = url.trim();
-    const img = document.getElementById('note-thumbnail-img');
-    const placeholder = document.getElementById('note-thumbnail-placeholder');
-    img.src = note.thumbnail;
-    img.style.display = 'block';
-    placeholder.style.display = 'none';
-  }
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const dataUrl = ev.target.result;
+      note.thumbnail = dataUrl;
+      const img = document.getElementById('note-thumbnail-img');
+      const placeholder = document.getElementById('note-thumbnail-placeholder');
+      const container = document.getElementById('note-thumbnail');
+      img.src = dataUrl;
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+      container.classList.remove('empty');
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
 }
 
 function saveNoteBody() {
@@ -289,9 +316,51 @@ function shareNoteWhatsApp(noteId) {
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
+function openNoteItemView(noteId, itemIdx) {
+  const note = window._notes.find(n => n.id === noteId);
+  if (!note || !note.items[itemIdx]) return;
+  const item = note.items[itemIdx];
+  const promo = window._promos && window._promos.find(p => p.title === item.title && p.businessName === item.business);
+  const content = document.getElementById('item-view-content');
+  if (!content) return;
+  const totalCost = (item.price * (item.qty || 1)).toFixed(2);
+  const tags = promo && promo.tags && promo.tags.length ? promo.tags.map(t => '<span style="background:var(--grey-light);padding:3px 8px;border-radius:4px;font-size:12px;">' + t + '</span>').join(' ') : '';
+  const categories = promo && promo.category ? '<p style="font-size:12px;color:var(--grey-dark);margin-bottom:4px;">Category: <strong>' + promo.category + '</strong></p>' : '';
+  const images = promo && promo.images && promo.images.length ? promo.images.slice(0, 3).map(function(img) { return '<img src="' + img + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;">'; }).join('') : '';
+  content.innerHTML =
+    '<div style="margin-bottom:16px;">' +
+      '<div style="font-size:32px;margin-bottom:8px;">' + (item.emoji || '\ud83d\udce6') + '</div>' +
+      '<h3 style="font-size:20px;font-weight:700;margin-bottom:4px;">' + item.title + '</h3>' +
+      categories +
+      (promo && promo.desc ? '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:8px;">' + promo.desc + '</p>' : '') +
+    '</div>' +
+    '<div style="background:var(--grey-light);border-radius:8px;padding:12px;margin-bottom:12px;">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">' +
+        '<span style="font-size:13px;color:var(--grey-dark);">Unit Price</span>' +
+        '<strong style="font-size:14px;">P ' + item.price.toFixed(2) + ' ' + item.unit + '</strong>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">' +
+        '<span style="font-size:13px;color:var(--grey-dark);">Quantity</span>' +
+        '<strong style="font-size:14px;">' + (item.qty || 1) + '</strong>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;border-top:1px solid var(--grey-mid);padding-top:6px;">' +
+        '<span style="font-size:13px;color:var(--grey-dark);">Total</span>' +
+        '<strong style="font-size:16px;color:var(--orange);">P ' + totalCost + '</strong>' +
+      '</div>' +
+    '</div>' +
+    '<div style="margin-bottom:12px;">' +
+      '<p style="font-size:12px;color:var(--grey-dark);margin-bottom:4px;">Service Provider</p>' +
+      '<p style="font-size:14px;font-weight:600;">' + item.business + '</p>' +
+    '</div>' +
+    (tags ? '<div><p style="font-size:12px;color:var(--grey-dark);margin-bottom:6px;">Tags</p><div style="display:flex;flex-wrap:wrap;gap:6px;">' + tags + '</div></div>' : '') +
+    (images ? '<div style="margin-top:12px;"><p style="font-size:12px;color:var(--grey-dark);margin-bottom:6px;">Images</p><div style="display:flex;gap:8px;">' + images + '</div></div>' : '');
+  openModal('item-view-modal');
+}
+
 window.renderNotes = renderNotes;
 window.openNote = openNote;
 window.createNote = createNote;
+window.openNoteItemView = openNoteItemView;
 window.shareNoteWhatsApp = shareNoteWhatsApp;
 window.updateNoteItemQty = updateNoteItemQty;
 window.editNoteTitle = editNoteTitle;

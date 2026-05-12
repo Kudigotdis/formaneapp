@@ -16,7 +16,23 @@ function toggleSubAcc(header) {
 function renderPersonalDetails() {
   const body = document.getElementById('personal-details-body');
   if (!body) return;
-  body.innerHTML = renderIdentitySection() + renderContactSection() + renderInterestsSection();
+  body.innerHTML = renderIdentitySection() + renderContactSection() + renderInterestsSection() + renderVIPSection() + renderAgentPortal() + renderSyncSection();
+}
+
+function renderSyncSection() {
+  return `<div class="sub-accordion">
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
+      <div style="display:flex; align-items:center; gap:8px;">
+         <span>🔄</span> Platform Sync
+      </div>
+    </div>
+    <div class="sub-accordion-body">
+      <div style="padding:10px 0;">
+        <p style="font-size:12px; color:var(--grey-dark); margin-bottom:8px;">Download latest industry icons for offline use.</p>
+        <button class="btn-sm" style="width:100%; background:var(--orange); color:white;" onclick="triggerPlatformSync()">Sync Assets Now</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 function renderIdentitySection() {
@@ -102,6 +118,66 @@ function renderInterestsSection() {
   </div>`;
 }
 
+function renderVIPSection() {
+  const s = UserState;
+  const isVerified = s.isVerified;
+  
+  return `<div class="sub-accordion">
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
+      <div style="display:flex; align-items:center; gap:8px;">
+         <span>🏆</span> VIP & Rewards
+      </div>
+    </div>
+    <div class="sub-accordion-body">
+      <div style="padding:10px 0; border-bottom:1px solid var(--grey-light);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:14px; font-weight:700;">VIP Pass</div>
+            <div style="font-size:11px; color:var(--grey-dark);">Exclusive discounts & early access</div>
+          </div>
+          <button class="btn-sm" style="width:auto; min-width:80px; ${isVerified ? 'background:var(--orange); color:white;' : 'background:var(--grey-light); color:var(--grey-mid); cursor:not-allowed;'}" 
+            onclick="${isVerified ? 'showVIPPass()' : 'promptVerification()'}">
+            ${isVerified ? 'View' : '🔒 Locked'}
+          </button>
+        </div>
+      </div>
+      
+      <div style="padding:10px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:14px; font-weight:700;">Claim Prize</div>
+            <div style="font-size:11px; color:var(--grey-dark);">Redeem your Wirog reward tokens</div>
+          </div>
+          <button class="btn-sm" style="width:auto; min-width:80px; ${isVerified ? 'background:var(--orange); color:white;' : 'background:var(--grey-light); color:var(--grey-mid); cursor:not-allowed;'}" 
+            onclick="${isVerified ? 'claimPrize()' : 'promptVerification()'}">
+            ${isVerified ? 'Claim' : '🔒 Locked'}
+          </button>
+        </div>
+      </div>
+      
+      ${!isVerified ? `
+        <div style="margin-top:12px; padding:10px; background:var(--orange-light); border-radius:8px; border:1px dashed var(--orange);">
+          <p style="font-size:12px; color:var(--orange); margin:0;">
+            <strong>Verification Required:</strong> To unlock these features, please visit a <strong>Wirog Agent</strong> at your nearest hardware store for identity verification.
+          </p>
+        </div>
+      ` : ''}
+    </div>
+  </div>`;
+}
+
+function promptVerification() {
+  alert("⚠️ Account Not Verified\n\nPlease find a Wirog Agent at any partner store (e.g., Kago Timber or Builders Mart) to verify your account and unlock VIP rewards.");
+}
+
+function showVIPPass() {
+  showToast("🎟️ VIP Pass Active!");
+}
+
+function claimPrize() {
+  showToast("🎁 Connecting to Rewards Hub...");
+}
+
 // ─── INLINE EDITING ───
 function editField(el) {
   const field = el.dataset.field;
@@ -160,6 +236,62 @@ function showInlineSave(parent, input, field, section, oldVal, newVal, restoreP)
   bar.className = 'save-bar';
   bar.innerHTML = `<span>✓ Save changes?</span><button class="save-btn" onclick="confirmField('${field}','${section}','${newVal.replace(/'/g,"\\'")}','${oldVal.replace(/'/g,"\\'")}',this)">Save</button><button class="cancel-btn" onclick="cancelField(this)">Cancel</button>`;
   parent.appendChild(bar);
+}
+
+/* ─── AGENT VERIFICATION PORTAL ─── */
+
+function renderAgentPortal() {
+  const s = UserState;
+  const isAdmin = s.role === 'Administrator';
+  
+  if (!isAdmin) return ''; // Only admins can see the portal for now
+
+  return `<div class="sub-accordion">
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
+      <div style="display:flex; align-items:center; gap:8px;">
+         <span>🛠️</span> Wirog Agent Portal
+      </div>
+    </div>
+    <div class="sub-accordion-body">
+      <div style="padding:10px 0;">
+        <label>Verify User Account</label>
+        <div style="display:flex; gap:6px; margin-top:4px;">
+          <input type="text" id="agent-user-search" placeholder="User ID or Phone" style="flex:1; font-size:12px;">
+          <button class="btn-sm" style="background:var(--orange); color:white;" onclick="agentVerifyUser()">Verify</button>
+        </div>
+        <p style="font-size:10px; color:var(--grey-dark); margin-top:4px;">Scan user ID to unlock VIP features.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function agentVerifyUser() {
+  const input = document.getElementById('agent-user-search');
+  const userId = input.value.trim();
+  if (!userId) return showToast("Enter a User ID");
+
+  showToast("Verifying user...");
+  // In a real app, this would update Firestore. For now, we simulate success.
+  setTimeout(() => {
+    showToast("✅ User Verified Successfully!");
+    input.value = "";
+  }, 1000);
+}
+
+/* ─── SYNC TRIGGER ─── */
+
+async function triggerPlatformSync() {
+  if (!window.WirogMediaCache) return showToast("Sync Engine not ready");
+  
+  showToast("🔄 Starting Platform Sync...");
+  try {
+    await window.WirogMediaCache.syncFromManifest('manifest.json', (progress) => {
+       console.log(`Sync Progress: ${progress}%`);
+    });
+    showToast("✅ Assets Synced Offline!");
+  } catch (e) {
+    showToast("❌ Sync Failed: " + e.message);
+  }
 }
 
 function confirmField(field, section, newVal, oldVal, btn) {
@@ -405,8 +537,16 @@ window._paymentProofPending = null;
 function openPaymentProofModal(method, amount, purpose) {
   const modal = document.getElementById('payment-proof-modal');
   if (!modal) return;
-  document.getElementById('payment-proof-instructions').textContent = `Pay P${amount} via ${method}. After payment, either send proof via WhatsApp or upload an image below.`;
-  modal.style.display = 'block';
+  const instEl = document.getElementById('payment-proof-instructions');
+  const methodNames = { BTC: 'BTC Smega', Mascom: 'Mascom Myzaka', Orange: 'Orange Money' };
+  const displayMethod = methodNames[method] || method;
+  const isMobile = ['BTC','Mascom','Orange'].includes(method);
+  if (isMobile) {
+    instEl.innerHTML = `Pay P${amount} via <strong>${displayMethod}</strong> for ${purpose}. After payment, upload a screenshot or send proof via WhatsApp.`;
+  } else {
+    instEl.innerHTML = `Pay P${amount} via bank transfer for ${purpose}.<br><strong>FNB Botswana &middot; Game City Branch</strong><br>Account Name: Wirog Investments<br><br>After payment, upload proof or send via WhatsApp.`;
+  }
+  openModal('payment-proof-modal');
   window._paymentProofPending = { method, amount: Number(amount), purpose };
 }
 
@@ -470,35 +610,109 @@ function renderPromoRequestsList() {
   const reqs = JSON.parse(localStorage.getItem('wirog_promo_requests') || '[]');
   const paymentReqs = JSON.parse(localStorage.getItem('wirog_payment_requests') || '[]');
   const all = reqs.concat(paymentReqs);
+
+  const pendingCount = all.filter(r => r.status === 'pending').length;
+  const totalEl = document.getElementById('count-total');
+  const pendingEl = document.getElementById('count-pending');
+  if (totalEl) totalEl.textContent = all.length;
+  if (pendingEl) pendingEl.textContent = pendingCount;
+
   if (all.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--grey-dark);">No requests</div>';
+    container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--grey-dark);"><p style="font-size:14px;">No pending promo requests found.</p></div>';
     return;
   }
+
   container.innerHTML = all.map(r => {
-    const date = new Date(r.createdAt).toLocaleString();
-    const img = r.image ? `<img src="${r.image}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;">` : '';
-    return `<div style="border-bottom:1px solid var(--grey-light);padding:12px;display:flex;gap:12px;align-items:flex-start;">
-      <div style="flex:1;">
-        <div style="font-weight:700;">${r.purpose || r.method || 'Payment'}</div>
-        <div style="font-size:13px;color:var(--grey-dark);">User: ${r.userId} · P ${r.amount || ''} · ${r.status}</div>
-        <div style="font-size:12px;color:var(--grey-mid);margin-top:6px;">${date}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">${img}<div style="display:flex;gap:6px;">
-        <button class="btn" onclick="approveRequest('${r.id}')">Approve</button>
-        <button class="btn btn-outline" onclick="rejectRequestPrompt('${r.id}')">Reject</button>
-      </div></div>
-    </div>`;
+    const date = new Date(r.createdAt).toLocaleDateString();
+    const statusLabel = r.status.charAt(0).toUpperCase() + r.status.slice(1);
+    const sc = {
+      pending: { bg: '#fff8e1', color: '#ffa000' },
+      approved: { bg: '#e8f5e9', color: '#2e7d32' },
+      rejected: { bg: '#ffebee', color: '#f44336' }
+    }[r.status] || { bg: '#f5f5f5', color: '#666' };
+    const imgSrc = r.image || '';
+    const category = r.purpose || r.method || 'Payment';
+    const methodName = r.method || 'Bank Transfer';
+
+    return '<div class="promo-card" style="background:white;border:1px solid var(--grey-light);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">' +
+        '<div>' +
+          '<div style="font-weight:700;font-size:14px;color:#111;">User: ' + r.userId + '</div>' +
+          '<div style="font-size:11px;color:var(--grey-dark);">' + date + '</div>' +
+        '</div>' +
+        '<span style="background:' + sc.bg + ';color:' + sc.color + ';font-size:10px;font-weight:800;padding:4px 8px;border-radius:6px;text-transform:uppercase;">' + statusLabel + '</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:12px;background:#f9f9f9;padding:10px;border-radius:8px;margin-bottom:12px;">' +
+        (imgSrc ? '<img src="' + imgSrc + '" style="width:60px;height:60px;border-radius:6px;object-fit:cover;background:#eee;">' : '<div style="width:60px;height:60px;border-radius:6px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:20px;">\ud83d\udcc4</div>') +
+        '<div style="flex:1;">' +
+          '<div style="font-size:12px;font-weight:600;color:var(--grey-dark);margin-bottom:2px;">Category</div>' +
+          '<div style="font-size:13px;color:#333;">' + category + '</div>' +
+          '<div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">Method: ' + methodName + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<button class="btn" onclick="approveRequest(\'' + r.id + '\')" style="flex:2;font-size:12px;padding:10px;background:#4CAF50;">Approve</button>' +
+        (imgSrc ? '<button class="btn-outline" onclick="viewProof(\'' + r.id + '\')" style="flex:1;font-size:12px;padding:10px;">View Proof</button>' : '') +
+        '<button class="btn-outline" onclick="rejectRequestPrompt(\'' + r.id + '\')" style="flex:1;font-size:12px;padding:10px;color:#f44336;border-color:#ffebee;">Reject</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
+}
+
+function markDriveRecordReviewed(id) {
+  const key = 'wirog_drive_records_reviewed';
+  const arr = JSON.parse(localStorage.getItem(key) || '[]');
+  if (!arr.includes(id)) arr.push(id);
+  localStorage.setItem(key, JSON.stringify(arr));
+  showToast('Marked as reviewed');
+  renderPromoRequestsList();
 }
 
 function approveRequest(id) {
   const prs = JSON.parse(localStorage.getItem('wirog_promo_requests') || '[]');
   const pidx = prs.findIndex(p=>p.id===id);
-  if (pidx !== -1) { prs[pidx].status = 'approved'; localStorage.setItem('wirog_promo_requests', JSON.stringify(prs)); showToast('Promo request approved'); renderPromoRequestsList(); return; }
+  if (pidx !== -1) {
+    prs[pidx].status = 'approved';
+    localStorage.setItem('wirog_promo_requests', JSON.stringify(prs));
+    // Push to promos feed
+    pushToPromosFeed(prs[pidx]);
+    showToast('Promo request approved');
+    renderPromoRequestsList();
+    return;
+  }
   const pays = JSON.parse(localStorage.getItem('wirog_payment_requests') || '[]');
   const p2 = pays.findIndex(p=>p.id===id);
-  if (p2 !== -1) { pays[p2].status = 'approved'; localStorage.setItem('wirog_payment_requests', JSON.stringify(pays)); showToast('Payment approved'); renderPromoRequestsList(); return; }
+  if (p2 !== -1) {
+    pays[p2].status = 'approved';
+    localStorage.setItem('wirog_payment_requests', JSON.stringify(pays));
+    showToast('Payment approved');
+    renderPromoRequestsList();
+    return;
+  }
   showToast('Request not found');
+}
+
+function pushToPromosFeed(req) {
+  const promos = window._promos || JSON.parse(localStorage.getItem('wirog_promos') || '[]');
+  const expiresAt = Date.now() + (req.durationDays || 3) * 86400000;
+  const promo = {
+    id: req.id || 'promo_' + Date.now(),
+    title: req.title || req.purpose || 'Promoted Item',
+    desc: req.desc || '',
+    category: req.category || 'General',
+    businessName: req.businessName || req.userId || 'Business',
+    promo: {
+      status: 'active',
+      expiresAt: expiresAt,
+      cost: req.amount || 0,
+      durationDays: req.durationDays || 3
+    },
+    kpi: { views: 0, likes: 0, addedToNotes: 0 },
+    createdAt: Date.now()
+  };
+  promos.push(promo);
+  window._promos = promos;
+  localStorage.setItem('wirog_promos', JSON.stringify(promos));
 }
 
 function rejectRequestPrompt(id) {
@@ -525,6 +739,22 @@ window.createPromoRequest = createPromoRequest;
 window.renderPromoRequestsList = renderPromoRequestsList;
 window.approveRequest = approveRequest;
 window.rejectRequestPrompt = rejectRequestPrompt;
+
+// ─── BOOST COUNTER HELPERS ───
+window.getBoostCounter = function() {
+  return Math.max(0, parseInt(localStorage.getItem('wirog_boosts_remaining') || '12', 10));
+};
+
+window.decrementBoostCounter = function() {
+  let b = window.getBoostCounter();
+  b = Math.max(0, b - 1);
+  localStorage.setItem('wirog_boosts_remaining', String(b));
+  ['boost-counter', 'boost-counter-modal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(b);
+  });
+  return b;
+};
 
 
 function updateMobileField(id, field, value) {
@@ -694,14 +924,14 @@ function updateAccountHero() {
   avatar.style.background = color;
 
   if (isGuest) {
-    avatar.innerHTML = '<img src="assets/images/company_logos_dummy/new_wirog_logo22.webp" style="width:82px;height:82px;border-radius:50%;object-fit:cover;display:block;">';
+    avatar.innerHTML = '<img src="assets/images/company_logos_dummy/new_wirog_logo22.webp" style="width:112px;height:112px;border-radius:2px;object-fit:cover;display:block;">';
   } else if (isAdmin) {
     avatar.innerHTML = initials;
   } else {
     const demoAcc = window.DEMO_ACCOUNTS.find(a => a.id === s.id);
     const logo = demoAcc?.logo || null;
     const imgSrc = logo || `assets/images/profile_pictures_dummy/${encodeURIComponent(name)}.jpg`;
-    avatar.innerHTML = `<img src="${imgSrc}" style="width:82px;height:82px;border-radius:50%;object-fit:cover;display:block;" onerror="this.outerHTML='${initials}'">`;
+    avatar.innerHTML = `<img src="${imgSrc}" style="width:112px;height:112px;border-radius:2px;object-fit:cover;display:block;" onerror="this.outerHTML='${initials}'">`;
   }
 
   document.getElementById('acct-name').textContent = name;
@@ -754,21 +984,36 @@ function openSwitcher() {
     '<i class="fas fa-lock" style="color:var(--grey-mid);margin-left:auto;font-size:14px;"></i>' +
   '</div>';
 
-  // 5. Board Kings & Staff
-  html += '<div class="switcher-section-header" style="font-size:10px;padding-top:2px;">Board Kings</div>';
-  var bkIds = ['supplier', 'staff-kudi', 'staff-mark', 'staff-smokey', 'staff-tshepang', 'user-william', 'user-robert'];
-  bkIds.forEach(function(id) {
-    var a = window.DEMO_ACCOUNTS.find(function(x) { return x.id === id; });
-    if (a) html += renderSwitcherOption(a.id, a.name, a.role, a.initials, a.color);
+  // 5. Group all DEMO_ACCOUNTS by business association
+  var grouped = {};
+  var unassociated = [];
+  window.DEMO_ACCOUNTS.forEach(function(a) {
+    if (a.id === 'guest' || a.id === 'admin') return;
+    var assoc = window.BUSINESS_ASSOCIATIONS ? window.BUSINESS_ASSOCIATIONS[a.id] : null;
+    if (assoc) {
+      if (!grouped[assoc.businessId]) grouped[assoc.businessId] = [];
+      grouped[assoc.businessId].push(a);
+    } else {
+      unassociated.push(a);
+    }
   });
 
-  // 6. Demo Accounts
-  html += '<div class="switcher-section-header" style="font-size:10px;padding-top:2px;">Demo Accounts</div>';
-  var demoIds = ['general', 'trade', 'user-gerald', 'owner-biz2', 'owner-biz3', 'owner-biz4'];
-  demoIds.forEach(function(id) {
-    var a = window.DEMO_ACCOUNTS.find(function(x) { return x.id === id; });
-    if (a) html += renderSwitcherOption(a.id, a.name, a.role, a.initials, a.color);
+  Object.keys(grouped).sort().forEach(function(bizId) {
+    var biz = window.SAMPLE_BUSINESSES.find(function(b) { return b.id === bizId; });
+    if (!biz) return;
+    html += '<div class="switcher-section-header" style="font-size:10px;padding-top:2px;">' + biz.name + '</div>';
+    grouped[bizId].forEach(function(a) {
+      html += renderSwitcherOption(a.id, a.name, a.role, a.initials, a.color);
+    });
   });
+
+  // 6. Unassociated Demo Accounts
+  if (unassociated.length > 0) {
+    html += '<div class="switcher-section-header" style="font-size:10px;padding-top:2px;">Other Accounts</div>';
+    unassociated.forEach(function(a) {
+      html += renderSwitcherOption(a.id, a.name, a.role, a.initials, a.color);
+    });
+  }
 
   // 7. Divider + Other Accounts button
   html += '<div class="switcher-section-divider"></div>';
@@ -787,59 +1032,53 @@ async function switchTo(id) {
   UserState.set(account.id, account.name, account.role, '', account.town, '');
   localStorage.setItem('wirog_userId', id);
   updateAccountHero();
-  if (id === 'supplier') {
-    UserState.business = { name: 'Board Kings', category: 'Boards & Timber', town: 'Gaborone', phone: '+267 71234567', subscription: 'full' };
-    renderBusinessCard();
-    UserState.kpi = { ads: 14, views: 1204, likes: 85, noteAdds: 32 };
-    UserState.interests = ['Boards & Timber', 'Tools & Equipment', 'Hardware & Fasteners'];
+
+  // Handle admin specially (password gate)
+  if (id === 'admin') {
+    closeSwitcher();
+    openModal('admin-pw-modal');
+    return;
+  }
+
+  // Data-driven business resolution via BUSINESS_ASSOCIATIONS
+  var assoc = window.BUSINESS_ASSOCIATIONS ? window.BUSINESS_ASSOCIATIONS[id] : null;
+  if (assoc) {
+    var biz = window.SAMPLE_BUSINESSES.find(function(b) { return b.id === assoc.businessId; });
+    if (biz) {
+      UserState.business = {
+        id: biz.id, name: biz.name, category: biz.category,
+        town: biz.location.split(',').pop().trim(),
+        phone: biz.phone || '', subscription: biz.subscription || 'free'
+      };
+      UserState.businessRole = assoc.role;
+      renderBusinessCard();
+    }
+    UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0, interactions: 0 };
+    UserState.interests = biz ? [biz.category] : [];
+  } else if (id === 'guest') {
+    UserState.business = null;
+    resetBusinessCard();
+    UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0, interactions: 0 };
+    UserState.interests = [];
   } else if (id === 'trade') {
     UserState.business = null;
     resetBusinessCard();
-    UserState.kpi = { ads: 0, views: 45, likes: 12, noteAdds: 8 };
+    UserState.kpi = { ads: 0, views: 45, likes: 12, noteAdds: 8, interactions: 0 };
     UserState.interests = ['Paint', 'Plumbing', 'Electrical'];
   } else if (id === 'general') {
     UserState.business = null;
     resetBusinessCard();
-    UserState.kpi = { ads: 0, views: 12, likes: 3, noteAdds: 5 };
+    UserState.kpi = { ads: 0, views: 12, likes: 3, noteAdds: 5, interactions: 0 };
     UserState.interests = ['Tiles & Flooring', 'Lighting', 'Paint'];
   } else if (id === 'user-gerald') {
     UserState.business = null;
     resetBusinessCard();
-    UserState.kpi = { ads: 2, views: 68, likes: 15, noteAdds: 11 };
+    UserState.kpi = { ads: 2, views: 68, likes: 15, noteAdds: 11, interactions: 0 };
     UserState.interests = ['Building Materials', 'Cement & Aggregates', 'Steel & Metal Products'];
-  } else if (id === 'owner-biz2') {
-    UserState.business = { name: 'BuildIt Gabs', category: 'Paint', town: 'Gaborone', phone: '+267 72345678', subscription: 'full' };
-    renderBusinessCard();
-    UserState.kpi = { ads: 22, views: 890, likes: 62, noteAdds: 18 };
-    UserState.interests = ['Paint', 'Hardware & Fasteners', 'Tools & Equipment'];
-  } else if (id === 'owner-biz3') {
-    UserState.business = { name: 'Francistown Steel', category: 'Steel & Metal Products', town: 'Francistown', phone: '+267 73456789', subscription: 'full' };
-    renderBusinessCard();
-    UserState.kpi = { ads: 18, views: 720, likes: 48, noteAdds: 14 };
-    UserState.interests = ['Steel & Metal Products', 'Cement & Aggregates', 'Roofing & Ceiling'];
-  } else if (id === 'owner-biz4') {
-    UserState.business = { name: 'Gabs Plumbing Depot', category: 'Plumbing', town: 'Gaborone', phone: '+267 74567890', subscription: 'full' };
-    renderBusinessCard();
-    UserState.kpi = { ads: 15, views: 560, likes: 38, noteAdds: 20 };
-    UserState.interests = ['Plumbing', 'Sanitaryware', 'Bathroom & Kitchen'];
-  } else if (id === 'staff-kudi' || id === 'staff-mark' || id === 'staff-smokey' || id === 'staff-tshepang') {
-    UserState.business = null;
-    resetBusinessCard();
-    UserState.kpi = { ads: 0, views: 35, likes: 8, noteAdds: 18 };
-    UserState.interests = ['Boards & Timber', 'Hardware & Fasteners', 'Tools & Equipment'];
-  } else if (id === 'guest') {
-    UserState.business = null;
-    resetBusinessCard();
-    UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0 };
-    UserState.interests = [];
-  } else if (id === 'admin') {
-    closeSwitcher();
-    openModal('admin-pw-modal');
-    return;
   } else {
     UserState.business = null;
     resetBusinessCard();
-    UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0 };
+    UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0, interactions: 0 };
     UserState.interests = [];
   }
   saveKpiToDB(); updateKPI(); closeSwitcher();
@@ -932,10 +1171,26 @@ async function switchToOtherUser(id) {
   UserState.surname = profile.surname || '';
   localStorage.setItem('wirog_userId', profile.id);
 
-  UserState.business = null;
-  resetBusinessCard();
-  UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0 };
-  UserState.interests = [];
+  var assoc = window.BUSINESS_ASSOCIATIONS ? window.BUSINESS_ASSOCIATIONS[id] : null;
+  if (assoc) {
+    var biz = window.SAMPLE_BUSINESSES.find(function(b) { return b.id === assoc.businessId; });
+    if (biz) {
+      UserState.business = {
+        id: biz.id, name: biz.name, category: biz.category,
+        town: biz.location.split(',').pop().trim(),
+        phone: biz.phone || '', subscription: biz.subscription || 'free'
+      };
+      UserState.businessRole = assoc.role;
+      renderBusinessCard();
+    }
+    UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0, interactions: 0 };
+    UserState.interests = biz ? [biz.category] : [];
+  } else {
+    UserState.business = null;
+    resetBusinessCard();
+    UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0, interactions: 0 };
+    UserState.interests = [];
+  }
 
   updateAccountHero();
   saveKpiToDB();
@@ -982,6 +1237,7 @@ function updateAccountUI() {
     if (UserState.hasBusiness()) { renderBusinessCard(); updateSubStatus(); }
     else { resetBusinessCard(); }
   }
+  if (window.renderBudgetSummary) window.renderBudgetSummary();
 }
 
 function toggleBizActions() {
@@ -1000,23 +1256,26 @@ function renderBusinessCard() {
   const col = window.APP_COLORS[init.charCodeAt(0) % window.APP_COLORS.length];
   const isPublic = biz.subscription === 'catalogue';
   const nameEsc = biz.name.replace(/'/g, "\\'");
-  document.getElementById('biz-card-content').innerHTML = `
-    <div class="biz-card-header" style="cursor:pointer;" onclick="toggleBizActions()">
-      ${biz.name === 'Board Kings' ? `<img src="assets/images/company_logos_dummy/Board_Kings_Logo_.webp" class="biz-logo-img">` : `<div class="biz-logo" style="background:${col};">${init}</div>`}
-      <div class="biz-name-wrap"><h3>${biz.name}</h3><p>${biz.category} · ${biz.town}</p></div>
-      <span id="biz-actions-chevron" style="margin-left:auto;color:var(--grey-mid);font-size:12px;transition:transform 0.2s;">▶</span>
-    </div>
-    <div id="biz-actions-body" style="display:none;padding:10px 16px;border-top:1px solid var(--grey-light);">
-      <button class="btn-outline btn-sm" style="margin-top:4px;" onclick="openBizProfile('biz_user','${nameEsc}','${init}','${col}','${biz.town}','${biz.phone || ''}',${isPublic},'')">
-        <i class="fas fa-eye"></i> View Profile
-      </button>
-      <button class="btn-outline btn-sm" style="margin-top:6px;" onclick="openBizCatalogue('biz_user','${nameEsc}','${biz.town}','${biz.phone || ''}','${col}','${init}')">
-        <i class="fas fa-list"></i> Edit Catalogue
-      </button>
-      <button class="btn-outline btn-sm" style="margin-top:6px;" onclick="openPromoModal()">
-        <i class="fas fa-bullhorn"></i> Create Promo
-      </button>
-    </div>`;
+  const isStaff = UserState.businessRole === 'staff';
+  const actionsHtml = isStaff
+    ? '<div style="padding:8px 16px;border-top:1px solid var(--grey-light);font-size:12px;color:var(--grey-dark);"><span style="background:var(--grey-light);padding:4px 8px;border-radius:4px;">Staff · View only</span></div>'
+    : '<div id="biz-actions-body" style="display:none;padding:10px 16px;border-top:1px solid var(--grey-light);">' +
+        '<button class="btn-outline btn-sm" style="margin-top:4px;" onclick="openBizProfile(\'biz_user\',\'' + nameEsc + '\',\'' + init + '\',\'' + col + '\',\'' + biz.town + '\',\'' + (biz.phone || '') + '\',' + isPublic + ',\'\')">' +
+          '<i class="fas fa-eye"></i> View Profile' +
+        '</button>' +
+        '<button class="btn-outline btn-sm" style="margin-top:6px;" onclick="openBizCatalogue(\'biz_user\',\'' + nameEsc + '\',\'' + biz.town + '\',\'' + (biz.phone || '') + '\',\'' + col + '\',\'' + init + '\')">' +
+          '<i class="fas fa-list"></i> Edit Catalogue' +
+        '</button>' +
+        '<button class="btn-outline btn-sm" style="margin-top:6px;" onclick="openPromoModal()">' +
+          '<i class="fas fa-bullhorn"></i> Create Promo' +
+        '</button>' +
+      '</div>';
+  document.getElementById('biz-card-content').innerHTML =
+    '<div class="biz-card-header" style="cursor:pointer;" onclick="toggleBizActions()">' +
+      (biz.name === 'Board Kings' ? '<img src="assets/images/company_logos_dummy/Board_Kings_Logo_.webp" class="biz-logo-img">' : '<div class="biz-logo" style="background:' + col + ';">' + init + '</div>') +
+      '<div class="biz-name-wrap"><h3>' + biz.name + '</h3><p>' + biz.category + ' · ' + biz.town + '</p></div>' +
+      (isStaff ? '' : '<span id="biz-actions-chevron" style="margin-left:auto;color:var(--grey-mid);font-size:12px;transition:transform 0.2s;">▶</span>') +
+    '</div>' + actionsHtml;
 }
 
 function resetBusinessCard() {
@@ -1054,18 +1313,49 @@ async function saveBusiness() {
   const category = document.getElementById('biz-cat').value;
   const town = document.getElementById('biz-town').value;
   const phone = document.getElementById('biz-phone').value.trim();
+  
+  // New File Inputs
+  const logoInput = document.getElementById('biz-logo-input');
+  const bannerInput = document.getElementById('biz-banner-input');
+  const logoFile = logoInput?.files[0] || null;
+  const bannerFile = bannerInput?.files[0] || null;
+
   if (!name) { showToast('Please enter a business name'); return; }
-  const biz = { id: 'biz_user', name, category, town, phone, subscription: 'free' };
-  UserState.business = { name, category, town, phone, subscription: 'free' };
-  try { await WirogDB.put('businesses', biz); } catch(e) { console.error('Failed to save business to DB:', e); }
+
+  const businessData = {
+    name,
+    category,
+    town,
+    phone,
+    subscription: 'free',
+    logoFile,   // Pass the physical blobs to the logic engine
+    bannerFile
+  };
+
   try {
-    if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
-      await window.SyncQueue.enqueue('businesses', biz, { clientId: UserState.id });
-      if (window.requestBackgroundSync) window.requestBackgroundSync().catch(()=>{});
+    // TASK 2: Use the P350 Hierarchy Integration
+    if (window.syncBusinessOnboarding) {
+        showToast('Syncing business...');
+        const docId = await window.syncBusinessOnboarding(businessData);
+        console.log("Business synced to cloud. ID:", docId);
     }
-  } catch(e) { console.warn('Failed to enqueue business for sync:', e); }
-  renderBusinessCard(); closeModal('biz-modal'); renderDirectory();
-  showToast('✅ Business saved!');
+    
+    // Save locally to UserState for immediate UI feedback
+    UserState.business = { name, category, town, phone, subscription: 'free' };
+    
+    // Legacy local DB save
+    const bizLocal = { id: 'biz_user', ...UserState.business };
+    await WirogDB.put('businesses', bizLocal);
+
+    renderBusinessCard(); 
+    closeModal('biz-modal'); 
+    renderDirectory();
+    showToast('✅ Business saved and synced!');
+
+  } catch (error) {
+    console.error('Business Onboarding Error:', error);
+    showToast('⚠️ Failed to sync: ' + error.message);
+  }
 }
 
 function shareApp() {
@@ -1116,7 +1406,7 @@ function installApp() {
 
 async function clearAppCache() {
   try {
-    var stores = ['users','businesses','items','promos','notes','kpi','filters','profiles','credentials'];
+    var stores = ['users','businesses','items','promos','notes','kpi','filters','profiles','credentials','mediaCache'];
     for (var i = 0; i < stores.length; i++) {
       if (WirogDB.db && WirogDB.db.objectStoreNames.contains(stores[i])) {
         await WirogDB.clear(stores[i]);
@@ -1149,7 +1439,7 @@ async function confirmDeleteAccount() {
   closeModal('delete-account-modal');
 
   try {
-    var stores = ['users','businesses','items','promos','notes','kpi','filters','profiles','credentials'];
+    var stores = ['users','businesses','items','promos','notes','kpi','filters','profiles','credentials','mediaCache'];
     for (var i = 0; i < stores.length; i++) {
       if (WirogDB.db && WirogDB.db.objectStoreNames.contains(stores[i])) {
         await WirogDB.clear(stores[i]);
@@ -1214,7 +1504,148 @@ window.removeFavourite = removeFavourite;
 window.toggleInterestCheckbox = toggleInterestCheckbox;
 window.toggleAllInterests = toggleAllInterests;
 window.toggleCategoryChildren = toggleCategoryChildren;
+
+function updateDriveRowUI(row) {
+  if (!row) row = document.getElementById('drive-sync-row');
+  if (!row) return;
+
+  var isSignedIn = window.DriveAPI && typeof window.DriveAPI.isSignedIn === 'function' && window.DriveAPI.isSignedIn();
+
+  if (isSignedIn) {
+    row.innerHTML =
+      '<i class="fab fa-google-drive" style="color:#34a853;width:20px;font-size:16px;"></i>' +
+      '<span>Google Drive <span style="font-size:11px;color:#34a853;font-weight:600;">Synced</span></span>' +
+      '<span style="margin-left:auto;color:var(--grey-dark);font-size:12px;"><i class="fas fa-sign-out-alt"></i></span>';
+  } else {
+    row.innerHTML =
+      '<i class="fab fa-google-drive" style="color:var(--grey-dark);width:20px;font-size:16px;"></i>' +
+      '<span>Sign in to Google Drive</span>' +
+      '<span style="margin-left:auto;color:var(--orange);font-size:12px;"><i class="fas fa-chevron-right"></i></span>';
+  }
+}
+
+async function toggleDriveSync() {
+  if (!window.DriveAPI) {
+    showToast('Drive API not loaded');
+    return;
+  }
+
+  var isSignedIn = typeof window.DriveAPI.isSignedIn === 'function' && window.DriveAPI.isSignedIn();
+
+  if (isSignedIn) {
+    window.DriveAPI.signOut();
+    showToast('Disconnected from Google Drive');
+    updateDriveRowUI();
+    return;
+  }
+
+  if (typeof window.DriveAPI.signIn !== 'function') {
+    showToast('Drive sign-in not available');
+    return;
+  }
+
+  try {
+    showToast('Connecting to Google Drive...');
+    await window.DriveAPI.signIn();
+    showToast('Connected to Google Drive!');
+
+    // Create folder for current user if they're a real user
+    if (window.Auth && typeof window.Auth.isRealUser === 'function' && window.Auth.isRealUser()) {
+      window.DriveAPI.ensureUserFolder(UserState.id).catch(function(e) {
+        console.warn('Drive folder creation failed:', e);
+      });
+    }
+
+    // Flush any pending sync items
+    if (window.SyncQueue && typeof window.SyncQueue.flushAll === 'function') {
+      window.SyncQueue.flushAll().catch(function(e) {
+        console.warn('Sync flush after Drive sign-in failed:', e);
+      });
+    }
+  } catch(e) {
+    showToast('Drive sign-in failed: ' + (e.message || e));
+    console.error('Drive sign-in error:', e);
+  }
+  updateDriveRowUI();
+}
+
+function updateDriveSyncUI() {
+  var row = injectDriveRow();
+  updateDriveRowUI(row);
+}
+
 window.installApp = installApp;
 window.clearAppCache = clearAppCache;
 window.deleteAccount = deleteAccount;
 window.confirmDeleteAccount = confirmDeleteAccount;
+
+/* ════════════════════════════════════════════════════════
+   Wirog Agent & Sync Utilities (Appended)
+   ════════════════════════════════════════════════════════ */
+
+function renderAgentPortal() {
+  const s = UserState;
+  const isAdmin = s.role === 'Administrator' || s.role === 'Admin' || s.id === 'admin';
+  if (!isAdmin) return ''; 
+
+  return `<div class="sub-accordion">
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
+      <div style="display:flex; align-items:center; gap:8px;">
+         <span>🛠️</span> Wirog Agent Portal
+      </div>
+    </div>
+    <div class="sub-accordion-body">
+      <div style="padding:10px 0;">
+        <label>Verify User Account</label>
+        <div style="display:flex; gap:6px; margin-top:4px;">
+          <input type="text" id="agent-user-search" placeholder="User ID or Phone" style="flex:1; font-size:12px;">
+          <button class="btn-sm" style="background:var(--orange); color:white;" onclick="agentVerifyUser()">Verify</button>
+        </div>
+        <p style="font-size:10px; color:var(--grey-dark); margin-top:4px;">Scan user ID to unlock VIP features.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function agentVerifyUser() {
+  const input = document.getElementById('agent-user-search');
+  const userId = input.value.trim();
+  if (!userId) return showToast("Enter a User ID");
+  showToast("Verifying user...");
+  setTimeout(() => {
+    showToast("✅ User Verified Successfully!");
+    input.value = "";
+  }, 1000);
+}
+
+function renderSyncSection() {
+  return `<div class="sub-accordion">
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
+      <div style="display:flex; align-items:center; gap:8px;">
+         <span>🔄</span> Platform Sync
+      </div>
+    </div>
+    <div class="sub-accordion-body">
+      <div style="padding:10px 0;">
+        <p style="font-size:12px; color:var(--grey-dark); margin-bottom:8px;">Download latest industry icons for offline use.</p>
+        <button class="btn-sm" style="width:100%; background:var(--orange); color:white;" onclick="triggerPlatformSync()">Sync Assets Now</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function triggerPlatformSync() {
+  if (!window.WirogMediaCache) return showToast("Sync Engine not ready");
+  showToast("🔄 Starting Platform Sync...");
+  try {
+    await window.WirogMediaCache.syncFromManifest('manifest.json');
+    showToast("✅ Assets Synced Offline!");
+  } catch (e) {
+    showToast("❌ Sync Failed: " + e.message);
+  }
+}
+
+window.renderAgentPortal = renderAgentPortal;
+window.agentVerifyUser = agentVerifyUser;
+window.renderSyncSection = renderSyncSection;
+window.triggerPlatformSync = triggerPlatformSync;

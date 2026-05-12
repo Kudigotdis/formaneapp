@@ -1,0 +1,495 @@
+**Recommended Priority Order for Implementation**
+
+Based on dependency analysis, data unification, and immediate admin pain points, here’s the optimal sequence:
+
+1. **Approvals Tab** – *Unified Queue (Promo Requests + Payment Proofs + Facebook Artwork)*  
+   This is the most broken part of the current dashboard. It directly connects the three silos and gives the admin a single place to act. Building this first forces you to create the unified data layer that all other tabs will depend on.
+
+2. **Overview Tab** – *Global KPIs, Budget, Expiring Promos, Payment Method Breakdown*  
+   With the unified data access in place, aggregating global stats is straightforward. It gives immediate visibility into system health.
+
+3. **Directory Search Tab** – *A-Z Business Search with Per-Business Admin Cards*  
+   Allows drill‑down into any business. It will reuse the same per‑business data aggregation functions needed for the later Analytics tab. Start with a summary card (total spend, active promos, etc.) and a link to a separate `view-admin-business`.
+
+4. **Analytics Tab (per business)** – *Monthly Drill‑down: Spending, Catalogue, Promos, Facebook*  
+   Build on the per‑business data model from the Directory. This is the richest view but can be implemented incrementally after the directory is working.
+
+5. **Facebook Packaging Calendar** – *Mon/Wed/Fri Scheduling for Approved Artwork*  
+   This is a standalone feature that can be worked on in parallel once approval workflows are stable. It primarily reads from `wirog_artwork_submissions` and a new `wirog_facebook_schedule` (if you add scheduling persistence). Not as urgent as the approval queue because the admin can initially manage posts manually.
+
+---
+
+## Implementation Plan – Key Steps per Tab
+
+### 0. Prerequisite: Unified Admin Data Module
+Before any UI, create a new module (e.g., `adminData.js`) that:
+
+- **Reads from all sources** synchronously: `_promos` array, `wirog_promo_requests`, `wirog_payment_requests`, `wirog_artwork_submissions`, `SAMPLE_BUSINESSES`, `DEMO_PROFILES`, and `BUSINESS_ASSOCIATIONS`.
+- **Builds efficient lookup maps**:
+  - `userId → user profile` (from `DEMO_PROFILES` and possibly `UserState` if logged in)
+  - `userId → businessId` (via `BUSINESS_ASSOCIATIONS`)
+  - `businessId → business detail` (from `SAMPLE_BUSINESSES`)
+  - `businessId → all associated users (owners/staff)`
+- **Provides functions**:
+  - `getUnifiedRequests()` → merges promo_requests, payment_requests, artwork_submissions into one array with common fields: `type`, `businessId`, `userId`, `status`, `createdAt`, `amount` (for payments/promos), etc.
+  - `getBusinessStats(bizId)` → calculates total spent, promo count, active promos, catalogue views, payment history, Facebook posts, staff list.
+  - `getGlobalStats()` → totals for overview KPI strip.
+  - `getPaymentMethodBreakdown()` → aggregates `wirog_payment_requests` by method.
+
+### 1. Approvals Tab (Unified Queue)
+**UI Layout:**
+- Filter bar: [All] [Promo Requests] [Payment Proofs] [Facebook Artwork]
+- Each item shows:
+  - Type icon + badge
+  - Business name (resolved via `userId` / `businessName` fallback)
+  - For promos: title, price, duration  
+  - For payments: method, amount, purpose  
+  - For artwork: category, boost day, image count
+  - Status badge (pending/approved/rejected)
+- Action buttons per item: [Approve] [Reject] [View Details/Proof]
+
+**Logic:**
+- Approve promo request → mark payment request as approved (if linked) and push promo into `_promos` (call existing `pushToPromosFeed()` after validation). Save changes to `wirog_promo_requests`.
+- Approve artwork → update status to ‘approved’, store in `wirog_artwork_submissions`.
+- Reject any → update status, optionally add reason.
+
+**Data linking challenge:** Promo requests currently do not have a direct link to a payment request. You’ll need to either match by `userId` and approximate time, or add a `paymentRequestId` field when a promo request is created. For the MVP, assume payments are submitted after promo request and can be matched manually; the admin can view all pending payments for that user.
+
+**Implementation steps:**
+1. Create `view-admin-approvals` (or reuse part of `view-admin` with a dedicated section).
+2. Build the unified feed using `getUnifiedRequests()`.
+3. Wire approve/reject to update the respective localStorage arrays and, where needed, sync promos to `_promos`.
+4. Add a small KPI badge showing total pending count.
+
+### 2. Overview Tab
+**UI:**
+- Top KPI strip: Total Promos, Active Promos, Pending Approvals, Revenue This Month (sum of approved payment amounts)
+- Second row: Budget Spent (sum of all promo costs), Average Cost per Promo, Business Count, Payment Methods pie/bar
+- Section: Expiring This Week (list of promos with expiry within 7 days, each with [Suspend] [Remove])
+- Section: Recently Approved / Latest Activity
+
+**Implementation:**
+- Use `getGlobalStats()` to calculate KPIs.
+- For expired/expiring promos, filter `_promos` on `promo.expiresAt` field.
+- Wire suspend/remove actions (update `promo.status` or splice from array).
+
+### 3. Directory Search Tab (Admin)
+**UI:**
+- Top search bar + A-Z horizontal scroll nav (reuse existing from `view-directory`).
+- Business list with names, location, stats (total spend, active promos).
+- Tap a business → navigate to `view-admin-business` (new view).
+
+**Implementation:**
+- Create a list of all businesses from `SAMPLE_BUSINESSES` (or from `_businesses` if you have a dynamic store).
+- For each, compute `getBusinessStats(bizId)` to show summary.
+- On tap, store selected `bizId` in `appState` and show `view-admin-business`.
+
+**Per-business view (`view-admin-business`):**
+- Header: business name, location, phone, subscription.
+- Tab bar: [Catalogue] [Promos] [Facebook] [Payments] [Staff]
+- Each tab loads relevant data using `adminData.getBusinessStats(bizId)`.
+- Catalogue tab: list of items with views (from KPIs stored perhaps in `kpi` store or in `_promos` where itemId might be linked – need to align item identification).
+- Promos tab: active/past promos for that business, with suspend/remove.
+- Facebook tab: all artwork submissions for that business, with schedule status.
+- Payments tab: all payment requests for that business’s associated users.
+- Staff tab: owners and staff linked via `BUSINESS_ASSOCIATIONS`.
+
+**Note:** You may need to enhance catalogue items with a unique `itemId` and track views via `kpi` store to show per-item performance.
+
+### 4. Analytics Tab (Per Business)
+This can be built inside `view-admin-business` as a dedicated analytics sub-tab, or as a separate drill‑down from the directory.
+
+**Required data grouping by month:**
+- **Spending:** sum of promo costs per month, payment method breakdown per month.
+- **Catalogue:** number of items added, views per item, zero‑view items.
+- **Promos:** impressions, likes, note‑adds per promo per month.
+- **Facebook:** posts per month, posts per day of week, estimated reach (if you track that).
+
+**Implementation:**
+- Extend `adminData.js` with `getMonthlyAnalytics(bizId, yearMonth)` that aggregates from `_promos`, `kpi` store, `wirog_artwork_submissions`.
+- For the Facebook day-of-week analysis, parse `boostDay` from artwork submissions and count posts per Mon/Wed/Fri.
+- Display using simple charts (reuse existing Chart.js or build bar charts with CSS).
+
+### 5. Facebook Packaging Calendar
+**Data persistence:** Introduce a new localStorage key `wirog_facebook_schedule` – an array of `{ date: '2026-05-11', artworkIds: ['artwork-1', 'artwork-2'] }`.
+
+**UI:**
+- Month/year picker (default to current month).
+- A week‑view grid with Mon, Wed, Fri columns.
+- Each cell shows scheduled artwork titles. Tapping a cell opens a modal to add/remove artwork.
+- Color coding: green for posted (if you add a `posted` flag), orange for scheduled.
+- "Auto-fill next available" button that distributes all unassigned approved artwork into the upcoming empty slots.
+
+**Implementation steps:**
+1. Build the calendar component (could be a table of days within the current month).
+2. Load approved artwork submissions with `status == 'approved'` and `boostDay == dayOfWeek`.
+3. Allow drag‑and‑drop or click‑to‑assign.
+4. When saved, update `wirog_facebook_schedule` and mark artwork as `scheduled` in its original submission.
+
+---
+
+## Key Architectural Decisions & Pitfalls
+
+- **Unified Data Source:** Do not duplicate data. The admin module should always read the latest from localStorage/IndexedDB and compute on the fly, because the admin may be operating on the same data as users (e.g., approving a promo feeds it into `_promos` that users see). 
+- **Business ID Resolution:** Some submissions lack `businessId`. Create a helper `resolveBusinessId(userId, businessName)` that checks `BUSINESS_ASSOCIATIONS` first, then falls back to matching `businessName` in `SAMPLE_BUSINESSES`. This avoids broken links.
+- **Auth:** Ensure only users with admin role can access `view-admin`. Add a simple check (`appState.currentUser.role === 'admin'`) before rendering.
+- **Offline-first:** All admin actions modify localStorage immediately. Later, you can sync to Google Drive via the existing GAS endpoints.
+- **Performance:** For many promos, keep filtering and aggregation fast by maintaining indices (e.g., `_promos` array is already in memory). Avoid deep nested loops in render functions.
+
+---
+
+Start with the **Approvals Tab** because it delivers immediate value, forces the unification of your data silos, and uncovers any data inconsistency early. From there, the rest of the dashboard becomes a natural progression of aggregation and drill‑down.
+
+
+
+
+
+
+
+
+
+
+I’ll break the admin dashboard code architecture into **data layer, view layer, state management, and integration points**—using the existing JavaScript modules and DOM structure without a framework. The goal is to keep it modular, testable, and ready for future Google Drive sync.
+
+---
+
+## 1. Overall Architecture
+
+```text
+app.js (main controller)
+├── admin/                        ← new folder
+│   ├── AdminData.js              ← unified data access
+│   ├── AdminState.js             ← admin-specific view state
+│   ├── views/
+│   │   ├── OverviewTab.js
+│   │   ├── ApprovalsTab.js
+│   │   ├── DirectoryTab.js
+│   │   ├── BusinessCard.js
+│   │   ├── AnalyticsTab.js
+│   │   └── FacebookCalendar.js
+│   └── utils/
+│       ├── formatCurrency.js
+│       └── dateHelpers.js
+├── existing files ...
+│   index.html, style.css, app.js, db.js, auth.js, promos.js …
+└── data sources (already loaded)
+    window.SAMPLE_BUSINESSES
+    window._promos (IndexedDB-backed)
+    window._userItems
+    localStorage keys ...
+```
+
+**Core idea:** The admin dashboard is a **single-page sub‑application** inside `#view-admin`. When the admin navigates to it, `app.js` calls `Admin.render()` which mounts the correct tab.
+
+---
+
+## 2. Data Layer – `AdminData.js`
+
+A class that **reads all silos** and builds fast lookup maps. It does **not** duplicate data—it always reads the live arrays/objects.
+
+```javascript
+// admin/AdminData.js
+class AdminData {
+  constructor() {
+    this.refresh(); // build initial maps
+  }
+
+  refresh() {
+    // Build cross‑reference maps
+    this.businesses = { ...window.SAMPLE_BUSINESSES }; // or get from db
+    this.promos = window._promos || [];
+    this.promoRequests = JSON.parse(localStorage.wirog_promo_requests || '[]');
+    this.paymentRequests = JSON.parse(localStorage.wirog_payment_requests || '[]');
+    this.artworkSubmissions = JSON.parse(localStorage.wirog_artwork_submissions || '[]');
+    this.users = window.DEMO_PROFILES; // should also include logged‑in users from db
+
+    this.userMap = {}; // userId -> user
+    this.businessMap = {}; // businessId -> business
+    this.userToBusiness = {}; // userId -> businessId (via BUSINESS_ASSOCIATIONS)
+
+    // Build maps
+    this.users.forEach(u => this.userMap[u.id] = u);
+    for (let bizId in this.businesses) {
+      let b = this.businesses[bizId];
+      this.businessMap[bizId] = b;
+    }
+    // associations (import from existing global BUSINESS_ASSOCIATIONS)
+    if (window.BUSINESS_ASSOCIATIONS) {
+      for (let [userId, assoc] of Object.entries(window.BUSINESS_ASSOCIATIONS)) {
+        this.userToBusiness[userId] = assoc.businessId;
+      }
+    }
+  }
+
+  // --- Unified Requests ---
+  getUnifiedRequests() {
+    return [
+      ...this.promoRequests.map(r => ({ type:'promo', ...r, businessId: this.resolveBizId(r.userId, r.businessName) })),
+      ...this.paymentRequests.map(r => ({ type:'payment', ...r, businessId: this.resolveBizId(r.userId) })),
+      ...this.artworkSubmissions.map(r => ({ type:'artwork', ...r, businessId: this.resolveBizId(r.userId, r.businessName) }))
+    ].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  resolveBizId(userId, businessNameFallback) {
+    if (this.userToBusiness[userId]) return this.userToBusiness[userId];
+    // fallback: look up by businessName
+    for (let bid in this.businessMap) {
+      if (this.businessMap[bid].name === businessNameFallback) return bid;
+    }
+    return null;
+  }
+
+  // --- Global Stats ---
+  getGlobalStats() {
+    const activePromos = this.promos.filter(p => p.promo?.status !== 'suspended');
+    const totalCost = activePromos.reduce((sum, p) => sum + (p.promo?.cost || 0), 0);
+    const pending = this.getUnifiedRequests().filter(r => r.status === 'pending').length;
+    return {
+      totalPromos: this.promos.length,
+      activePromos: activePromos.length,
+      pendingApprovals: pending,
+      totalBudgetSpent: totalCost,
+      avgCost: activePromos.length ? totalCost / activePromos.length : 0,
+      businessCount: Object.keys(this.businessMap).length,
+      expiringThisWeek: this.promos.filter(p => {
+        if (!p.promo?.expiresAt) return false;
+        const days = (new Date(p.promo.expiresAt) - Date.now()) / 86400000;
+        return days >= 0 && days <= 7;
+      })
+    };
+  }
+
+  // --- Per‑Business Stats ---
+  getBusinessStats(bizId) {
+    const biz = this.businessMap[bizId];
+    if (!biz) return null;
+    const promos = this.promos.filter(p => p.businessId === bizId);
+    const catalogueItems = window._userItems?.filter(i => i.businessId === bizId) || [];
+    // Get all users associated with this business
+    const staffUserIds = Object.entries(this.userToBusiness)
+      .filter(([, bid]) => bid === bizId)
+      .map(([uid]) => uid);
+    const payments = this.paymentRequests.filter(r => staffUserIds.includes(r.userId));
+    const artworks = this.artworkSubmissions.filter(a => a.businessId === bizId);
+    return {
+      biz,
+      promos,
+      catalogueItems,
+      payments,
+      artworks,
+      staff: staffUserIds.map(id => this.userMap[id])
+    };
+  }
+
+  // --- Payment Method Breakdown ---
+  getPaymentMethodBreakdown() {
+    const methods = { BTC:0, Orange:0, Mascom:0, Bank:0 };
+    this.paymentRequests.forEach(r => {
+      if (methods[r.method] !== undefined) methods[r.method] += r.amount;
+    });
+    return methods;
+  }
+}
+
+window.AdminData = AdminData;  // make global for easy access
+```
+
+**Why a class?** Because we can `adminData.refresh()` whenever data changes (e.g., after approving a request). All tab views will use a single instance.
+
+---
+
+## 3. View State – `AdminState.js`
+
+Simple object to track which tab is active, selected business for drill‑down, filters, etc.
+
+```javascript
+// admin/AdminState.js
+const AdminState = {
+  activeTab: 'overview',          // overview | approvals | directory | analytics | fbcalendar
+  selectedBusinessId: null,
+  approvalsFilter: 'all',        // all | promo | payment | artwork
+  directorySearch: '',
+  analyticsMonth: new Date().toISOString().slice(0,7), // YYYY-MM
+  fbCalendarMonth: new Date().toISOString().slice(0,7),
+
+  changeTab(tab) {
+    this.activeTab = tab;
+    Admin.refresh(); // re-render main area
+  },
+
+  selectBusiness(bizId) {
+    this.selectedBusinessId = bizId;
+    Admin.refresh();
+  }
+};
+```
+
+---
+
+## 4. Views – Modular Tab Renderers
+
+Each tab is a separate file that exports a `render(container)` function. The main `Admin` controller decides which to call.
+
+### Main Admin Controller (`admin.js`)
+
+```javascript
+// admin.js (or extend existing admin.js)
+const Admin = {
+  data: new AdminData(),
+
+  async init() {
+    this.data.refresh();
+    this.render();
+  },
+
+  render() {
+    const container = document.getElementById('view-admin');
+    if (!container) return;
+    // Clear container and build tab nav + content area
+    container.innerHTML = `
+      <div class="admin-tabs">
+        <button class="tab ${AdminState.activeTab==='overview'?'active':''}" onclick="AdminState.changeTab('overview')">Overview</button>
+        <button class="tab ${AdminState.activeTab==='approvals'?'active':''}" onclick="AdminState.changeTab('approvals')">Approvals</button>
+        <button class="tab ${AdminState.activeTab==='fbcalendar'?'active':''}" onclick="AdminState.changeTab('fbcalendar')">Facebook</button>
+        <button class="tab ${AdminState.activeTab==='directory'?'active':''}" onclick="AdminState.changeTab('directory')">Directory</button>
+        <button class="tab ${AdminState.activeTab==='analytics'?'active':''}" onclick="AdminState.changeTab('analytics')">Analytics</button>
+      </div>
+      <div class="admin-content" id="admin-content"></div>
+    `;
+
+    const content = document.getElementById('admin-content');
+    switch (AdminState.activeTab) {
+      case 'overview': OverviewTab.render(content); break;
+      case 'approvals': ApprovalsTab.render(content); break;
+      case 'fbcalendar': FacebookCalendar.render(content); break;
+      case 'directory': DirectoryTab.render(content); break;
+      case 'analytics': AnalyticsTab.render(content); break;
+    }
+  },
+
+  refresh() {
+    this.data.refresh();
+    this.render();
+  }
+};
+
+// Hook into app initialization
+document.addEventListener('DOMContentLoaded', () => {
+  // existing app logic...
+  if (appState.view === 'admin') {
+    Admin.init();
+  }
+});
+```
+
+### Example: Approvals Tab
+
+```javascript
+// admin/views/ApprovalsTab.js
+const ApprovalsTab = {
+  render(container) {
+    const all = Admin.data.getUnifiedRequests();
+    const filter = AdminState.approvalsFilter;
+    const filtered = filter === 'all' ? all : all.filter(r => r.type === filter);
+
+    container.innerHTML = `
+      <div class="approvals-header">
+        <div class="filter-buttons">
+          <button class="${filter==='all'?'active':''}" onclick="AdminState.approvalsFilter='all';Admin.refresh()">All (${all.length})</button>
+          <button class="${filter==='promo'?'active':''}" onclick="AdminState.approvalsFilter='promo';Admin.refresh()">Promos</button>
+          <button class="${filter==='payment'?'active':''}" onclick="AdminState.approvalsFilter='payment';Admin.refresh()">Payments</button>
+          <button class="${filter==='artwork'?'active':''}" onclick="AdminState.approvalsFilter='artwork';Admin.refresh()">Artwork</button>
+        </div>
+      </div>
+      <div class="requests-list">
+        ${filtered.map(req => this.renderRequest(req)).join('')}
+      </div>
+    `;
+  },
+
+  renderRequest(req) {
+    const biz = Admin.data.businessMap[req.businessId];
+    let detail = '';
+    if (req.type === 'promo') detail = `${req.title} - P${req.amount} for ${req.durationDays}d`;
+    else if (req.type === 'payment') detail = `${req.method} - P${req.amount} (${req.purpose})`;
+    else detail = `${req.category} boost on ${req.boostDay} (${req.imageCount} images)`;
+
+    return `
+      <div class="request-card ${req.status}">
+        <span class="type-icon">${this.iconFor(req.type)}</span>
+        <div>
+          <strong>${biz?.name || req.businessName}</strong>
+          <div>${detail}</div>
+          <small>${new Date(req.createdAt).toLocaleDateString()}</small>
+        </div>
+        <div class="actions">
+          ${req.status === 'pending' ? `
+            <button onclick="ApproveRequest('${req.type}', '${req.id}')">Approve</button>
+            <button onclick="RejectRequest('${req.type}', '${req.id}')">Reject</button>
+          ` : `<span class="badge">${req.status}</span>`}
+        </div>
+      </div>
+    `;
+  },
+
+  iconFor(type) {
+    return { promo: '📢', payment: '💳', artwork: '🖼️' }[type];
+  }
+};
+
+// Global action handlers (could be in admin.js)
+function ApproveRequest(type, id) {
+  if (type === 'promo') approvePromoRequest(id);
+  else if (type === 'payment') approvePaymentProof(id);
+  else if (type === 'artwork') approveArtworkSubmission(id);
+  Admin.refresh();
+}
+
+function RejectRequest(type, id) {
+  const reason = prompt('Reason for rejection:');
+  if (!reason) return;
+  if (type === 'promo') rejectPromoRequest(id, reason);
+  else if (type === 'payment') rejectPayment(id, reason);
+  else if (type === 'artwork') rejectArtwork(id, reason);
+  Admin.refresh();
+}
+```
+
+The actual approval functions manipulate the underlying localStorage arrays, and then call `AdminData.refresh()` to update the UI. For promos, they also call `pushToPromosFeed()`.
+
+### Directory Tab
+
+Reuses the A‑Z pattern – builds a list of all businesses with stats computed from `Admin.data.getBusinessStats()`. On click, sets `AdminState.selectBusiness(bizId)` which renders `BusinessCard.js` inside the content area (or navigates to a separate view if you prefer).
+
+**Business Card View** renders the detailed sub‑tabs (Catalogue, Promos, etc.) using `Admin.data.getBusinessStats(bizId)`. Each sub‑tab calls a dedicated mini‑view (like `PromoList`, `CatalogueList`, `PaymentsTable`, `StaffList`).
+
+---
+
+## 5. Integration Points
+
+- **App Navigation:** In `app.js`, when switching to `view-admin`, call `Admin.init()`.  
+- **Data Persistence:** All writes to localStorage (and eventually IndexedDB) should be done via existing helper functions (e.g., `saveToLocalStorage(key, data)`) that you may already have. Then call `Admin.data.refresh()` to keep the dashboard live.  
+- **Styles:** Reuse existing design tokens (orange buttons, cards, etc.). Add `admin.css` for new components.  
+- **Google Drive Sync:** Once stable, you can add `synctoDrive()` calls inside approval functions, using the config from `wirog-config.json` and the GAS endpoints.
+
+---
+
+## 6. Data Flow (Simplified)
+
+```text
+User Action → Tab Renderer → AdminData method → Reads localStorage / IndexedDB / _promos → Returns computed data → Renders HTML
+
+Admin Approval → Update localStorage (e.g., splice request, change status) → AdminData.refresh() → UI re‑renders.
+```
+
+---
+
+## 7. Next Steps for Implementation
+
+1. **Create `admin/` folder** and add `AdminData.js`, `AdminState.js`, `admin.js`.
+2. **Replace existing `renderAdmin()`** in `admin.js` with the new modular system.
+3. **Build ApprovalsTab first** to prove unified data.
+4. **Then Overview, Directory, Analytics, Facebook** in that priority.
+5. **Keep the existing Promos/KPIs rendering untouched** – only modify what's inside `#view-admin`.
+
+This architecture gives you a clear separation of concerns, easy testing, and a straight path to add the Google Drive upload layer later without rewriting business logic.

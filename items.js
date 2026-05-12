@@ -8,48 +8,7 @@ if (!window._userItems) window._userItems = [];
 
 /* ─── OPEN MODAL ─── */
 function openItemModal() {
-  document.getElementById('item-section-identity').classList.add('open');
-  document.getElementById('item-section-money').classList.remove('open');
-  document.getElementById('item-section-visibility').classList.remove('open');
-  document.getElementById('item-section-promo').classList.add('open');
-
-  _selectedItemCategory = '';
-  document.getElementById('item-cat-btn').textContent = 'Select Category';
-  document.getElementById('item-cat-display').style.display = 'none';
-  document.getElementById('item-cat-selector').style.display = 'none';
-  initScheduleGrid();
-  updateFreePromoStatus();
-  updatePromoCostEstimate();
-
-  // Reset form values
-  document.getElementById('item-title').value = '';
-  document.getElementById('item-desc').value = '';
-  document.getElementById('item-price').value = '';
-  document.getElementById('item-tag-input').value = '';
-  document.getElementById('item-tag-container').innerHTML = '';
-  document.getElementById('item-variables-container').innerHTML = '';
-  document.getElementById('item-tier-type').value = 'none';
-  document.getElementById('item-tier-rules').style.display = 'none';
-  document.getElementById('item-tier-rules').innerHTML = '';
-  document.getElementById('item-discount-type').value = 'none';
-  document.getElementById('item-discount-value').value = '0';
-  document.getElementById('item-promo-days').value = '3';
-  document.getElementById('item-region').value = 'local';
-  document.getElementById('item-start-date').value = '';
-  document.getElementById('item-end-date').value = '';
-
-  document.querySelector('#item-modal .modal-title').textContent = 'Add Item to Catalogue';
-  document.getElementById('item-save-btn').textContent = 'Save Item & Submit to Promos';
-
-  // Reset modifiers
-  ['urgency','nightShift','remoteArea','hazard'].forEach(m => {
-    document.getElementById('mod-' + m).checked = false;
-  });
-
-  document.getElementById('item-pricing-preview').innerHTML = '';
-  updatePricingPreview();
-
-  openModal('item-modal');
+  openAddItemModal();
 }
 
 function toggleItemSection(id) {
@@ -58,52 +17,8 @@ function toggleItemSection(id) {
   el.classList.toggle('open');
 }
 
-/* ─── CATEGORIES ─── */
+/* ─── CATEGORIES (now handled by pills in account-views.js) ─── */
 let _selectedItemCategory = '';
-
-function openItemCategorySelector() {
-  const container = document.getElementById('item-cat-list');
-  const wrapper = document.getElementById('item-cat-selector');
-  if (!container || !wrapper) return;
-
-  if (wrapper.style.display === 'block') {
-    wrapper.style.display = 'none';
-    return;
-  }
-
-  const data = window.WIROG_PRODUCT_CATEGORIES || { categories: [] };
-  container.innerHTML = '';
-  data.categories.forEach(cat => {
-    const group = document.createElement('div');
-    group.style.cssText = 'font-weight:700;font-size:13px;padding:8px 12px 4px;color:var(--orange);background:var(--grey-light);';
-    group.textContent = cat.name;
-    container.appendChild(group);
-
-    if (cat.children && cat.children.length > 0) {
-      cat.children.forEach(sub => {
-        const btn = document.createElement('button');
-        btn.style.cssText = 'display:block;width:100%;text-align:left;padding:8px 16px;font-size:13px;background:none;border:none;cursor:pointer;border-bottom:1px solid var(--grey-light);';
-        btn.textContent = sub.name;
-        btn.onclick = () => selectItemCategory(sub.name);
-        container.appendChild(btn);
-      });
-    }
-  });
-
-  wrapper.style.display = 'block';
-}
-
-function selectItemCategory(cat) {
-  _selectedItemCategory = cat;
-  document.getElementById('item-cat-btn').textContent = cat;
-  document.getElementById('item-cat-display').textContent = 'Selected: ' + cat;
-  document.getElementById('item-cat-display').style.display = 'block';
-  document.getElementById('item-cat-selector').style.display = 'none';
-  populateItemUnits(cat);
-  buildItemImagePicker(cat);
-  updatePricingPreview();
-  updatePromoCostEstimate();
-}
 
 function getSelectedCategory() {
   return _selectedItemCategory;
@@ -402,399 +317,74 @@ function updatePricingPreview() {
   const basePrice = parseFloat(document.getElementById('item-price').value) || 0;
   const variables = getItemVariables();
   const modifiers = {
-    urgency: document.getElementById('mod-urgency').checked,
-    nightShift: document.getElementById('mod-nightShift').checked,
-    remoteArea: document.getElementById('mod-remoteArea').checked,
-    hazard: document.getElementById('mod-hazard').checked
-  };
-  const discountType = document.getElementById('item-discount-type').value;
-  const discountVal = parseFloat(document.getElementById('item-discount-value').value) || 0;
-  const discount = discountType === 'none' ? { type: 'none', value: 0 } : { type: discountType, value: discountVal };
-
-  window.PricingEngine.renderPricingPreview('item-pricing-preview', {
-    basePrice,
-    variables,
-    modifiers,
-    discount,
-    qty: 1,
-    tiers: getItemTiers()
-  });
-}
-
-function getItemVariables() {
-  const vars = [];
-  document.querySelectorAll('#item-variables-container > div').forEach(row => {
-    const inputs = row.querySelectorAll('input');
-    if (inputs.length >= 3) {
-      const name = inputs[0].value.trim();
-      const value = parseFloat(inputs[1].value) || 0;
-      const rate = parseFloat(inputs[2].value) || 0;
-      if (name) vars.push({ name, value, rate });
-    }
-  });
-  return vars;
-}
-
-function getItemTiers() {
-  const type = document.getElementById('item-tier-type').value;
-  if (type === 'none') return null;
-  const rules = [];
-  document.querySelectorAll('#item-tier-rules .tier-rule-row').forEach(row => {
-    const inputs = row.querySelectorAll('input');
-    if (type === 'bulk' && inputs.length >= 2) {
-      rules.push({ minQty: parseFloat(inputs[0].value) || 0, price: parseFloat(inputs[1].value) || 0 });
-    } else if (type === 'stepped' && inputs.length >= 3) {
-      rules.push({ from: parseFloat(inputs[0].value) || 0, to: parseFloat(inputs[1].value) || 0, price: parseFloat(inputs[2].value) || 0 });
-    } else if (type === 'threshold' && inputs.length >= 2) {
-      rules.push({ minSpend: parseFloat(inputs[0].value) || 0, discount: parseFloat(inputs[1].value) || 0 });
-    }
-  });
-  return { type, rules };
-}
-
-function onTierTypeChange() {
-  const type = document.getElementById('item-tier-type').value;
-  const container = document.getElementById('item-tier-rules');
-  if (type === 'none') {
-    container.style.display = 'none';
-    container.innerHTML = '';
-    updatePricingPreview();
-    return;
-  }
-  container.style.display = 'block';
-
-  let html = '<div style="margin-bottom:6px;font-size:12px;color:var(--grey-dark);">';
-  if (type === 'bulk') html += 'Min Qty → Price per unit';
-  else if (type === 'stepped') html += 'From → To → Price per unit (iterative)';
-  else if (type === 'threshold') html += 'Min Spend → Discount %';
-  html += '</div>';
-
-  html += '<div id="tier-rules-list">';
-  html += buildTierRuleRow(type, 0);
-  html += '</div>';
-  html += '<button class="add-entry-btn" onclick="addTierRule()" style="margin-top:4px;">+ Add Tier</button>';
-  container.innerHTML = html;
-  updatePricingPreview();
-}
-
-function buildTierRuleRow(type, idx) {
-  if (type === 'bulk') {
-    return '<div class="tier-rule-row" style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">' +
-      '<input type="number" placeholder="Min qty" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
-      '<input type="number" placeholder="Price" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
-      '<span style="cursor:pointer;color:var(--grey-mid);" onclick="this.parentElement.remove();updatePricingPreview();">&times;</span></div>';
-  } else if (type === 'stepped') {
-    return '<div class="tier-rule-row" style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">' +
-      '<input type="number" placeholder="From" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
-      '<input type="number" placeholder="To" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
-      '<input type="number" placeholder="Price" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
-      '<span style="cursor:pointer;color:var(--grey-mid);" onclick="this.parentElement.remove();updatePricingPreview();">&times;</span></div>';
-  } else if (type === 'threshold') {
-    return '<div class="tier-rule-row" style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">' +
-      '<input type="number" placeholder="Min spend (P)" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
-      '<input type="number" placeholder="Discount %" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
-      '<span style="cursor:pointer;color:var(--grey-mid);" onclick="this.parentElement.remove();updatePricingPreview();">&times;</span></div>';
-  }
-  return '';
-}
-
-let _tierRuleCount = 1;
-function addTierRule() {
-  const type = document.getElementById('item-tier-type').value;
-  const list = document.getElementById('tier-rules-list');
-  if (list) {
-    const row = document.createElement('div');
-    row.innerHTML = buildTierRuleRow(type, _tierRuleCount++);
-    list.appendChild(row.firstElementChild || row);
-  }
-}
-
-/* ─── SCHEDULE GRID ─── */
-let _scheduleDays = {};
-
-function initScheduleGrid() {
-  const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  const container = document.getElementById('item-day-rows');
-  if (!container) return;
-  container.innerHTML = '';
-
-  dayNames.forEach((day, i) => {
-    if (!_scheduleDays[day]) {
-      _scheduleDays[day] = { active: i < 5, from: '09:00', to: '17:00' };
-    }
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--grey-light);';
-    row.innerHTML =
-      '<label style="display:flex;align-items:center;gap:6px;text-transform:none;font-weight:400;font-size:13px;color:var(--text-main);margin:0;width:100px;cursor:pointer;">' +
-      '<input type="checkbox" ' + (_scheduleDays[day].active ? 'checked' : '') + ' onchange="toggleScheduleDay(\'' + day + '\',this.checked)" style="width:auto;margin:0;"> ' +
-      day.slice(0,3) + '</label>' +
-      '<input type="time" value="' + _scheduleDays[day].from + '" style="flex:1;margin:0;padding:6px 8px;" onchange="updateScheduleDay(\'' + day + '\',\'from\',this.value)">' +
-      '<span style="color:var(--grey-dark);font-size:12px;">to</span>' +
-      '<input type="time" value="' + _scheduleDays[day].to + '" style="flex:1;margin:0;padding:6px 8px;" onchange="updateScheduleDay(\'' + day + '\',\'to\',this.value)">';
-    container.appendChild(row);
-  });
-}
-
-function toggleScheduleDay(day, active) {
-  if (!_scheduleDays[day]) _scheduleDays[day] = { active: false, from: '09:00', to: '17:00' };
-  _scheduleDays[day].active = active;
-}
-
-function updateScheduleDay(day, field, value) {
-  if (!_scheduleDays[day]) _scheduleDays[day] = { active: false, from: '09:00', to: '17:00' };
-  _scheduleDays[day][field] = value;
-}
-
-function applySchedulePreset(preset) {
-  const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  dayNames.forEach((day, i) => {
-    if (!_scheduleDays[day]) _scheduleDays[day] = { active: false, from: '09:00', to: '17:00' };
-    if (preset === 'weekday') {
-      _scheduleDays[day].active = i < 5;
-      _scheduleDays[day].from = '09:00';
-      _scheduleDays[day].to = '17:00';
-    } else if (preset === 'weekend') {
-      _scheduleDays[day].active = i >= 5;
-      _scheduleDays[day].from = '09:00';
-      _scheduleDays[day].to = '17:00';
-    } else if (preset === 'everyday') {
-      _scheduleDays[day].active = true;
-      _scheduleDays[day].from = '08:00';
-      _scheduleDays[day].to = '18:00';
-    }
-  });
-  initScheduleGrid();
-}
-
-/* ─── REGION / GEOFENCING ─── */
-function onItemRegionChange() {
-  const region = document.getElementById('item-region').value;
-  const detail = document.getElementById('item-location-detail');
-  if (detail) {
-    detail.style.display = region === 'nationwide' ? 'none' : 'block';
-  }
-}
-
-/* ─── PROMO COST ESTIMATE ─── */
-function updatePromoCostEstimate() {
-  const days = parseInt(document.getElementById('item-promo-days').value) || 3;
-  const region = document.getElementById('item-region').value;
-  const town = document.getElementById('item-town')?.value || 'Gaborone';
-  const freeUsed = UserState.freePromoUsed;
-
-  const cost = window.PricingEngine.calcPromoCost(days, region, town, freeUsed);
-
-  const detailEl = document.getElementById('item-promo-cost-detail');
-  if (detailEl) {
-    detailEl.innerHTML = cost.breakdown.map(b =>
-      '<div class="cost-row"><span>' + b.label + '</span><span>P ' + b.amount.toFixed(2) + '</span></div>'
-    ).join('');
-  }
-
-  const totalEl = document.getElementById('item-promo-cost-total');
-  if (totalEl) totalEl.textContent = 'P ' + cost.total.toFixed(2);
-
-  const saveBtn = document.getElementById('item-save-btn');
-  const subtext = document.getElementById('item-save-subtext');
-  if (saveBtn) {
-    if (cost.free) {
-      saveBtn.textContent = 'Save Item & Submit to Promos (Free)';
-      if (subtext) subtext.textContent = 'This promo is free! (local promotion)';
-    } else {
-      saveBtn.textContent = 'Save Item & Submit to Promos (P ' + cost.total.toFixed(2) + ')';
-      if (subtext) subtext.textContent = 'Item will be saved to your catalogue and boosted to the Promos feed.';
-    }
-  }
-}
-
-function updateFreePromoStatus() {
-  const el = document.getElementById('item-free-promo-status');
-  if (!el) return;
-  if (UserState.canUseFreePromo()) {
-    el.textContent = 'You have 1 free promo this week!';
-  } else {
-    el.textContent = 'Free promo used this week. P25 per item.';
-  }
-}
-
-/* ─── UPDATE ITEM PREVIEW ─── */
-function updateItemPreview() {
-  // Title preview callback for identity section
-}
-
-/* ─── SAVE ITEM ─── */
-async function saveItem() {
-  const title = document.getElementById('item-title').value.trim();
-  const desc = document.getElementById('item-desc').value.trim();
-  const category = _selectedItemCategory || 'General';
-  const categoryPath = [category];
-  const basePrice = parseFloat(document.getElementById('item-price').value) || 0;
-  const unit = document.getElementById('item-unit').value;
-  const region = document.getElementById('item-region').value;
-  const promoDays = parseInt(document.getElementById('item-promo-days').value) || 3;
-  const startDate = document.getElementById('item-start-date').value;
-  const endDate = document.getElementById('item-end-date').value;
-
-  if (!title) { showToast('Please enter an item title'); return; }
-  if (!UserState.business) { showToast('Please add a business first'); return; }
-
-  // Gather all data
-  const variables = getItemVariables();
-  const modifiers = {
-    urgency: document.getElementById('mod-urgency').checked,
-    nightShift: document.getElementById('mod-nightShift').checked,
-    remoteArea: document.getElementById('mod-remoteArea').checked,
-    hazard: document.getElementById('mod-hazard').checked
+    urgency: document.getElementById('mod-urgency')?.checked || false,
+    nightShift: document.getElementById('mod-nightShift')?.checked || false,
+    remoteArea: document.getElementById('mod-remoteArea')?.checked || false,
+    hazard: document.getElementById('mod-hazard')?.checked || false
   };
   const discountType = document.getElementById('item-discount-type').value;
   const discountVal = parseFloat(document.getElementById('item-discount-value').value) || 0;
   const tiers = getItemTiers();
 
-  // Generate tags
-  const customTags = _itemTags || [];
-  const autoTags = window.PricingEngine.generateTags(categoryPath, title, desc, customTags);
-
-  // Calculate pricing
   const pricing = window.PricingEngine.calcPrice(basePrice, variables, modifiers,
     discountType === 'none' ? { type: 'none', value: 0 } : { type: discountType, value: discountVal });
 
-  // Calculate promo cost
-  const town = document.getElementById('item-town')?.value || UserState.business?.town || 'Gaborone';
-  const promoCost = window.PricingEngine.calcPromoCost(promoDays, region, town, UserState.freePromoUsed);
+  const container = document.getElementById('item-pricing-preview');
+  if (!container) return;
+  container.innerHTML = pricing.breakdown.map(b =>
+    '<div class="cost-row"><span>' + b.label + '</span><span>P ' + b.amount.toFixed(2) + '</span></div>'
+  ).join('');
+  container.innerHTML += '<div class="cost-divider"></div><div class="cost-row cost-total"><span>Total</span><span>P ' + pricing.total.toFixed(2) + '</span></div>';
+}
 
-  // Build schedule days
-  const scheduleDays = [];
-  const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  dayNames.forEach(day => {
-    if (_scheduleDays[day] && _scheduleDays[day].active) {
-      scheduleDays.push({ day, from: _scheduleDays[day].from, to: _scheduleDays[day].to });
-    }
-  });
+/* ─── SAVE ITEM (legacy) ─── */
+async function saveItem() {
+  const title = document.getElementById('item-title').value.trim();
+  const desc = document.getElementById('item-desc').value.trim();
+  const category = _selectedItemCategory || 'General';
+  const basePrice = parseFloat(document.getElementById('item-price').value) || 0;
+  const unit = document.getElementById('item-unit').value;
+  const region = window._itemRegion || document.getElementById('item-region')?.value || 'local';
+  const promoDays = parseInt(document.getElementById('item-promo-days')?.value) || 3;
+  const startDate = document.getElementById('item-start-date')?.value || '';
+  const endDate = document.getElementById('item-end-date')?.value || '';
 
-  const emoji = window.ITEM_EMOJIS[category] || '\ud83d\udce6';
-  const bg = window.BG_CLASSES[Math.floor(Math.random() * window.BG_CLASSES.length)];
-  const bizInit = UserState.business.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  const bizColor = window.APP_COLORS[bizInit.charCodeAt(0) % window.APP_COLORS.length];
+  if (!title) { showToast('Please enter an item title'); return; }
 
+  const variables = getItemVariables();
+  const modifiers = {
+    urgency: document.getElementById('mod-urgency')?.checked || false,
+    nightShift: document.getElementById('mod-nightShift')?.checked || false,
+    remoteArea: document.getElementById('mod-remoteArea')?.checked || false,
+    hazard: document.getElementById('mod-hazard')?.checked || false
+  };
+  const promoCost = window.PricingEngine.calcPromoCost(promoDays, region, 'Gaborone', false);
   const now = new Date();
   const promoEndDate = new Date(now);
   promoEndDate.setDate(promoEndDate.getDate() + promoCost.effectiveDays);
+  const scheduleDays = [];
 
   const item = {
     id: 'item_' + Date.now(),
-    title,
-    desc,
-    category,
-    categoryPath,
-    tags: autoTags,
-    images: _selectedItemImage ? [_selectedItemImage] : [],
-    basePrice,
-    unit,
-    variables,
-    modifiers,
-    tiers,
-    discount: discountType === 'none' ? null : { type: discountType, value: discountVal },
-    pricingResult: {
-      unitPrice: pricing.total,
-      modifierMultiplier: pricing.modifierMultiplier,
-      discountAmount: pricing.discountAmount,
-      breakdown: pricing.breakdown
-    },
-    geofencing: {
-      region,
-      town: document.getElementById('item-town')?.value || '',
-      area: document.getElementById('item-area')?.value || '',
-      gps: {
-        lat: document.getElementById('item-gps-lat')?.value || '',
-        lng: document.getElementById('item-gps-lng')?.value || '',
-        radius: parseFloat(document.getElementById('item-gps-radius')?.value) || 0
-      }
-    },
-    scheduling: {
-      startDate: startDate || now.toISOString(),
-      endDate: endDate || '',
-      days: scheduleDays
-    },
-    promo: {
-      active: true,
-      cost: promoCost.total,
-      days: promoCost.effectiveDays,
-      freePromoUsed: UserState.canUseFreePromo() && region === 'local' ? false : promoCost.total > 0,
-      submittedAt: now.toISOString(),
-      expiresAt: promoEndDate.toISOString(),
-      status: 'active'
-    },
+    title, desc, category, basePrice, unit,
+    variables, modifiers,
+    promo: { active: true, cost: promoCost.total, days: promoCost.effectiveDays, submittedAt: now.toISOString(), expiresAt: promoEndDate.toISOString(), status: 'active' },
     kpi: { views: 0, likes: 0, interactions: 0, addedToNotes: 0 },
-    businessId: 'biz_user',
-    businessName: UserState.business.name,
-    businessInit: bizInit,
-    businessColor: bizColor,
-    location: town,
-    phone: UserState.business.phone || '',
-    emoji,
-    bg,
-    promoType: 'Buy New',
-    qty: 1,
-    liked: false,
     createdAt: now.toISOString()
   };
 
-  window._userItems.push(item);
-
-  try {
-    await WirogDB.put('items', item);
-  } catch(e) {
-    console.error('Failed to save item to DB:', e);
-  }
-
-  // Always add to promos
+  try { await WirogDB.put('items', item); } catch(e) { console.error('Failed to save item:', e); }
   if (!window._promos) window._promos = [];
   window._promos.unshift(item);
+  try { await WirogDB.put('promos', item); } catch(e) { console.error('Failed to save promo:', e); }
 
-  try {
-    await WirogDB.put('promos', item);
-  } catch(e) {
-    console.error('Failed to save promo to DB:', e);
-  }
-
-  // Enqueue for background sync if SyncQueue is available
-  try {
-    if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
-      await window.SyncQueue.enqueue('promos', item, { clientId: UserState.id });
-      if (window.requestBackgroundSync) window.requestBackgroundSync().catch(()=>{});
-    }
-  } catch(e) { console.warn('Failed to enqueue promo for sync:', e); }
-
-  // Track promo usage
-  if (promoCost.total > 0) {
-    UserState.useFreePromo();
-  }
-  UserState.recordPromoSubmission();
-  UserState.kpi.ads++;
-  updateKPI();
-
-  renderPromos();
-  renderBusinessCard();
-
-  showToast('\u2705 Item saved & boosted to Promos!');
-
-  // Reset form
-  document.getElementById('item-title').value = '';
-  document.getElementById('item-desc').value = '';
-  document.getElementById('item-price').value = '';
-  _itemTags = [];
-  renderItemTags();
-  _selectedItemImage = '';
-  _scheduleDays = {};
-  document.getElementById('item-variables-container').innerHTML = '';
-  document.getElementById('item-tier-rules').innerHTML = '';
-  document.getElementById('item-tier-rules').style.display = 'none';
-
+  showToast('Item saved & boosted to Promos!');
   closeModal('item-modal');
 }
 
 /* ─── DELETE ITEM ─── */
 async function deleteItem(itemId) {
+  if (UserState.businessRole === 'staff') { showToast('Staff cannot delete items'); return; }
   if (!confirm('Delete this item from your catalogue?')) return;
 
   window._userItems = window._userItems.filter(it => it.id !== itemId);
@@ -825,6 +415,10 @@ async function deleteItem(itemId) {
 function editPromo(promoId) {
   const p = window._promos.find(x => x.id === promoId);
   if (!p) return;
+  if (UserState.businessRole === 'staff' && !p.allowStaffEdits) {
+    showToast('Staff cannot edit this item');
+    return;
+  }
   const isActive = p.promo && p.promo.status === 'active';
   populatePromoCategories();
   document.getElementById('promo-item-title').value = p.title || '';
@@ -1079,7 +673,6 @@ window.addTierRule = addTierRule;
 window.initScheduleGrid = initScheduleGrid;
 window.toggleScheduleDay = toggleScheduleDay;
 window.updateScheduleDay = updateScheduleDay;
-window.applySchedulePreset = applySchedulePreset;
 window.onItemRegionChange = onItemRegionChange;
 window.updatePromoCostEstimate = updatePromoCostEstimate;
 window.updateItemPreview = updateItemPreview;
@@ -1099,6 +692,4 @@ window.removePromoTag = removePromoTag;
 window.togglePromoSuggestionTag = togglePromoSuggestionTag;
 window.applyPromoTags = applyPromoTags;
 window.syncPromoTagDisplay = syncPromoTagDisplay;
-window.openItemCategorySelector = openItemCategorySelector;
-window.selectItemCategory = selectItemCategory;
 window.getSelectedCategory = getSelectedCategory;

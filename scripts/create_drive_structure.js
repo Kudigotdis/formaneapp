@@ -2,13 +2,15 @@
 /**
  * create_drive_structure.js
  *
- * Creates a Drive folder layout for WirogApp using a service account.
+ * Creates the full Drive folder layout for WirogApp using a service account.
+ * This is an ALTERNATIVE to the Google Apps Script method — use either one.
+ *
  * Usage:
- *   - Place your service account JSON key at ./service-account.json OR set env var GOOGLE_SERVICE_ACCOUNT_JSON to the path
+ *   - Place your service account JSON key at ./service-account.json
+ *     OR set env var GOOGLE_SERVICE_ACCOUNT_JSON to the path
  *   - Run: node scripts/create_drive_structure.js
  *
- * The script will create a root folder named `WirogApp` (if missing) and subfolders listed below,
- * then write `drive-structure.json` with the resulting folder IDs.
+ * The script outputs drive-structure.json with all created folder IDs.
  */
 
 const fs = require('fs');
@@ -33,9 +35,12 @@ async function loadAuth() {
   return jwt;
 }
 
-async function ensureFolder(drive, name, parentId = null) {
-  // Look for existing folder with name under parent
-  const qParts = [`name = '${name.replace(/'/g, "\\'")}'`, "mimeType = 'application/vnd.google-apps.folder'", "trashed = false"];
+async function ensureFolder(drive, name, parentId) {
+  const qParts = [
+    `name = '${name.replace(/'/g, "\\'")}'`,
+    "mimeType = 'application/vnd.google-apps.folder'",
+    "trashed = false"
+  ];
   if (parentId) qParts.push(`'${parentId}' in parents`);
   const q = qParts.join(' and ');
   const res = await drive.files.list({ q, fields: 'files(id,name)', spaces: 'drive' });
@@ -51,36 +56,66 @@ async function main() {
   const auth = await loadAuth();
   const drive = google.drive({ version: 'v3', auth });
 
-  const rootName = 'WirogApp';
-  console.log('Ensuring root folder', rootName);
+  const rootName = 'Wirog App Drive';
+  console.log('Ensuring root folder:', rootName);
   const rootId = await ensureFolder(drive, rootName, null);
 
-  const structure = {
+  // App System
+  const appSystemId = await ensureFolder(drive, 'app-system', rootId);
+  const iconsId = await ensureFolder(drive, 'icons', appSystemId);
+  await ensureFolder(drive, 'solid', iconsId);
+  await ensureFolder(drive, 'brands', iconsId);
+  const categoryImagesId = await ensureFolder(drive, 'category-images', appSystemId);
+
+  const categories = [
+    'attire-uniform', 'bathroom-kitchen', 'boards-timber', 'building-materials',
+    'cement-aggregates', 'chemicals', 'design-plans', 'doors-windows', 'electrical',
+    'gardening-outdoor-living', 'generators-power-solutions', 'geysers-heating',
+    'hardware-fasteners', 'home-decor', 'lighting', 'paint', 'partitioning',
+    'plumbing', 'pre-builds-shipping-containers', 'rooting-ceiling', 'safety-security',
+    'sanitaryware', 'solar-supplies', 'shelving-storage', 'steel-metal-products',
+    'tiles-flooring', 'tools-equipment'
+  ];
+  const categoryIds = {};
+  for (const cat of categories) {
+    categoryIds[cat] = await ensureFolder(drive, cat, categoryImagesId);
+    console.log('  category:', cat, '→', categoryIds[cat]);
+  }
+
+  await ensureFolder(drive, 'platform-media', appSystemId);
+
+  // Clients root
+  const clientsRootId = await ensureFolder(drive, 'clients', rootId);
+
+  // Four-tier parent folders
+  const usersFolderId = await ensureFolder(drive, 'users', clientsRootId);
+  const prosFolderId = await ensureFolder(drive, 'pros', clientsRootId);
+  const businessesFolderId = await ensureFolder(drive, 'businesses', clientsRootId);
+
+  const result = {
     root: { id: rootId, name: rootName },
-    promos: {},
-    catalogue: {},
-    profiles: { avatars: null, profiles_meta: null },
-    logos: {},
-    tasks: {},
-    facebook_submissions: {},
-    system: { backups: null, manifests: null }
+    app_system: {
+      folder_id: appSystemId,
+      icons_id: iconsId,
+      category_images_id: categoryImagesId,
+      categories: categoryIds,
+      platform_media_id: null // created above if you track it
+    },
+    clients_root_id: clientsRootId,
+    users_folder_id: usersFolderId,
+    pros_folder_id: prosFolderId,
+    businesses_folder_id: businessesFolderId
   };
 
-  // Create top-level folders
-  structure.promos.id = await ensureFolder(drive, 'promos', rootId);
-  structure.catalogue.id = await ensureFolder(drive, 'catalogue', rootId);
-  structure.profiles.avatars = await ensureFolder(drive, 'profiles/avatars', rootId);
-  structure.profiles.profiles_meta = await ensureFolder(drive, 'profiles/profiles_meta', rootId);
-  structure.logos.id = await ensureFolder(drive, 'logos', rootId);
-  structure.tasks.id = await ensureFolder(drive, 'tasks', rootId);
-  structure.facebook_submissions.id = await ensureFolder(drive, 'facebook_submissions', rootId);
-  structure.system.backups = await ensureFolder(drive, 'system/backups', rootId);
-  structure.system.manifests = await ensureFolder(drive, 'system/manifests', rootId);
-
   const outPath = path.join(process.cwd(), 'drive-structure.json');
-  fs.writeFileSync(outPath, JSON.stringify(structure, null, 2));
-  console.log('Drive structure created/written to', outPath);
-  console.log(JSON.stringify(structure, null, 2));
+  fs.writeFileSync(outPath, JSON.stringify(result, null, 2));
+  console.log('\nDrive structure written to', outPath);
+  console.log('\n=== COPY THESE INTO wirog-config.json ===');
+  console.log('"clients_root_id": "' + clientsRootId + '",');
+  console.log('"users_folder_id": "' + usersFolderId + '",');
+  console.log('"pros_folder_id": "' + prosFolderId + '",');
+  console.log('"businesses_folder_id": "' + businessesFolderId + '"');
+  console.log('==========================================');
 }
 
 main().catch(err => { console.error(err && err.stack || err); process.exit(1); });

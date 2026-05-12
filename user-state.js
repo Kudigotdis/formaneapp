@@ -1,4 +1,4 @@
-﻿function getMonday(d) {
+function getMonday(d) {
   const date = new Date(d);
   const day = date.getDay();
   const diff = date.getDate() - day + (day === 0 ? -6 : 1);
@@ -23,6 +23,7 @@ const UserState = {
   firstName: localStorage.getItem("wirog_firstName") || "",
   surname: localStorage.getItem("wirog_surname") || "",
   role: localStorage.getItem("wirog_role") || "General User",
+  isVerified: localStorage.getItem("wirog_isVerified") === 'true', // New: VIP/Agent Verification
   company: localStorage.getItem("wirog_company") || "",
   town: localStorage.getItem("wirog_town") || "Gaborone",
   mobile: localStorage.getItem("wirog_mobile") || "",
@@ -36,8 +37,9 @@ const UserState = {
   interests: JSON.parse(localStorage.getItem("wirog_interests") || '[]'),
   favouriteSuppliers: JSON.parse(localStorage.getItem("wirog_favSuppliers") || '[]'),
   business: null,
+  businessRole: null,
   items: [],
-  kpi: { ads: 0, views: 0, likes: 0, noteAdds: 0 },
+  kpi: { ads: 0, views: 0, likes: 0, noteAdds: 0, interactions: 0 },
   promosThisWeek: 0,
   freePromoUsed: false,
   promoWeekReset: (() => {
@@ -58,6 +60,8 @@ const UserState = {
     this.company = company;
     this.town = town || this.location.town;
     this.mobile = mobile;
+    this.business = null;
+    this.businessRole = null;
     this.location.town = town || this.location.town;
     localStorage.setItem("wirog_userId", id);
     localStorage.setItem("wirog_name", name);
@@ -94,6 +98,7 @@ const UserState = {
     this.interests = [];
     this.favouriteSuppliers = [];
     this.business = null;
+    this.businessRole = null;
     this.items = [];
     this.promosThisWeek = 0;
     this.freePromoUsed = false;

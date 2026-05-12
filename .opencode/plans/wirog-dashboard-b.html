@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wirog Admin Dashboard</title>
+<style>
+:root {
+  --orange: #E8600A;
+  --orange-light: #FFF3EB;
+  --orange-dark: #C44E06;
+  --dark: #1A1A1A;
+  --mid: #444;
+  --muted: #888;
+  --border: #E5E5E5;
+  --bg: #F8F8F6;
+  --white: #FFFFFF;
+  --green: #22863A;
+  --green-bg: #E8F5EC;
+  --red: #C0392B;
+  --red-bg: #FDECEA;
+  --yellow: #B8860B;
+  --yellow-bg: #FFF8E1;
+  --blue: #1A6FAB;
+  --blue-bg: #E3F0FB;
+  --purple: #7B2D8B;
+  --purple-bg: #F3E8F7;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--dark);
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--orange);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(232,96,10,0.3);
+}
+.topbar-logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.topbar-logo span { opacity: 0.7; font-weight: 400; font-size: 13px; margin-left: 8px; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.admin-badge { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+.topbar-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; cursor: pointer; }
+
+/* ── TAB NAV ── */
+.tabnav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  padding: 0 12px;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: sticky;
+  top: 56px;
+  z-index: 90;
+}
+.tabnav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex-shrink: 0;
+  padding: 14px 16px 12px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--dark); }
+.tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
+.tab-badge {
+  background: var(--red);
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ── MAIN CONTENT ── */
+.main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── CARDS & GRIDS ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+@media (max-width: 768px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
+
+.kpi-card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+  border-left: 4px solid var(--border);
+}
+.kpi-card.orange { border-left-color: var(--orange); }
+.kpi-card.green  { border-left-color: var(--green); }
+.kpi-card.red    { border-left-color: var(--red); }
+.kpi-card.blue   { border-left-color: var(--blue); }
+.kpi-card.purple { border-left-color: var(--purple); }
+.kpi-card.yellow { border-left-color: var(--yellow); }
+.kpi-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.kpi-value { font-size: 26px; font-weight: 800; color: var(--dark); line-height: 1; }
+.kpi-value.sm { font-size: 20px; }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .count { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+.card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 16px;
+}
+
+/* ── STATUS PILLS ── */
+.pill {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.pill-active  { background: var(--green-bg); color: var(--green); }
+.pill-pending { background: var(--yellow-bg); color: var(--yellow); }
+.pill-suspended { background: var(--red-bg); color: var(--red); }
+.pill-approved { background: var(--green-bg); color: var(--green); }
+.pill-rejected { background: var(--red-bg); color: var(--red); }
+.pill-scheduled { background: var(--blue-bg); color: var(--blue); }
+.pill-posted { background: var(--purple-bg); color: var(--purple); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary { background: var(--orange); color: white; }
+.btn-primary:hover { background: var(--orange-dark); }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg); color: var(--dark); }
+.btn-green { background: var(--green-bg); color: var(--green); }
+.btn-green:hover { background: #d4eddb; }
+.btn-red { background: var(--red-bg); color: var(--red); }
+.btn-red:hover { background: #f5c6c3; }
+.btn-blue { background: var(--blue-bg); color: var(--blue); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+
+/* ── LIST ITEMS ── */
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.list-item:last-child { border-bottom: none; padding-bottom: 0; }
+.list-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.list-info { flex: 1; min-width: 0; }
+.list-name { font-size: 13px; font-weight: 600; color: var(--dark); }
+.list-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.list-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+/* ── SEARCH BAR ── */
+.search-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.search-wrap input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search-wrap input:focus { border-color: var(--orange); }
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 16px;
+}
+
+/* ── ALPHA NAV ── */
+.alpha-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+.alpha-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.alpha-btn:hover, .alpha-btn.active { background: var(--orange); color: white; border-color: var(--orange); }
+.alpha-btn.has-biz { color: var(--dark); border-color: #ccc; }
+
+/* ── CHARTS ── */
+.bar-chart { margin: 8px 0; }
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.bar-label { font-size: 11px; color: var(--mid); width: 130px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { flex: 1; height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 5px; background: var(--orange); transition: width 0.6s ease; }
+.bar-fill.green { background: var(--green); }
+.bar-fill.blue { background: var(--blue); }
+.bar-fill.purple { background: var(--purple); }
+.bar-val { font-size: 11px; color: var(--muted); width: 60px; text-align: right; flex-shrink: 0; }
+
+/* ── CALENDAR ── */
+.cal-week {
+  border-left: 3px solid var(--orange);
+  margin-bottom: 12px;
+  padding-left: 12px;
+}
+.cal-week-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.cal-day-row {
+  background: var(--white);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.cal-day-row:hover { border-color: var(--orange); }
+.cal-day-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.cal-day-dot.full { background: var(--orange); }
+.cal-day-dot.partial { background: var(--yellow); }
+.cal-day-dot.empty { background: var(--border); }
+.cal-day-name { font-size: 13px; font-weight: 600; color: var(--dark); width: 90px; }
+.cal-day-posts { font-size: 12px; color: var(--muted); flex: 1; }
+.cal-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.cal-chip {
+  background: var(--orange-light);
+  color: var(--orange);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ── APPROVAL QUEUE ── */
+.approval-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: var(--white);
+  transition: box-shadow 0.15s;
+}
+.approval-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.approval-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.approval-type-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.type-promo { background: var(--orange-light); }
+.type-payment { background: var(--green-bg); }
+.type-artwork { background: var(--blue-bg); }
+.approval-title { font-size: 13px; font-weight: 600; color: var(--dark); }
+.approval-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.approval-details {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.approval-tag {
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--mid);
+}
+.approval-actions { display: flex; gap: 6px; }
+
+/* ── BUSINESS CARD MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: var(--white);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 640px;
+  max-height: 88vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 0; flex-shrink: 0; }
+.modal-scroll { overflow-y: auto; padding: 16px 20px 32px; }
+.modal-biz-header {
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+}
+.modal-biz-avatar {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: white; flex-shrink: 0;
+}
+.modal-biz-name { font-size: 18px; font-weight: 800; }
+.modal-biz-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.modal-tabs { display: flex; gap: 2px; overflow-x: auto; margin-bottom: 16px; scrollbar-width: none; }
+.modal-tabs::-webkit-scrollbar { display: none; }
+.modal-tab {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 8px;
+  border: none; background: var(--bg); color: var(--muted);
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.modal-tab.active { background: var(--orange); color: white; }
+.modal-tab-panel { display: none; }
+.modal-tab-panel.active { display: block; }
+
+/* ── ANALYTICS ── */
+.analytics-biz-selector {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  width: 100%;
+  margin-bottom: 16px;
+  outline: none;
+}
+.analytics-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.analytics-tab {
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--white); font-size: 12px; font-weight: 600;
+  color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.analytics-tab.active { background: var(--orange); color: white; border-color: var(--orange); }
+.analytics-panel { display: none; }
+.analytics-panel.active { display: block; }
+
+/* ── FILTER TABS ── */
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.filter-btn {
+  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--white); font-size: 12px; font-weight: 600;
+  color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.filter-btn.active { background: var(--orange); color: white; border-color: var(--orange); }
+
+/* ── RESPONSIVE GRID ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+.stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.stat-chip {
+  background: var(--bg); border-radius: 8px; padding: 8px 14px;
+  text-align: center; flex: 1; min-width: 80px;
+}
+.stat-chip-val { font-size: 18px; font-weight: 800; color: var(--dark); }
+.stat-chip-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+
+/* ── PAYMENT METHODS ── */
+.method-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+@media (max-width: 600px) { .method-bar { grid-template-columns: repeat(2,1fr); } }
+.method-card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+.method-icon { font-size: 22px; margin-bottom: 6px; }
+.method-name { font-size: 11px; font-weight: 600; color: var(--muted); }
+.method-val { font-size: 18px; font-weight: 800; color: var(--dark); margin-top: 4px; }
+.method-count { font-size: 10px; color: var(--muted); }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+.empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+.empty-state p { font-size: 13px; }
+
+/* ── MINI TABLE ── */
+.mini-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.mini-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+.mini-table td { padding: 9px 8px; border-bottom: 1px solid var(--border); color: var(--dark); }
+.mini-table tr:last-child td { border-bottom: none; }
+.mini-table tr:hover td { background: var(--bg); }
+
+/* ── SCROLL AREA ── */
+.scroll-list { max-height: 400px; overflow-y: auto; }
+
+/* ── MONTH SELECTOR ── */
+.month-selector { display: flex; gap: 6px; align-items: center; margin-bottom: 16px; }
+.month-selector select { padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; background: var(--white); }
+
+/* ── EXPIRY LIST ── */
+.expiry-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.expiry-item:last-child { border-bottom: none; }
+.expiry-days {
+  width: 48px; height: 48px; border-radius: 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-weight: 700; flex-shrink: 0;
+}
+.expiry-days.urgent { background: var(--red-bg); color: var(--red); }
+.expiry-days.soon { background: var(--yellow-bg); color: var(--yellow); }
+.expiry-days.later { background: var(--blue-bg); color: var(--blue); }
+.expiry-days .num { font-size: 18px; line-height: 1; }
+.expiry-days .unit { font-size: 9px; font-weight: 600; text-transform: uppercase; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--dark); color: white; border-radius: 10px;
+  padding: 10px 20px; font-size: 13px; font-weight: 500;
+  z-index: 9999; opacity: 0; transition: opacity 0.2s;
+  pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ── DONUT ── */
+.donut-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto 12px; }
+.donut-wrap svg { transform: rotate(-90deg); }
+.donut-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  text-align: center;
+}
+.donut-center .val { font-size: 20px; font-weight: 800; }
+.donut-center .lbl { font-size: 9px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--mid); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">wirog <span>Admin</span></div>
+  <div class="topbar-right">
+    <div class="admin-badge">🔐 Superadmin</div>
+    <div class="topbar-avatar">A</div>
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<div class="tabnav" id="mainTabNav">
+  <button class="tab-btn active" data-tab="overview" onclick="switchTab('overview')">
+    📊 Overview
+  </button>
+  <button class="tab-btn" data-tab="approvals" onclick="switchTab('approvals')">
+    ✅ Approvals <span class="tab-badge" id="pendingBadge">—</span>
+  </button>
+  <button class="tab-btn" data-tab="facebook" onclick="switchTab('facebook')">
+    📅 Facebook
+  </button>
+  <button class="tab-btn" data-tab="directory" onclick="switchTab('directory')">
+    🏢 Directory
+  </button>
+  <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">
+    📈 Analytics
+  </button>
+</div>
+
+<div class="main">
+
+  <!-- ══════════ OVERVIEW TAB ══════════ -->
+  <div class="tab-panel active" id="tab-overview">
+
+    <div class="kpi-grid">
+      <div class="kpi-card orange">
+        <div class="kpi-label">Total Promos</div>
+        <div class="kpi-value" id="kpi-total-promos">—</div>
+        <div class="kpi-sub" id="kpi-active-promos">active</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value sm" id="kpi-revenue">—</div>
+        <div class="kpi-sub">all time</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Businesses</div>
+        <div class="kpi-value" id="kpi-biz-count">—</div>
+        <div class="kpi-sub" id="kpi-biz-active">with promos</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Pending Approvals</div>
+        <div class="kpi-value" id="kpi-pending">—</div>
+        <div class="kpi-sub">needs action</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-label">Total Views</div>
+        <div class="kpi-value sm" id="kpi-views">—</div>
+        <div class="kpi-sub">across all promos</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Total Likes</div>
+        <div class="kpi-value" id="kpi-likes">—</div>
+        <div class="kpi-sub">engagements</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Avg Cost / Promo</div>
+        <div class="kpi-value sm" id="kpi-avg-cost">—</div>
+        <div class="kpi-sub">per promo</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-label">Note Adds</div>
+        <div class="kpi-value" id="kpi-notes">—</div>
+        <div class="kpi-sub">saved by users</div>
+      </div>
+    </div>
+
+    <!-- Payment Methods -->
+    <div class="section-title">💳 Payment Methods</div>
+    <div class="method-bar" id="methodBar"></div>
+
+    <!-- Two-col: Category chart + Expiry -->
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">🏷️ Promos by Category</div>
+        <div class="bar-chart" id="catChart"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">⏳ Expiring Soon <span class="count" id="expiryCount"></span></div>
+        <div id="expiryList" class="scroll-list"></div>
+      </div>
+    </div>
+
+    <!-- Top businesses -->
+    <div class="card">
+      <div class="section-title">🏆 Top Businesses by Spend</div>
+      <div class="bar-chart" id="bizSpendChart"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ APPROVALS TAB ══════════ -->
+  <div class="tab-panel" id="tab-approvals">
+
+    <div class="filter-row" id="approvalFilters">
+      <button class="filter-btn active" onclick="filterApprovals('all', this)">All</button>
+      <button class="filter-btn" onclick="filterApprovals('promo', this)">🏷️ Promo Requests</button>
+      <button class="filter-btn" onclick="filterApprovals('payment', this)">💳 Payments</button>
+      <button class="filter-btn" onclick="filterApprovals('artwork', this)">🎨 Artwork</button>
+    </div>
+
+    <div id="approvalQueue"></div>
+
+  </div>
+
+  <!-- ══════════ FACEBOOK TAB ══════════ -->
+  <div class="tab-panel" id="tab-facebook">
+
+    <div class="kpi-grid" style="grid-template-columns: repeat(3,1fr);">
+      <div class="kpi-card blue">
+        <div class="kpi-label">Total Submissions</div>
+        <div class="kpi-value" id="fb-total">—</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Approved & Scheduled</div>
+        <div class="kpi-value" id="fb-scheduled">—</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-label">Pending Review</div>
+        <div class="kpi-value" id="fb-pending">—</div>
+      </div>
+    </div>
+
+    <div class="month-selector">
+      <span style="font-size:14px; font-weight:600;">📅 Schedule</span>
+      <select id="fbMonthSelect" onchange="renderFacebookCal()">
+        <option value="4">May 2026</option>
+        <option value="5">June 2026</option>
+        <option value="6">July 2026</option>
+        <option value="7">August 2026</option>
+      </select>
+    </div>
+
+    <div id="fbCalendar"></div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="section-title">🎨 All Artwork Submissions</div>
+      <div id="artworkList" class="scroll-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ DIRECTORY TAB ══════════ -->
+  <div class="tab-panel" id="tab-directory">
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="dirSearch" placeholder="Search businesses by name, category, town…" oninput="renderDirectory()">
+    </div>
+
+    <div class="alpha-nav" id="alphaNav"></div>
+
+    <div id="bizList"></div>
+
+  </div>
+
+  <!-- ══════════ ANALYTICS TAB ══════════ -->
+  <div class="tab-panel" id="tab-analytics">
+
+    <select class="analytics-biz-selector" id="analyticsBizSelect" onchange="renderAnalytics()">
+      <option value="">— Select a Business —</option>
+    </select>
+
+    <div id="analyticsContent" style="display:none;">
+
+      <div class="analytics-tabs" id="analyticsTabs">
+        <button class="analytics-tab active" onclick="switchAnalyticsTab('spending', this)">💰 Spending</button>
+        <button class="analytics-tab" onclick="switchAnalyticsTab('catalogue', this)">📦 Catalogue</button>
+        <button class="analytics-tab" onclick="switchAnalyticsTab('promos', this)">🏷️ Promos</button>
+        <button class="analytics-tab" onclick="switchAnalyticsTab('facebook', this)">📣 Facebook</button>
+        <button class="analytics-tab" onclick="switchAnalyticsTab('staff', this)">👥 Staff</button>
+      </div>
+
+      <!-- SPENDING -->
+      <div class="analytics-panel active" id="apanel-spending">
+        <div class="kpi-grid" style="grid-template-columns: repeat(3,1fr);">
+          <div class="kpi-card green">
+            <div class="kpi-label">Total Spend</div>
+            <div class="kpi-value sm" id="an-total-spend">—</div>
+          </div>
+          <div class="kpi-card orange">
+            <div class="kpi-label">Promo Count</div>
+            <div class="kpi-value" id="an-promo-count">—</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">Avg per Promo</div>
+            <div class="kpi-value sm" id="an-avg-spend">—</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">💳 Payment Methods Used</div>
+          <div id="an-methods"></div>
+        </div>
+        <div class="card">
+          <div class="section-title">🏷️ Promos &amp; Costs</div>
+          <div id="an-promo-costs" class="scroll-list"></div>
+        </div>
+      </div>
+
+      <!-- CATALOGUE -->
+      <div class="analytics-panel" id="apanel-catalogue">
+        <div id="an-catalogue"></div>
+      </div>
+
+      <!-- PROMOS -->
+      <div class="analytics-panel" id="apanel-promos">
+        <div id="an-promos-list"></div>
+      </div>
+
+      <!-- FACEBOOK -->
+      <div class="analytics-panel" id="apanel-facebook">
+        <div id="an-facebook"></div>
+      </div>
+
+      <!-- STAFF -->
+      <div class="analytics-panel" id="apanel-staff">
+        <div id="an-staff"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div><!-- end main -->
+
+<!-- BUSINESS MODAL -->
+<div class="modal-overlay" id="bizModal" onclick="closeBizModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-scroll" id="bizModalContent"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════
+// DATA LAYER — embedded JSON
+// ════════════════════════════════════
+const WIROG = (function() {
+  const BUSINESSES = [{"id":"biz-1","name":"Board Kings","type":"supplier","category":"Boards & Timber","subcategories":["Timber","Boards","Postform Tops","Edging","PVC Foil & Laminates"],"location":{"town":"Gaborone","area":"Phakalane (Extension 97)"},"phone":"+267 71234567","public":true,"subscription":"full"},{"id":"biz-2","name":"BuildIt Gabs","type":"supplier","category":"Paint","subcategories":["PVA","Enamel","Primer & Undercoat","Roof Paint","Wood Coatings"],"location":{"town":"Gaborone","area":"Block 8 (Extension 35)"},"phone":"+267 72345678","public":true,"subscription":"full"},{"id":"biz-3","name":"Francistown Steel","type":"supplier","category":"Steel & Metal Products","subcategories":["Structural Steel","Reinforcing","Sheet Metal"],"location":{"town":"Francistown","area":"Central Industrial Area"},"phone":"+267 73456789","public":true,"subscription":"full"},{"id":"biz-4","name":"Gabs Plumbing Depot","type":"supplier","category":"Plumbing","subcategories":["Pipes & Fittings","Waste Traps & Gratings","Drains","Rainwater Goods","Toilet Spares"],"location":{"town":"Gaborone","area":"Gaborone West Extension 14"},"phone":"+267 74567890","public":true,"subscription":"full"},{"id":"biz-5","name":"Tile Express BW","type":"supplier","category":"Tiles & Flooring","subcategories":["Floor Tiles","Wall Tiles","Porcelain Tiles","Decor & Mosaics","Tile Adhesives & Grouts"],"location":{"town":"Gaborone","area":"Gaborone West Extension 2"},"phone":"+267 75678901","public":true,"subscription":"full"},{"id":"biz-6","name":"Paint World Gaborone","type":"supplier","category":"Paint","subcategories":["PVA","Enamel","Spray Paint","Floor Paint","Accessories"],"location":{"town":"Gaborone","area":"Broadhurst (Extension 16)"},"phone":"+267 76789012","public":true,"subscription":"full"},{"id":"biz-7","name":"Hardware Kings","type":"supplier","category":"Hardware & Fasteners","subcategories":["Fasteners","Adhesives & Sealants","Ironmongery"],"location":{"town":"Gaborone","area":"Gaborone West Extension 14"},"phone":"+267 77890123","public":true,"subscription":"full"},{"id":"biz-8","name":"Roofing Masters BW","type":"supplier","category":"Roofing & Ceiling","subcategories":["Roof Sheeting","Roof Tiles","Fascia & Barge","Insulation & Underlay","Ventilators","Ceiling"],"location":{"town":"Mogoditshane","area":"Village Mogoditshane"},"phone":"+267 78901234","public":false},{"id":"biz-9","name":"Gaborone Attire & Uniforms","type":"supplier","category":"Attire & Uniform","subcategories":["Workwear","Corporate Uniforms","School & Hospitality"],"location":{"town":"Gaborone","area":"Gaborone West Extension 6"},"phone":"+267 72000001","public":true,"subscription":"full"},{"id":"biz-10","name":"Bathroom & Kitchen World","type":"supplier","category":"Bathroom & Kitchen","subcategories":["Bathroomware","Kitchen"],"location":{"town":"Gaborone","area":"Extension 18 Broadhurst"},"phone":"+267 72000002","public":true,"subscription":"full"},{"id":"biz-11","name":"Builders Sand & Stone","type":"supplier","category":"Building Materials","subcategories":["Bricks","Sand","Stone","Lintels","Concrete Products","Reinforcing & Underlay"],"location":{"town":"Gaborone","area":"Glen Valley"},"phone":"+267 72000003","public":true,"subscription":"full"},{"id":"biz-12","name":"CementCo Botswana","type":"supplier","category":"Cement & Aggregates","subcategories":["Portland Cement","Masonry Cement","Rapid Hardening","Aggregates","Ready Mix"],"location":{"town":"Gaborone","area":"Kgale View"},"phone":"+267 72000004","public":true,"subscription":"full"},{"id":"biz-13","name":"ChemCare Botswana","type":"supplier","category":"Chemicals","subcategories":["Construction Chemicals","Cleaning Chemicals","Pool Chemicals"],"location":{"town":"Gaborone","area":"Gaborone West Extension 7"},"phone":"+267 72000005","public":true,"subscription":"full"},{"id":"biz-14","name":"DesignPro House Plans","type":"supplier","category":"Design & Plans","subcategories":["House Plans","Commercial Plans","Approval Services"],"location":{"town":"Gaborone","area":"Extension 1 (Mmaraka)"},"phone":"+267 72000006","public":true,"subscription":"full"},{"id":"biz-15","name":"Door & Window Hub","type":"supplier","category":"Doors & Windows","subcategories":["Interior Doors","Exterior Doors","Security Doors","Aluminium Windows","Wooden Windows","Door Frames"],"location":{"town":"Gaborone","area":"Block 6 (Extension 39)"},"phone":"+267 72000007","public":true,"subscription":"full"},{"id":"biz-16","name":"Gaborone Electrical Supplies","type":"supplier","category":"Electrical","subcategories":["Wire","DB Boxes & Breakers","Plugs & Extension Cords","Switches & Cover Plates","Conduit & Accessories","Batteries"],"location":{"town":"Gaborone","area":"Gaborone West Extension 15"},"phone":"+267 72000008","public":true,"subscription":"full"},{"id":"biz-17","name":"Green Gardens BW","type":"supplier","category":"Gardening & Outdoor Living","subcategories":["Gardening","Outdoor Living","Irrigation, Tanks & Pumps"],"location":{"town":"Gaborone","area":"Gaborone West Extension 21"},"phone":"+267 72000009","public":true,"subscription":"full"},{"id":"biz-18","name":"PowerGen BW","type":"supplier","category":"Generators & Power Solutions","subcategories":["Petrol Generators","Diesel Generators","Inverters & UPS","AVR","Change-over Switches"],"location":{"town":"Gaborone","area":"Gaborone West Extension 24"},"phone":"+267 72000010","public":true,"subscription":"full"},{"id":"biz-19","name":"Geyser & Heating Pros","type":"supplier","category":"Geysers & Heating","subcategories":["Electric Geysers","Solar Geysers","Heat Pumps","Instant Heaters"],"location":{"town":"Gaborone","area":"Gaborone West Extension 18"},"phone":"+267 72000011","public":true,"subscription":"full"},{"id":"biz-20","name":"FastFix Hardware","type":"supplier","category":"Hardware & Fasteners","subcategories":["Fasteners","Adhesives & Sealants","Ironmongery","Hand Tools"],"location":{"town":"Gaborone","area":"Block 3 (Extension 31)"},"phone":"+267 72000012","public":true,"subscription":"full"},{"id":"biz-21","name":"HomeDeco BW","type":"supplier","category":"Home Decor","subcategories":["Soft Furnishings","Wall Art","Frames","Decorative Lighting","Mirrors"],"location":{"town":"Gaborone","area":"Extension 15 Broadhurst"},"phone":"+267 72000013","public":true,"subscription":"full"},{"id":"biz-22","name":"Bright Lights Gaborone","type":"supplier","category":"Lighting","subcategories":["LED Lighting","Downlights","Outdoor Lighting","Emergency Lighting","Smart Lighting"],"location":{"town":"Gaborone","area":"Gaborone West Extension 22"},"phone":"+267 72000014","public":true,"subscription":"full"},{"id":"biz-23","name":"Colour King Botswana","type":"supplier","category":"Paint","subcategories":["PVA","Enamel","Roof Paint","Specialty Paint"],"location":{"town":"Gaborone","area":"Old Naledi"},"phone":"+267 72000015","public":true,"subscription":"full"},{"id":"biz-24","name":"PanelMate BW","type":"supplier","category":"Partitioning","subcategories":["Drywall","Movable Partitions","Cubicles","Acoustic Panels"],"location":{"town":"Gaborone","area":"Extension 12 Block 8"},"phone":"+267 72000016","public":true,"subscription":"full"},{"id":"biz-25","name":"PipeFit Plumbing","type":"supplier","category":"Plumbing","subcategories":["Pipes & Fittings","Taps & Valves","Water Tanks","Hot Water"],"location":{"town":"Gaborone","area":"Gaborone West Extension 11"},"phone":"+267 72000017","public":true,"subscription":"full"}];
+  
+  // Color palette for business avatars
+  const COLORS = ['#E8600A','#22863A','#1A6FAB','#7B2D8B','#B8860B','#C0392B','#16A085','#2980B9','#8E44AD','#D35400'];
+  function bizColor(id) { const n = parseInt(id.replace('biz-','')); return COLORS[n % COLORS.length]; }
+  function bizInitials(name) { return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+  // Generate synthetic promos with rich metadata
+  const PROMO_TITLES = [
+    'Meranti Planks 22x144mm – 15% Off','Dulux Trade Emulsion 20L – Free Delivery',
+    'Galvanised Corrugated Sheets – Buy 10 Get 1','Copper Pipe Set 20% Off',
+    'Floor Tile 60x60 Porcelain – Bulk Discount','Structural Steel I-Beam Bundle',
+    'PVC Conduit & Fittings – 25% Off','Cement CEM II 50kg – 10+ Bags',
+    'LED Panel Light 600x600 – Buy 5 Get 1','Aluminium Window 1200x900',
+    'Roof Sheet IBR 0.47mm – Free Delivery','Heavy-Duty Bolt Set M12x100',
+    'Solar Panel 330W Kit','Bathtub Freestanding 1700mm',
+    'Teak Hardwood Flooring 20m²','Security Gate Sliding 3m',
+    'Geyser 150L Kwikot','Paint Sprayer Pro Kit',
+    'Portland Cement Pallet (40 bags)','Chainsaw 45cc – Demo Special',
+    'Brick 222x106x73 – 500 Pack','Irrigation Drip Kit 50m',
+    'Split AC 12000BTU Installation','Diesel Generator 5kVA',
+    'Cabinet Hinge Set (50 pairs)','Laminate Flooring 8mm AC4',
+    'Outdoor Security Light 30W','Kitchen Mixer Tap Chrome',
+    'Epoxy Resin Floor Kit','Reinforcing Mesh A393'
+  ];
+  const CATS = ['Boards & Timber','Paint','Steel & Metal Products','Plumbing','Tiles & Flooring','Electrical','Roofing & Ceiling','Hardware & Fasteners','Cement & Aggregates','Lighting','Building Materials','Gardening & Outdoor Living'];
+  const METHODS = ['BTC Smega','Mascom Myzaka','Orange Money','Bank Transfer'];
+  const STATUSES = ['active','active','active','active','pending','suspended'];
+  const TODAY = new Date('2026-05-11');
+
+  function seededRand(seed) {
+    let s = seed;
+    return function() { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
+  }
+
+  const r = seededRand(12345);
+  const PROMOS = [];
+  const PAYMENTS = [];
+  const ARTWORK = [];
+
+  // Generate 100 promos spread across first 25 businesses
+  for (let i = 0; i < 100; i++) {
+    const bizIdx = Math.floor(r() * 25);
+    const biz = BUSINESSES[bizIdx];
+    const cat = CATS[Math.floor(r() * CATS.length)];
+    const daysFromNow = Math.floor(r() * 90);
+    const exp = new Date(TODAY);
+    exp.setDate(exp.getDate() + daysFromNow);
+    const submittedDaysAgo = Math.floor(r() * 60);
+    const sub = new Date(TODAY);
+    sub.setDate(sub.getDate() - submittedDaysAgo);
+    const cost = Math.round((50 + r() * 200) * 100) / 100;
+    const method = METHODS[Math.floor(r() * METHODS.length)];
+    const status = STATUSES[Math.floor(r() * STATUSES.length)];
+    const origPrice = Math.round((100 + r() * 900) * 100) / 100;
+    const disc = Math.floor(r() * 30);
+    const promoPrice = Math.round(origPrice * (1 - disc / 100) * 100) / 100;
+
+    PROMOS.push({
+      id: `promo-${i + 1}`,
+      title: PROMO_TITLES[i % PROMO_TITLES.length] + (i >= PROMO_TITLES.length ? ` (v${Math.floor(i/PROMO_TITLES.length)+1})` : ''),
+      businessId: biz.id,
+      businessName: biz.name,
+      category: cat,
+      originalPrice: origPrice,
+      promoPrice: promoPrice,
+      discountPercent: disc,
+      unit: 'each',
+      cost: cost,
+      paymentMethod: method,
+      status: status,
+      submittedAt: sub.toISOString().split('T')[0],
+      validUntil: exp.toISOString().split('T')[0],
+      durationDays: [3,7,14,30][Math.floor(r() * 4)],
+      kpi: {
+        views: Math.floor(50 + r() * 750),
+        likes: Math.floor(5 + r() * 115),
+        noteAdds: Math.floor(1 + r() * 29),
+        interactions: Math.floor(10 + r() * 190)
+      }
+    });
+
+    PAYMENTS.push({
+      id: `pay-${i + 1}`,
+      promoId: `promo-${i + 1}`,
+      businessId: biz.id,
+      businessName: biz.name,
+      method: method,
+      amount: cost,
+      purpose: PROMO_TITLES[i % PROMO_TITLES.length].substring(0, 35),
+      status: status === 'pending' ? 'pending' : 'approved',
+      createdAt: sub.toISOString().split('T')[0]
+    });
+  }
+
+  // Generate 30 artwork submissions
+  const ART_STATUSES = ['pending','pending','approved','approved','rejected'];
+  const BOOST_DAYS = ['Mon','Wed','Fri'];
+  let schedDate = new Date(TODAY);
+  schedDate.setDate(schedDate.getDate() + 1);
+
+  function nextMWF(d) {
+    while (true) { d.setDate(d.getDate() + 1); if ([1,3,5].includes(d.getDay())) return new Date(d); }
+  }
+  let nextSlot = new Date(TODAY);
+
+  for (let i = 0; i < 30; i++) {
+    const biz = BUSINESSES[Math.floor(r() * 20)];
+    const st = ART_STATUSES[Math.floor(r() * ART_STATUSES.length)];
+    const daysAgo = Math.floor(r() * 45);
+    const created = new Date(TODAY);
+    created.setDate(created.getDate() - daysAgo);
+    let scheduled = null;
+    if (st === 'approved') {
+      nextSlot = nextMWF(nextSlot);
+      scheduled = nextSlot.toISOString().split('T')[0];
+    }
+    ARTWORK.push({
+      id: `art-${i + 1}`,
+      businessId: biz.id,
+      businessName: biz.name,
+      category: CATS[Math.floor(r() * CATS.length)],
+      boostDay: BOOST_DAYS[Math.floor(r() * 3)],
+      imageCount: Math.floor(1 + r() * 4),
+      status: st,
+      createdAt: created.toISOString().split('T')[0],
+      scheduledDate: scheduled
+    });
+  }
+
+  // Compute per-business stats
+  const bizStats = {};
+  for (const biz of BUSINESSES) {
+    bizStats[biz.id] = { spend: 0, promoCount: 0, activePromos: 0, views: 0, likes: 0, noteAdds: 0, promos: [], methodBreakdown: {} };
+  }
+  for (const p of PROMOS) {
+    const s = bizStats[p.businessId];
+    if (!s) continue;
+    s.spend += p.cost;
+    s.promoCount++;
+    if (p.status === 'active') s.activePromos++;
+    s.views += p.kpi.views;
+    s.likes += p.kpi.likes;
+    s.noteAdds += p.kpi.noteAdds;
+    s.promos.push(p);
+    s.methodBreakdown[p.paymentMethod] = (s.methodBreakdown[p.paymentMethod] || 0) + p.cost;
+  }
+
+  // Staff associations
+  const staffMap = {};
+  const NAMES = ['Kedi','Mpho','Thabo','Lesego','Oratile','Botshelo','Kagiso','Neo','Tebogo','Dineo'];
+  for (let i = 0; i < BUSINESSES.length; i++) {
+    const biz = BUSINESSES[i];
+    staffMap[biz.id] = {
+      owners: [NAMES[i % NAMES.length] + ' (Owner)'],
+      staff: Array.from({length: Math.floor(r() * 3) + 1}, (_, j) => NAMES[(i + j + 1) % NAMES.length])
+    };
+  }
+
+  // Method totals
+  const methodTotals = {};
+  for (const p of PROMOS) {
+    methodTotals[p.paymentMethod] = (methodTotals[p.paymentMethod] || 0) + p.cost;
+  }
+
+  return { BUSINESSES, PROMOS, PAYMENTS, ARTWORK, bizStats, staffMap, methodTotals, bizColor, bizInitials };
+})();
+
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let currentAlpha = 'ALL';
+let approvalFilter = 'all';
+let currentBizModal = null;
+let modalTab = 'overview';
+let analyticsTab = 'spending';
+let approvalStates = {}; // tracks local approve/reject
+
+// ════════════════════════════════════
+// UTILS
+// ════════════════════════════════════
+function fmt(n) { return 'P ' + n.toLocaleString('en-BW', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtK(n) { return n >= 1000 ? (n/1000).toFixed(1)+'k' : n.toString(); }
+function daysUntil(dateStr) {
+  const d = new Date(dateStr), t = new Date('2026-05-11');
+  return Math.round((d - t) / (1000 * 60 * 60 * 24));
+}
+function relDate(dateStr) {
+  const d = daysUntil(dateStr);
+  if (d < 0) return `${Math.abs(d)}d ago`;
+  if (d === 0) return 'Today';
+  if (d === 1) return 'Tomorrow';
+  return `in ${d}d`;
+}
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+function pillHtml(status) {
+  const map = {active:'pill-active',pending:'pill-pending',suspended:'pill-suspended',approved:'pill-approved',rejected:'pill-rejected',scheduled:'pill-scheduled',posted:'pill-posted'};
+  return `<span class="pill ${map[status]||'pill-pending'}">${status}</span>`;
+}
+
+// ════════════════════════════════════
+// TAB SWITCHING
+// ════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+}
+
+// ════════════════════════════════════
+// OVERVIEW
+// ════════════════════════════════════
+function renderOverview() {
+  const promos = WIROG.PROMOS;
+  const active = promos.filter(p => p.status === 'active');
+  const pending = promos.filter(p => p.status === 'pending');
+  const totalSpend = promos.reduce((s,p) => s + p.cost, 0);
+  const totalViews = promos.reduce((s,p) => s + p.kpi.views, 0);
+  const totalLikes = promos.reduce((s,p) => s + p.kpi.likes, 0);
+  const totalNotes = promos.reduce((s,p) => s + p.kpi.noteAdds, 0);
+  const bizWithPromos = new Set(promos.map(p => p.businessId)).size;
+
+  document.getElementById('kpi-total-promos').textContent = promos.length;
+  document.getElementById('kpi-active-promos').textContent = `${active.length} active · ${pending.length} pending`;
+  document.getElementById('kpi-revenue').textContent = fmt(totalSpend);
+  document.getElementById('kpi-biz-count').textContent = WIROG.BUSINESSES.length;
+  document.getElementById('kpi-biz-active').textContent = `${bizWithPromos} with promos`;
+  document.getElementById('kpi-pending').textContent = pending.length + WIROG.ARTWORK.filter(a => a.status==='pending').length;
+  document.getElementById('kpi-views').textContent = fmtK(totalViews);
+  document.getElementById('kpi-likes').textContent = fmtK(totalLikes);
+  document.getElementById('kpi-avg-cost').textContent = fmt(totalSpend / promos.length);
+  document.getElementById('kpi-notes').textContent = fmtK(totalNotes);
+
+  // Update pending badge
+  document.getElementById('pendingBadge').textContent = pending.length + WIROG.ARTWORK.filter(a=>a.status==='pending').length;
+
+  // Payment methods
+  const methodIcons = {'BTC Smega':'📱','Mascom Myzaka':'📲','Orange Money':'🟠','Bank Transfer':'🏦'};
+  const methodCounts = {};
+  for (const p of promos) methodCounts[p.paymentMethod] = (methodCounts[p.paymentMethod]||0)+1;
+  let mHtml = '';
+  for (const [m, total] of Object.entries(WIROG.methodTotals)) {
+    mHtml += `<div class="method-card">
+      <div class="method-icon">${methodIcons[m]||'💳'}</div>
+      <div class="method-name">${m}</div>
+      <div class="method-val">${fmt(total)}</div>
+      <div class="method-count">${methodCounts[m]||0} transactions</div>
+    </div>`;
+  }
+  document.getElementById('methodBar').innerHTML = mHtml;
+
+  // Category chart
+  const catCounts = {};
+  for (const p of promos) catCounts[p.category] = (catCounts[p.category]||0)+1;
+  const sortedCats = Object.entries(catCounts).sort((a,b) => b[1]-a[1]).slice(0,10);
+  const maxCat = sortedCats[0][1];
+  let catHtml = '';
+  for (const [cat, count] of sortedCats) {
+    const pct = Math.round(count/maxCat*100);
+    catHtml += `<div class="bar-row">
+      <div class="bar-label">${cat}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="bar-val">${count} promos</div>
+    </div>`;
+  }
+  document.getElementById('catChart').innerHTML = catHtml;
+
+  // Expiry list (promos expiring in ≤30 days)
+  const expiring = promos.filter(p => {
+    const d = daysUntil(p.validUntil);
+    return d >= 0 && d <= 30;
+  }).sort((a,b) => daysUntil(a.validUntil) - daysUntil(b.validUntil)).slice(0,15);
+  document.getElementById('expiryCount').textContent = `${expiring.length} promos`;
+
+  let exHtml = '';
+  for (const p of expiring) {
+    const d = daysUntil(p.validUntil);
+    const cls = d <= 3 ? 'urgent' : d <= 7 ? 'soon' : 'later';
+    exHtml += `<div class="expiry-item">
+      <div class="expiry-days ${cls}">
+        <span class="num">${d}</span>
+        <span class="unit">days</span>
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div class="list-name" style="font-size:12px;">${p.title}</div>
+        <div class="list-meta">${p.businessName} · ${p.category}</div>
+      </div>
+      <div style="display:flex; gap:4px;">
+        <button class="btn btn-ghost btn-sm" onclick="actionPromo('extend','${p.id}')">+7d</button>
+        <button class="btn btn-red btn-sm" onclick="actionPromo('suspend','${p.id}')">Suspend</button>
+      </div>
+    </div>`;
+  }
+  document.getElementById('expiryList').innerHTML = exHtml || '<div class="empty-state"><p>No expiring promos this month</p></div>';
+
+  // Top businesses by spend
+  const bizSpendArr = Object.entries(WIROG.bizStats)
+    .filter(([,s]) => s.spend > 0)
+    .sort((a,b) => b[1].spend - a[1].spend)
+    .slice(0,10);
+  const maxSpend = bizSpendArr[0][1].spend;
+  let bzHtml = '';
+  for (const [bizId, s] of bizSpendArr) {
+    const biz = WIROG.BUSINESSES.find(b => b.id === bizId);
+    if (!biz) continue;
+    const pct = Math.round(s.spend/maxSpend*100);
+    bzHtml += `<div class="bar-row">
+      <div class="bar-label" style="cursor:pointer; color:var(--orange);" onclick="openBizModal('${bizId}')">${biz.name}</div>
+      <div class="bar-track"><div class="bar-fill green" style="width:${pct}%"></div></div>
+      <div class="bar-val">${fmt(s.spend)}</div>
+    </div>`;
+  }
+  document.getElementById('bizSpendChart').innerHTML = bzHtml;
+}
+
+// ════════════════════════════════════
+// APPROVALS
+// ════════════════════════════════════
+function filterApprovals(type, btn) {
+  approvalFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderApprovals();
+}
+
+function renderApprovals() {
+  const pendingPromos = WIROG.PROMOS.filter(p => {
+    const st = approvalStates[p.id] || p.status;
+    return st === 'pending';
+  });
+  const pendingPayments = WIROG.PAYMENTS.filter(p => {
+    const st = approvalStates[p.id] || p.status;
+    return st === 'pending';
+  });
+  const pendingArtwork = WIROG.ARTWORK.filter(a => {
+    const st = approvalStates[a.id] || a.status;
+    return st === 'pending';
+  });
+
+  let items = [];
+  if (approvalFilter === 'all' || approvalFilter === 'promo') {
+    items.push(...pendingPromos.map(p => ({ type:'promo', data:p })));
+  }
+  if (approvalFilter === 'all' || approvalFilter === 'payment') {
+    items.push(...pendingPayments.map(p => ({ type:'payment', data:p })));
+  }
+  if (approvalFilter === 'all' || approvalFilter === 'artwork') {
+    items.push(...pendingArtwork.map(a => ({ type:'artwork', data:a })));
+  }
+
+  if (!items.length) {
+    document.getElementById('approvalQueue').innerHTML = `<div class="empty-state"><div class="icon">✅</div><p>No pending ${approvalFilter === 'all' ? '' : approvalFilter} requests</p></div>`;
+    return;
+  }
+
+  const typeInfo = {
+    promo: { icon:'🏷️', label:'Promo Request', cls:'type-promo' },
+    payment: { icon:'💳', label:'Payment Proof', cls:'type-payment' },
+    artwork: { icon:'🎨', label:'Artwork Submission', cls:'type-artwork' }
+  };
+
+  let html = '';
+  for (const item of items.slice(0, 50)) {
+    const { type, data } = item;
+    const ti = typeInfo[type];
+    let detailTags = '';
+    let titleText = '';
+    let subText = '';
+
+    if (type === 'promo') {
+      titleText = data.title;
+      subText = `${data.businessName} · ${data.category}`;
+      detailTags = `
+        <span class="approval-tag">💰 ${fmt(data.cost)}</span>
+        <span class="approval-tag">📅 ${data.durationDays} days</span>
+        <span class="approval-tag">💳 ${data.paymentMethod}</span>
+        <span class="approval-tag">📅 Submitted ${data.submittedAt}</span>`;
+    } else if (type === 'payment') {
+      titleText = `Payment: ${data.purpose}`;
+      subText = `${data.businessName}`;
+      detailTags = `
+        <span class="approval-tag">💰 ${fmt(data.amount)}</span>
+        <span class="approval-tag">📲 ${data.method}</span>
+        <span class="approval-tag">📅 ${data.createdAt}</span>`;
+    } else {
+      titleText = `Artwork: ${data.imageCount} image${data.imageCount>1?'s':''}`;
+      subText = `${data.businessName} · ${data.category}`;
+      detailTags = `
+        <span class="approval-tag">📅 Boost: ${data.boostDay}</span>
+        <span class="approval-tag">🖼️ ${data.imageCount} images</span>
+        <span class="approval-tag">📅 ${data.createdAt}</span>`;
+    }
+
+    html += `<div class="approval-item" id="aitem-${data.id}">
+      <div class="approval-header">
+        <div class="approval-type-icon ${ti.cls}">${ti.icon}</div>
+        <div style="flex:1;">
+          <div class="approval-title">${titleText}</div>
+          <div class="approval-sub">${subText}</div>
+        </div>
+        <span class="pill pill-pending">pending</span>
+      </div>
+      <div class="approval-details">${detailTags}</div>
+      <div class="approval-actions">
+        <button class="btn btn-green btn-sm" onclick="approveItem('${data.id}','${type}')">✓ Approve</button>
+        <button class="btn btn-red btn-sm" onclick="rejectItem('${data.id}','${type}')">✕ Reject</button>
+        ${type==='promo'?`<button class="btn btn-blue btn-sm" onclick="openBizModal('${data.businessId}')">View Business</button>`:''}
+      </div>
+    </div>`;
+  }
+  document.getElementById('approvalQueue').innerHTML = html;
+}
+
+function approveItem(id, type) {
+  approvalStates[id] = 'approved';
+  const el = document.getElementById('aitem-'+id);
+  if (el) {
+    el.style.opacity = '0.5';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => { el.remove(); toast(`✅ ${type} approved`); }, 300);
+  }
+}
+function rejectItem(id, type) {
+  approvalStates[id] = 'rejected';
+  const el = document.getElementById('aitem-'+id);
+  if (el) {
+    el.style.opacity = '0.5';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => { el.remove(); toast(`❌ ${type} rejected`); }, 300);
+  }
+}
+function actionPromo(action, id) {
+  toast(action === 'extend' ? '📅 Promo extended by 7 days' : '⏸️ Promo suspended');
+}
+
+// ════════════════════════════════════
+// FACEBOOK
+// ════════════════════════════════════
+function renderFacebook() {
+  const art = WIROG.ARTWORK;
+  document.getElementById('fb-total').textContent = art.length;
+  document.getElementById('fb-scheduled').textContent = art.filter(a=>a.status==='approved').length;
+  document.getElementById('fb-pending').textContent = art.filter(a=>a.status==='pending').length;
+  renderFacebookCal();
+  renderArtworkList();
+}
+
+function renderFacebookCal() {
+  const monthIdx = parseInt(document.getElementById('fbMonthSelect').value);
+  const year = 2026;
+  // Get all Mon/Wed/Fri in selected month
+  const days = [];
+  const d = new Date(year, monthIdx, 1);
+  while (d.getMonth() === monthIdx) {
+    if ([1,3,5].includes(d.getDay())) {
+      days.push(new Date(d));
+    }
+    d.setDate(d.getDate()+1);
+  }
+
+  // Group by week
+  const weeks = [];
+  let week = null;
+  for (const day of days) {
+    const wk = Math.floor((day.getDate() - 1) / 7);
+    if (!week || week.wk !== wk) { week = {wk, days:[]}; weeks.push(week); }
+    week.days.push(day);
+  }
+
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  let html = '';
+  for (const week of weeks) {
+    html += `<div class="cal-week"><div class="cal-week-label">Week of ${dayNames[week.days[0].getDay()]} ${week.days[0].getDate()} ${monthNames[monthIdx]}</div>`;
+    for (const day of week.days) {
+      const dateStr = day.toISOString().split('T')[0];
+      const posts = WIROG.ARTWORK.filter(a => a.scheduledDate === dateStr);
+      const dotCls = posts.length >= 3 ? 'full' : posts.length > 0 ? 'partial' : 'empty';
+      const chipsHtml = posts.map(p =>
+        `<span class="cal-chip">${p.businessName.split(' ')[0]} · ${p.category.split(' ')[0]}</span>`
+      ).join('');
+      html += `<div class="cal-day-row">
+        <div class="cal-day-dot ${dotCls}"></div>
+        <div class="cal-day-name">${dayNames[day.getDay()]} ${day.getDate()} ${monthNames[monthIdx]}</div>
+        <div class="cal-day-posts">
+          ${posts.length ? `<div class="cal-chips">${chipsHtml}</div>` : '<span style="color:var(--border);">No posts scheduled</span>'}
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="toast('📅 Schedule dialog coming soon')">+ Add</button>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  document.getElementById('fbCalendar').innerHTML = html || '<div class="empty-state"><p>No Mon/Wed/Fri in this range</p></div>';
+}
+
+function renderArtworkList() {
+  const art = WIROG.ARTWORK;
+  let html = '';
+  for (const a of art) {
+    html += `<div class="list-item">
+      <div class="list-avatar" style="background:${WIROG.bizColor(a.businessId)}; color:white;">${WIROG.bizInitials(a.businessName)}</div>
+      <div class="list-info">
+        <div class="list-name">${a.businessName}</div>
+        <div class="list-meta">${a.category} · ${a.imageCount} images · Boost: ${a.boostDay}</div>
+        <div class="list-meta">${a.scheduledDate ? '📅 Scheduled: '+a.scheduledDate : '📅 Submitted: '+a.createdAt}</div>
+      </div>
+      <div class="list-actions">
+        ${pillHtml(a.status)}
+        ${a.status==='pending'?`<button class="btn btn-green btn-sm" onclick="approveItem('${a.id}','artwork'); renderFacebook()">Approve</button>`:''}
+      </div>
+    </div>`;
+  }
+  document.getElementById('artworkList').innerHTML = html;
+}
+
+// ════════════════════════════════════
+// DIRECTORY
+// ════════════════════════════════════
+function renderAlphaNav() {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const bizLetters = new Set(WIROG.BUSINESSES.map(b => b.name[0].toUpperCase()));
+  let html = `<button class="alpha-btn ${currentAlpha==='ALL'?'active':''}" onclick="setAlpha('ALL',this)">All</button>`;
+  for (const l of letters) {
+    html += `<button class="alpha-btn ${bizLetters.has(l)?'has-biz':''} ${currentAlpha===l?'active':''}" onclick="setAlpha('${l}',this)">${l}</button>`;
+  }
+  document.getElementById('alphaNav').innerHTML = html;
+}
+
+function setAlpha(letter, btn) {
+  currentAlpha = letter;
+  renderAlphaNav();
+  renderDirectory();
+}
+
+function renderDirectory() {
+  const q = document.getElementById('dirSearch').value.toLowerCase();
+  let bizs = WIROG.BUSINESSES;
+
+  if (currentAlpha !== 'ALL') {
+    bizs = bizs.filter(b => b.name[0].toUpperCase() === currentAlpha);
+  }
+  if (q) {
+    bizs = bizs.filter(b =>
+      b.name.toLowerCase().includes(q) ||
+      b.category.toLowerCase().includes(q) ||
+      b.location.town.toLowerCase().includes(q) ||
+      (b.location.area||'').toLowerCase().includes(q)
+    );
+  }
+
+  if (!bizs.length) {
+    document.getElementById('bizList').innerHTML = '<div class="empty-state"><div class="icon">🏢</div><p>No businesses found</p></div>';
+    return;
+  }
+
+  let html = '';
+  for (const biz of bizs) {
+    const s = WIROG.bizStats[biz.id] || {};
+    const color = WIROG.bizColor(biz.id);
+    const initials = WIROG.bizInitials(biz.name);
+    html += `<div class="list-item" style="cursor:pointer;" onclick="openBizModal('${biz.id}')">
+      <div class="list-avatar" style="background:${color}; color:white;">${initials}</div>
+      <div class="list-info">
+        <div class="list-name">${biz.name}</div>
+        <div class="list-meta">${biz.category} · ${biz.location.town}, ${biz.location.area||''}</div>
+        <div class="list-meta">
+          ${s.spend?fmt(s.spend)+' spent · ':''} 
+          ${s.promoCount?s.promoCount+' promos · ':''}
+          ${s.activePromos?'<span style="color:var(--green);">'+s.activePromos+' active</span>':'<span style="color:var(--muted);">no active promos</span>'}
+        </div>
+      </div>
+      <div class="list-actions">
+        ${biz.subscription ? `<span class="pill pill-active">${biz.subscription}</span>` : `<span class="pill pill-pending">basic</span>`}
+        <span style="color:var(--muted); font-size:18px;">›</span>
+      </div>
+    </div>`;
+  }
+
+  // Group by first letter if showing all
+  document.getElementById('bizList').innerHTML = `<div class="card" style="padding: 0 20px;">${html}</div>`;
+}
+
+// ════════════════════════════════════
+// BUSINESS MODAL
+// ════════════════════════════════════
+function openBizModal(bizId) {
+  const biz = WIROG.BUSINESSES.find(b => b.id === bizId);
+  if (!biz) return;
+  currentBizModal = bizId;
+  const s = WIROG.bizStats[bizId] || {};
+  const staff = WIROG.staffMap[bizId] || {};
+  const color = WIROG.bizColor(bizId);
+  const initials = WIROG.bizInitials(biz.name);
+
+  let html = `
+    <div class="modal-biz-header">
+      <div class="modal-biz-avatar" style="background:${color}">${initials}</div>
+      <div>
+        <div class="modal-biz-name">${biz.name}</div>
+        <div class="modal-biz-meta">${biz.category} · ${biz.location.town}</div>
+        <div class="modal-biz-meta">${biz.phone}</div>
+      </div>
+      ${biz.subscription?`<span class="pill pill-active" style="margin-left:auto;">${biz.subscription}</span>`:''}
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-chip">
+        <div class="stat-chip-val">${fmt(s.spend||0)}</div>
+        <div class="stat-chip-label">Total Spend</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val">${s.promoCount||0}</div>
+        <div class="stat-chip-label">Promos</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val">${fmtK(s.views||0)}</div>
+        <div class="stat-chip-label">Views</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val">${s.likes||0}</div>
+        <div class="stat-chip-label">Likes</div>
+      </div>
+    </div>
+
+    <div class="modal-tabs" id="modalTabBar">
+      <button class="modal-tab active" onclick="switchModalTab('overview')">Overview</button>
+      <button class="modal-tab" onclick="switchModalTab('promos')">Promos</button>
+      <button class="modal-tab" onclick="switchModalTab('payments')">Payments</button>
+      <button class="modal-tab" onclick="switchModalTab('facebook')">Facebook</button>
+      <button class="modal-tab" onclick="switchModalTab('staff')">Staff</button>
+    </div>
+
+    <div id="modal-tab-overview" class="modal-tab-panel active">
+      <div class="bar-chart">`;
+
+  // Payment method breakdown
+  if (s.methodBreakdown) {
+    const maxM = Math.max(...Object.values(s.methodBreakdown));
+    for (const [m, amt] of Object.entries(s.methodBreakdown)) {
+      const pct = Math.round(amt/maxM*100);
+      html += `<div class="bar-row">
+        <div class="bar-label">${m}</div>
+        <div class="bar-track"><div class="bar-fill blue" style="width:${pct}%"></div></div>
+        <div class="bar-val">${fmt(amt)}</div>
+      </div>`;
+    }
+  }
+
+  html += `</div>
+      <div style="margin-top:12px;">
+        <button class="btn btn-red btn-sm" onclick="toast('⚠️ Business suspension requires confirmation')">⛔ Suspend Business</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:6px;" onclick="toast('📤 Export data coming soon')">📤 Export</button>
+      </div>
+    </div>
+
+    <div id="modal-tab-promos" class="modal-tab-panel">`;
+
+  const bizPromos = s.promos || [];
+  if (bizPromos.length) {
+    html += `<table class="mini-table"><thead><tr><th>Title</th><th>Status</th><th>Cost</th><th>Views</th><th>Exp</th></tr></thead><tbody>`;
+    for (const p of bizPromos) {
+      html += `<tr>
+        <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${p.title}">${p.title}</td>
+        <td>${pillHtml(p.status)}</td>
+        <td>${fmt(p.cost)}</td>
+        <td>${fmtK(p.kpi.views)}</td>
+        <td>${relDate(p.validUntil)}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+  } else { html += '<div class="empty-state"><p>No promos yet</p></div>'; }
+
+  html += `</div>
+    <div id="modal-tab-payments" class="modal-tab-panel">`;
+
+  const bizPays = WIROG.PAYMENTS.filter(p => p.businessId === bizId);
+  if (bizPays.length) {
+    html += `<table class="mini-table"><thead><tr><th>Purpose</th><th>Method</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>`;
+    for (const p of bizPays) {
+      html += `<tr>
+        <td style="max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.purpose}</td>
+        <td>${p.method}</td>
+        <td>${fmt(p.amount)}</td>
+        <td>${pillHtml(p.status)}</td>
+        <td>${p.createdAt}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+  } else { html += '<div class="empty-state"><p>No payments recorded</p></div>'; }
+
+  html += `</div>
+    <div id="modal-tab-facebook" class="modal-tab-panel">`;
+
+  const bizArt = WIROG.ARTWORK.filter(a => a.businessId === bizId);
+  if (bizArt.length) {
+    for (const a of bizArt) {
+      html += `<div class="list-item">
+        <div class="list-info">
+          <div class="list-name">${a.category} · ${a.imageCount} images</div>
+          <div class="list-meta">Boost: ${a.boostDay} · ${a.scheduledDate ? '📅 '+a.scheduledDate : 'Not scheduled'}</div>
+        </div>
+        ${pillHtml(a.status)}
+      </div>`;
+    }
+  } else { html += '<div class="empty-state"><p>No artwork submissions</p></div>'; }
+
+  html += `</div>
+    <div id="modal-tab-staff" class="modal-tab-panel">
+      <div style="margin-bottom:12px;">
+        <div class="section-title" style="margin-bottom:8px;">👑 Owners</div>`;
+  for (const o of (staff.owners||[])) {
+    html += `<div class="list-item" style="padding:8px 0;"><div class="list-name">${o}</div></div>`;
+  }
+  html += `</div><div><div class="section-title" style="margin-bottom:8px;">👥 Staff</div>`;
+  for (const s2 of (staff.staff||[])) {
+    html += `<div class="list-item" style="padding:8px 0;"><div class="list-name">${s2}</div></div>`;
+  }
+  html += `</div></div>`;
+
+  document.getElementById('bizModalContent').innerHTML = html;
+  document.getElementById('bizModal').classList.add('open');
+}
+
+function switchModalTab(tab) {
+  document.querySelectorAll('.modal-tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('modal-tab-'+tab);
+  if (panel) panel.classList.add('active');
+  event.target.classList.add('active');
+}
+
+function closeBizModal(e) {
+  if (e.target === document.getElementById('bizModal')) {
+    document.getElementById('bizModal').classList.remove('open');
+  }
+}
+
+// ════════════════════════════════════
+// ANALYTICS
+// ════════════════════════════════════
+function renderAnalyticsSelector() {
+  const sel = document.getElementById('analyticsBizSelect');
+  const bizWithStats = WIROG.BUSINESSES.filter(b => WIROG.bizStats[b.id] && WIROG.bizStats[b.id].promoCount > 0);
+  sel.innerHTML = '<option value="">— Select a Business —</option>';
+  for (const b of bizWithStats) {
+    sel.innerHTML += `<option value="${b.id}">${b.name} · ${b.location.town}</option>`;
+  }
+}
+
+function renderAnalytics() {
+  const bizId = document.getElementById('analyticsBizSelect').value;
+  if (!bizId) { document.getElementById('analyticsContent').style.display='none'; return; }
+  document.getElementById('analyticsContent').style.display='block';
+  renderAnalyticsTab(analyticsTab, bizId);
+}
+
+function switchAnalyticsTab(tab, btn) {
+  analyticsTab = tab;
+  document.querySelectorAll('.analytics-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.analytics-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('apanel-'+tab).classList.add('active');
+  const bizId = document.getElementById('analyticsBizSelect').value;
+  if (bizId) renderAnalyticsTab(tab, bizId);
+}
+
+function renderAnalyticsTab(tab, bizId) {
+  const biz = WIROG.BUSINESSES.find(b => b.id === bizId);
+  const s = WIROG.bizStats[bizId] || {};
+  const staff = WIROG.staffMap[bizId] || {};
+
+  if (tab === 'spending') {
+    document.getElementById('an-total-spend').textContent = fmt(s.spend||0);
+    document.getElementById('an-promo-count').textContent = s.promoCount||0;
+    document.getElementById('an-avg-spend').textContent = s.promoCount ? fmt(s.spend/s.promoCount) : 'P 0.00';
+
+    // Methods
+    let mHtml = '<div class="bar-chart">';
+    if (s.methodBreakdown) {
+      const maxM = Math.max(...Object.values(s.methodBreakdown));
+      for (const [m, amt] of Object.entries(s.methodBreakdown)) {
+        const pct = Math.round(amt/maxM*100);
+        mHtml += `<div class="bar-row">
+          <div class="bar-label">${m}</div>
+          <div class="bar-track"><div class="bar-fill blue" style="width:${pct}%"></div></div>
+          <div class="bar-val">${fmt(amt)}</div>
+        </div>`;
+      }
+    }
+    mHtml += '</div>';
+    document.getElementById('an-methods').innerHTML = mHtml;
+
+    // Promo cost list
+    let pcHtml = '';
+    for (const p of s.promos||[]) {
+      pcHtml += `<div class="list-item">
+        <div class="list-info">
+          <div class="list-name" style="font-size:12px;">${p.title}</div>
+          <div class="list-meta">${p.category} · ${p.paymentMethod} · ${p.submittedAt}</div>
+        </div>
+        <div style="font-size:13px; font-weight:700; color:var(--dark);">${fmt(p.cost)}</div>
+      </div>`;
+    }
+    document.getElementById('an-promo-costs').innerHTML = pcHtml || '<div class="empty-state"><p>No promos</p></div>';
+  }
+
+  else if (tab === 'catalogue') {
+    let html = '';
+    const products = []; // synthetic — in real app from products data
+    html += `<div class="card">
+      <div class="section-title">📦 Promo Performance by Category</div>
+      <div class="bar-chart">`;
+    const catViews = {};
+    for (const p of s.promos||[]) {
+      catViews[p.category] = (catViews[p.category]||0) + p.kpi.views;
+    }
+    const sortedCV = Object.entries(catViews).sort((a,b)=>b[1]-a[1]);
+    const maxCV = sortedCV[0]?.[1]||1;
+    for (const [cat, views] of sortedCV) {
+      html += `<div class="bar-row">
+        <div class="bar-label">${cat}</div>
+        <div class="bar-track"><div class="bar-fill purple" style="width:${Math.round(views/maxCV*100)}%"></div></div>
+        <div class="bar-val">${fmtK(views)} views</div>
+      </div>`;
+    }
+    html += `</div></div>`;
+
+    html += `<div class="card">
+      <div class="section-title">🏷️ Top Promos by Views</div>
+      <table class="mini-table"><thead><tr><th>Promo</th><th>Views</th><th>Likes</th><th>Notes</th></tr></thead><tbody>`;
+    const sorted = [...(s.promos||[])].sort((a,b)=>b.kpi.views-a.kpi.views).slice(0,10);
+    for (const p of sorted) {
+      html += `<tr>
+        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${p.title}">${p.title}</td>
+        <td>${fmtK(p.kpi.views)}</td>
+        <td>${p.kpi.likes}</td>
+        <td>${p.kpi.noteAdds}</td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+    document.getElementById('an-catalogue').innerHTML = html;
+  }
+
+  else if (tab === 'promos') {
+    let html = `<div class="filter-row">
+      ${['all','active','pending','suspended'].map(st =>
+        `<button class="filter-btn ${st==='all'?'active':''}" onclick="filterAnalyticsPromos('${st}',this,'${bizId}')">${st.charAt(0).toUpperCase()+st.slice(1)}</button>`
+      ).join('')}
+    </div><div id="an-promos-inner">`;
+    html += renderPromoTable(s.promos||[], 'all');
+    html += '</div>';
+    document.getElementById('an-promos-list').innerHTML = html;
+  }
+
+  else if (tab === 'facebook') {
+    const bizArt = WIROG.ARTWORK.filter(a => a.businessId === bizId);
+    const scheduled = bizArt.filter(a => a.status==='approved');
+    const pending = bizArt.filter(a => a.status==='pending');
+    const rejected = bizArt.filter(a => a.status==='rejected');
+
+    let html = `<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="kpi-card blue"><div class="kpi-label">Total Submissions</div><div class="kpi-value">${bizArt.length}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Scheduled</div><div class="kpi-value">${scheduled.length}</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">Pending</div><div class="kpi-value">${pending.length}</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title">🎨 Submission History</div>`;
+
+    if (bizArt.length) {
+      for (const a of bizArt) {
+        html += `<div class="list-item">
+          <div class="list-info">
+            <div class="list-name" style="font-size:12px;">${a.category} · ${a.imageCount} images · Boost: ${a.boostDay}</div>
+            <div class="list-meta">${a.scheduledDate ? '📅 Scheduled: '+a.scheduledDate : 'Submitted: '+a.createdAt}</div>
+          </div>
+          ${pillHtml(a.status)}
+        </div>`;
+      }
+    } else { html += '<div class="empty-state"><p>No submissions yet</p></div>'; }
+
+    html += '</div>';
+    document.getElementById('an-facebook').innerHTML = html;
+  }
+
+  else if (tab === 'staff') {
+    let html = `<div class="card">
+      <div class="section-title">👑 Owners</div>`;
+    for (const o of staff.owners||[]) {
+      html += `<div class="list-item"><div class="list-avatar" style="background:var(--orange);color:white;">O</div><div class="list-info"><div class="list-name">${o}</div><div class="list-meta">Business Owner</div></div></div>`;
+    }
+    html += `</div><div class="card"><div class="section-title">👥 Staff Members</div>`;
+    for (const s2 of staff.staff||[]) {
+      html += `<div class="list-item"><div class="list-avatar" style="background:var(--blue);color:white;">S</div><div class="list-info"><div class="list-name">${s2}</div><div class="list-meta">Staff</div></div></div>`;
+    }
+    html += '</div>';
+    document.getElementById('an-staff').innerHTML = html;
+  }
+}
+
+function renderPromoTable(promos, filterStatus) {
+  const filtered = filterStatus === 'all' ? promos : promos.filter(p => p.status === filterStatus);
+  if (!filtered.length) return '<div class="empty-state"><p>No promos in this status</p></div>';
+  let html = `<table class="mini-table"><thead><tr><th>Title</th><th>Status</th><th>Cost</th><th>Views</th><th>Likes</th><th>Expires</th><th>Actions</th></tr></thead><tbody>`;
+  for (const p of filtered) {
+    html += `<tr>
+      <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${p.title}">${p.title}</td>
+      <td>${pillHtml(p.status)}</td>
+      <td>${fmt(p.cost)}</td>
+      <td>${fmtK(p.kpi.views)}</td>
+      <td>${p.kpi.likes}</td>
+      <td>${relDate(p.validUntil)}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="toast('⏸️ Promo suspended')">Suspend</button>
+        <button class="btn btn-red btn-sm" onclick="toast('🗑️ Promo removed')">Remove</button>
+      </td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  return html;
+}
+
+function filterAnalyticsPromos(status, btn, bizId) {
+  document.querySelectorAll('#an-promos-list .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const s = WIROG.bizStats[bizId] || {};
+  document.getElementById('an-promos-inner').innerHTML = renderPromoTable(s.promos||[], status);
+}
+
+// ════════════════════════════════════
+// INIT
+// ════════════════════════════════════
+function init() {
+  renderOverview();
+  renderApprovals();
+  renderFacebook();
+  renderAlphaNav();
+  renderDirectory();
+  renderAnalyticsSelector();
+}
+
+init();
+</script>
+</body>
+</html>

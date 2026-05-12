@@ -183,6 +183,11 @@ function scrollToAlpha(letter) {
 }
 
 function openBizProfile(bizId, name, init, color, location, phone, isPublic, description, isUserBiz) {
+  // Track the view in Firestore
+  if (window.recordInteraction) {
+     window.recordInteraction(bizId, 'views').catch(e => console.warn("KPI update failed", e));
+  }
+  
   const content = document.getElementById('biz-profile-content');
   if (!content) return;
 
@@ -204,6 +209,10 @@ function openBizProfile(bizId, name, init, color, location, phone, isPublic, des
   const phoneWa = phone ? phone.replace(/[^0-9]/g, '') : '';
   const nameEsc = name.replace(/'/g, "\\'");
   const locationEsc = location.replace(/'/g, "\\'");
+
+  // Store data for bottom-bar dropdowns
+  _bizDropdownData = { bizId: bizId, name: name, phone: phoneClean, phoneWa: phoneWa, location: location };
+  _bizDropdownState = null;
 
   const catPills = categories.map(c => `<span class="pill">${c}</span>`).join('');
 
@@ -229,11 +238,13 @@ function openBizProfile(bizId, name, init, color, location, phone, isPublic, des
     </div>
     <div class="biz-bottom-bar">
       <button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
-      <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="callBusiness('${phoneClean}')">
-      <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="openFacebook('${nameEsc}')">
-      <img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="openMaps('${nameEsc}','${locationEsc}')">
-      <img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="openWhatsApp('${phoneWa}','${nameEsc}')">
-      <img src="assets/icons/${UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon'}.png" class="biz-bar-icon" onclick="toggleFavBiz('${bizId}')" id="biz-heart-icon">
+      <div id="biz-bar-actions">
+        <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
+        <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
+        <img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
+        <img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
+        <img src="assets/icons/${UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon'}.png" class="biz-bar-icon" onclick="toggleFavBiz('${bizId}')" id="biz-heart-icon">
+      </div>
     </div>
   `;
 
@@ -265,6 +276,10 @@ function openProProfile(proId) {
     starsHtml += ' <span style="font-size:12px;color:var(--grey-dark);font-weight:600;">' + pro.rating.toFixed(1) + '</span>';
   }
 
+  // Store data for bottom-bar dropdowns
+  _bizDropdownData = { bizId: proId, name: pro.name, phone: phoneClean, phoneWa: phoneWa, location: pro.location };
+  _bizDropdownState = null;
+
   content.innerHTML =
     '<div style="text-align:center; margin-bottom:20px;">' +
       '<div class="avatar" style="width:72px; height:72px; font-size:26px; margin:0 auto; background:' + pro.color + ';">' + pro.initials + '</div>' +
@@ -283,9 +298,11 @@ function openProProfile(proId) {
     '</div>' +
     '<div class="biz-bottom-bar">' +
       '<button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>' +
-      '<img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="callBusiness(\'' + phoneClean + '\')">' +
-      '<img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="openWhatsApp(\'' + phoneWa + '\',\'' + nameEsc + '\')">' +
-      '<img src="assets/icons/' + (UserState.isFavourite(proId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png" class="biz-bar-icon" onclick="toggleFavBiz(\'' + proId + '\')" id="pro-heart-icon">' +
+      '<div id="biz-bar-actions">' +
+        '<img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'call\')">' +
+        '<img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'whatsapp\')">' +
+        '<img src="assets/icons/' + (UserState.isFavourite(proId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png" class="biz-bar-icon" onclick="toggleFavBiz(\'' + proId + '\')" id="pro-heart-icon">' +
+      '</div>' +
     '</div>';
 
   goTo('view-pro-profile');
@@ -322,7 +339,9 @@ function openBizPromos(bizId, businessName) {
       if (p.images && p.images.length > 1) {
         imgHtml = '<div class="promo-carousel" id="carousel-' + p.id + '">';
         p.images.forEach(function(img) {
-          imgHtml += '<img src="' + img + '" class="promo-img" alt="' + p.title + '" onerror="this.parentElement.removeChild(this)">';
+          var src = WIROG_IMG_MODE.getImgSrc(img);
+          imgHtml += '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'"' +
+            (WIROG_IMG_MODE.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
         });
         imgHtml += '</div>' +
           '<div class="carousel-dots" id="dots-' + p.id + '">';
@@ -331,7 +350,10 @@ function openBizPromos(bizId, businessName) {
         });
         imgHtml += '</div>';
       } else if (p.images && p.images.length === 1) {
-        imgHtml = '<img src="' + p.images[0] + '" class="promo-img" alt="' + p.title + '" onerror="this.style.display=\'none\'">';
+        var img = p.images[0];
+        var src = WIROG_IMG_MODE.getImgSrc(img);
+        imgHtml = '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'"' +
+          (WIROG_IMG_MODE.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
       } else {
         imgHtml = '<div class="promo-img-ph ' + (p.bg || 'img-amber') + '"><span class="promo-img-emoji">' + (p.emoji || '\ud83d\udce6') + '</span></div>';
       }
@@ -399,6 +421,18 @@ function openBizPromos(bizId, businessName) {
     </div>
   `;
 
+  // Phase 2: async resolve saved-mode images
+  setTimeout(function() {
+    var imgs = view.querySelectorAll('.promo-img[data-original-url]');
+    for (var j = 0; j < imgs.length; j++) {
+      (function(img) {
+        WIROG_IMG_MODE.resolve(img.getAttribute('data-original-url')).then(function(resolved) {
+          if (resolved) img.src = resolved;
+        });
+      })(imgs[j]);
+    }
+  }, 0);
+
   goTo('view-business-promos');
 }
 
@@ -408,9 +442,14 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
 
   let biz = window.SAMPLE_BUSINESSES.find(b => b.id === bizId || b.name === businessName);
   const isOwner = bizId === 'biz_user' || (biz && biz.id === 'biz_user');
-  const categories = biz && biz.categories ? biz.categories : [];
   const cataloguePublic = biz && biz.cataloguePublic !== undefined ? biz.cataloguePublic : true;
   const loc = location || (biz ? biz.location : '');
+
+  // Store data for bottom-bar dropdowns
+  var catPhoneClean = biz ? biz.phone.replace(/[^0-9+]/g, '') : '+26770000000';
+  var catPhoneWaClean = phoneWa || (biz ? biz.phone.replace(/[^0-9]/g, '') : '26770000000');
+  _bizDropdownData = { bizId: bizId, name: businessName, phone: catPhoneClean, phoneWa: catPhoneWaClean, location: loc };
+  _bizDropdownState = null;
 
   const navHtml = `
     <div class="biz-profile-card-nav" onclick="goTo('view-business')">
@@ -418,9 +457,22 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${businessName}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc}</div>
-        <div style="font-size:12px;color:var(--orange);font-weight:600;">Catalogue</div>
+        <div style="font-size:12px;color:var(--orange);font-weight:600;" id="catalogue-nav-label">Catalogue</div>
       </div>
       <span style="font-size:20px;color:rgba(255,255,255,0.3);margin-left:8px;">›</span>
+    </div>
+  `;
+
+  const bottomBarHtml = `
+    <div class="biz-bottom-bar">
+      <button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
+      <div id="biz-bar-actions">
+        <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
+        <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
+        <img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
+        <img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
+        <img src="assets/icons/heart_inactive_icon.png" class="biz-bar-icon" onclick="toggleFavBiz('${bizId}')" id="biz-heart-icon">
+      </div>
     </div>
   `;
 
@@ -443,116 +495,44 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
         </div>
       </div>
       ${navHtml}
+      ${bottomBarHtml}
     `;
     goTo('view-business-catalogue');
     return;
   }
 
-  const nameEsc = (businessName || '').replace(/'/g, "\\'");
-  let contentHtml = '';
-
+  var items = [];
   if (isOwner) {
     const userItems = window._userItems || [];
     const realBizId = biz && biz.id;
-    const demoItems = (window.DEMO_CATALOGUE_ITEMS || []).filter(it => it.businessId === realBizId);
-    const catMap = {};
-    userItems.concat(demoItems).forEach(it => {
-      const c = it.category || 'Other';
-      if (!catMap[c]) catMap[c] = [];
-      catMap[c].push(it);
-    });
-    const catKeys = Object.keys(catMap);
-    if (catKeys.length === 0) {
-      contentHtml = '<div style="text-align:center;padding:40px 16px;color:var(--grey-dark);"><div style="font-size:40px;margin-bottom:12px;">📦</div><p style="font-size:14px;font-weight:600;">Your catalogue is empty</p><p style="font-size:12px;margin-top:4px;">Add items to showcase your products.</p></div>';
-    } else {
-      catKeys.forEach(cat => {
-        const catItems = catMap[cat];
-        contentHtml += `
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span style="font-size:15px;font-weight:700;color:var(--orange);">${cat}</span>
-              <span style="font-size:11px;color:var(--grey-dark);">${catItems.length} item${catItems.length !== 1 ? 's' : ''}</span>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              ${catItems.map(it => {
-                const price = (it.pricingResult && it.pricingResult.unitPrice) || it.basePrice || it.price || 0;
-                const unit = it.unit || 'each';
-                const img = it.images && it.images[0] ? it.images[0] : '';
-                return `
-                  <div class="catalogue-card" onclick="${it.businessId === 'biz_user' ? '' : "addToNoteQuick('" + it.id + "','" + it.title.replace(/'/g,"\\'") + "'," + price + ",'" + unit + "','" + (businessName || '').replace(/'/g,"\\'") + "')"}">
-                    ${img ? '<img src="' + img + '" class="catalogue-card-img" onerror="this.style.display=\'none\'">' : '<div class="catalogue-card-img catalogue-card-img-ph">' + (it.emoji || '📦') + '</div>'}
-                    <div class="catalogue-card-body">
-                      <div class="catalogue-card-title">${it.title}</div>
-                      <div class="catalogue-card-price">P ${price.toFixed(2)} <span class="catalogue-card-unit">${unit}</span></div>
-                      <div style="display:flex;gap:6px;margin-top:6px;">
-                        ${it.businessId === 'biz_user' ? '<button class="btn-sm" onclick="event.stopPropagation();editPromo(\'' + it.id + '\')" style="flex:1;">Edit</button>' : '<button class="btn-sm" onclick="event.stopPropagation();addToNoteQuick(\'' + it.id + '\',\'' + it.title.replace(/'/g,"\\'") + '\',' + price + ',\'' + unit + '\',\'' + (businessName || '').replace(/'/g,"\\'") + '\')" style="flex:1;">+ Note</button>'}
-                        ${it.businessId === 'biz_user' ? '<button class="btn-sm" style="flex:1;background:var(--grey-light);color:var(--grey-dark);border:1px solid var(--grey-light);" onclick="event.stopPropagation();deleteItem(\'' + it.id + '\')">Delete</button>' : ''}
-                      </div>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      });
-    }
-    contentHtml += '<button class="btn" style="margin-top:8px;width:100%;" onclick="openItemModal()">+ Add to Catalogue</button>';
+    const demoItems = (window.DEMO_CATALOGUE_ITEMS || []).filter(function(it) { return it.businessId === realBizId; });
+    items = userItems.concat(demoItems);
   } else {
-    let promos = window._promos.filter(p => p.businessId === bizId || p.businessName === businessName);
+    const promos = window._promos.filter(function(p) { return p.businessId === bizId || p.businessName === businessName; });
     const realBizId = biz && biz.id;
-    const demoItems = (window.DEMO_CATALOGUE_ITEMS || []).filter(it => it.businessId === realBizId || it.businessName === businessName);
-    const allItems = promos.concat(demoItems);
-    if (categories.length === 0 && allItems.length === 0) {
-      contentHtml = '<div style="text-align:center;padding:40px 16px;color:var(--grey-dark);"><div style="font-size:40px;margin-bottom:12px;">📦</div><p style="font-size:14px;font-weight:600;">No catalogue items yet</p><p style="font-size:12px;margin-top:4px;">Check back later or contact the business.</p></div>';
-    } else {
-      const catMap = {};
-      const catsToUse = categories.length > 0 ? categories : [...new Set(allItems.map(i => i.category || 'Other'))];
-      catsToUse.forEach(c => { if (!catMap[c]) catMap[c] = []; });
-      allItems.forEach(it => {
-        const c = it.category || 'Other';
-        if (!catMap[c]) catMap[c] = [];
-        catMap[c].push(it);
-      });
-      Object.keys(catMap).forEach(cat => {
-        const catItems = catMap[cat];
-        contentHtml += `
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span style="font-size:15px;font-weight:700;color:var(--orange);">${cat}</span>
-              <span style="font-size:11px;color:var(--grey-dark);">${catItems.length} item${catItems.length !== 1 ? 's' : ''}</span>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              ${catItems.map(p => {
-                const price = (p.basePrice || p.price || 0);
-                const unit = p.unit || 'each';
-                const img = p.images && p.images[0] ? p.images[0] : '';
-                return `
-                  <div class="catalogue-card" onclick="addToNoteQuick('${p.id}','${(p.title || '').replace(/'/g,"\\'")}',${price},'${unit}','${(businessName || '').replace(/'/g,"\\'")}')">
-                    ${img ? '<img src="' + img + '" class="catalogue-card-img" onerror="this.style.display=\'none\'">' : '<div class="catalogue-card-img catalogue-card-img-ph">' + (p.emoji || '📦') + '</div>'}
-                    <div class="catalogue-card-body">
-                      <div class="catalogue-card-title">${p.title || ''}</div>
-                      <div class="catalogue-card-price">P ${price.toFixed(2)} <span class="catalogue-card-unit">${unit}</span></div>
-                      <button class="btn-sm" style="margin-top:6px;width:100%;" onclick="event.stopPropagation();addToNoteQuick('${p.id}','${(p.title || '').replace(/'/g,"\\'")}',${price},'${unit}','${(businessName || '').replace(/'/g,"\\'")}')">+ Add to Note</button>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      });
-    }
+    const demoItems = (window.DEMO_CATALOGUE_ITEMS || []).filter(function(it) { return it.businessId === realBizId || it.businessName === businessName; });
+    items = promos.concat(demoItems);
   }
 
-  view.innerHTML = `
-    <div id="biz-catalogue-content" style="flex:1;overflow-y:auto;padding:12px;">
-      ${contentHtml}
-    </div>
-    ${navHtml}
-  `;
+  // Build category map using main categories from WIROG_PRODUCT_CATEGORIES
+  var catMap = {};
+  items.forEach(function(it) {
+    var mainCat = _itemToMainCategory(it.category);
+    if (!catMap[mainCat]) catMap[mainCat] = [];
+    catMap[mainCat].push(it);
+  });
 
+  _bizCatalogueState = {
+    bizId: bizId, businessName: businessName, location: loc,
+    phoneWa: phoneWa, color: color, init: init,
+    isOwner: isOwner, items: items, catMap: catMap,
+    selectedCat: null
+  };
+
+  // Set up the shell with nav, content, and bottom bar, then render categories
+  view.innerHTML = navHtml + '<div id="biz-catalogue-content" style="flex:1;overflow-y:auto;padding:12px;"></div>' + bottomBarHtml;
   goTo('view-business-catalogue');
+  renderCatalogueCategories();
 }
 
 function requestCatalogueAccess(businessName, phone) {
@@ -566,6 +546,8 @@ function toggleFavBiz(bizId) {
   var icon = document.getElementById('biz-heart-icon');
   if (icon) icon.src = src;
   icon = document.getElementById('pro-heart-icon');
+  if (icon) icon.src = src;
+  icon = document.getElementById('biz-listed-heart-icon');
   if (icon) icon.src = src;
   // Also update directory list heart icons
   document.querySelectorAll('.dir-card button img').forEach(function(img) {
@@ -619,6 +601,266 @@ function toggleBizPromo(id) {
   if (!wasOpen) current.classList.add('open');
 }
 
+/* ─── BOTTOM BAR DROPDOWN HELPERS ─── */
+let _bizDropdownData = null;
+let _bizDropdownState = null;
+let _bizCatalogueState = null;
+
+function _getBizDropdownItems(type) {
+  var d = _bizDropdownData;
+  if (!d) return [];
+  var isBK = d.bizId === 'biz-1' || d.name === 'Board Kings';
+  var callPhone = isBK ? (d.phone || '+26771234567') : '+26770000000';
+  var waPhone  = isBK ? (d.phoneWa || '26771234567') : '26770000000';
+  var map = {
+    call: [
+      { label: 'Sales',     action: 'call',     phone: callPhone },
+      { label: 'Marketing', action: 'call',     phone: callPhone },
+      { label: 'Accounts',  action: 'call',     phone: callPhone },
+      { label: 'Warehouse', action: 'call',     phone: callPhone }
+    ],
+    facebook: [
+      { label: 'Main Page', action: 'facebook', query: d.name },
+      { label: 'Fan Page',  action: 'facebook', query: d.name }
+    ],
+    gps: [
+      { label: 'Main Branch',         action: 'maps',     name: d.name, location: d.location },
+      { label: 'Phakalane Branch',    action: 'bizpage' },
+      { label: 'Francistown Branch',  action: 'bizpage' },
+      { label: 'Maun Branch',         action: 'bizpage' }
+    ],
+    whatsapp: [
+      { label: 'Sales',     action: 'whatsapp', phone: waPhone,  name: d.name },
+      { label: 'Marketing', action: 'whatsapp', phone: waPhone,  name: d.name },
+      { label: 'Accounts',  action: 'whatsapp', phone: waPhone,  name: d.name },
+      { label: 'Warehouse', action: 'whatsapp', phone: waPhone,  name: d.name }
+    ]
+  };
+  return map[type] || [];
+}
+
+function toggleBizDropdown(type) {
+  var actions = document.getElementById('biz-bar-actions');
+  if (!actions) return;
+  // Toggle off if same type
+  if (_bizDropdownState && _bizDropdownState.type === type) {
+    closeBizDropdown();
+    return;
+  }
+  // Save icons HTML on first toggle
+  if (!_bizDropdownState) _bizDropdownState = { iconsHtml: null, type: null };
+  if (!_bizDropdownState.iconsHtml) _bizDropdownState.iconsHtml = actions.innerHTML;
+
+  _bizDropdownState.type = type;
+  var items = _getBizDropdownItems(type);
+  var html = items.map(function(i) {
+    var p1 = (i.phone || i.query || '').replace(/'/g, "\\'");
+    var p2 = (i.name || '').replace(/'/g, "\\'");
+    var p3 = (i.location || '').replace(/'/g, "\\'");
+    var label = i.label.replace(/'/g, "\\'");
+    return '<div class="biz-dd-item" onclick="closeBizDropdown();doBizDropdownAction(\'' + i.action + '\',\'' + p1 + '\',\'' + p2 + '\',\'' + p3 + '\')">' + label + '</div>';
+  }).join('');
+  html += '<div class="biz-dd-close" onclick="closeBizDropdown()"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;"></div>';
+  actions.innerHTML = html;
+}
+
+function closeBizDropdown() {
+  var actions = document.getElementById('biz-bar-actions');
+  if (!actions || !_bizDropdownState || !_bizDropdownState.iconsHtml) return;
+  actions.innerHTML = _bizDropdownState.iconsHtml;
+  _bizDropdownState.type = null;
+}
+
+function doBizDropdownAction(action, p1, p2, p3) {
+  closeBizDropdown();
+  if (action === 'call')        callBusiness(p1);
+  else if (action === 'facebook') openFacebook(p1);
+  else if (action === 'maps')    openMaps(p2, p3);
+  else if (action === 'whatsapp') openWhatsApp(p1, p2);
+  else if (action === 'bizpage') {
+    var d = _bizDropdownData;
+    if (d) openBizProfile(d.bizId, d.name, '', '', d.location, d.phone, false, '', false);
+  }
+}
+
+/* ─── CATALOGUE CATEGORY DRILL-DOWN ─── */
+function _itemToMainCategory(itemCategory) {
+  if (!itemCategory || !window.WIROG_PRODUCT_CATEGORIES) return 'Other';
+  var cats = window.WIROG_PRODUCT_CATEGORIES.categories;
+  for (var mi = 0; mi < cats.length; mi++) {
+    if (cats[mi].name === itemCategory) return cats[mi].name;
+    var subs = cats[mi].children || [];
+    for (var si = 0; si < subs.length; si++) {
+      if (subs[si].name === itemCategory) return cats[mi].name;
+      var leaves = subs[si].children || [];
+      for (var li = 0; li < leaves.length; li++) {
+        if (leaves[li].name === itemCategory) return cats[mi].name;
+      }
+    }
+  }
+  return 'Other';
+}
+
+function renderCatalogueCategories() {
+  var state = _bizCatalogueState;
+  if (!state) return;
+  var content = document.getElementById('biz-catalogue-content');
+  if (!content) return;
+
+  var label = document.getElementById('catalogue-nav-label');
+  if (label) label.textContent = 'Catalogue';
+
+  var catKeys = Object.keys(state.catMap);
+  if (catKeys.length === 0) {
+    var emptyMsg = state.isOwner
+      ? '<div style="text-align:center;padding:40px 16px;color:var(--grey-dark);"><div style="font-size:40px;margin-bottom:12px;">📦</div><p style="font-size:14px;font-weight:600;">Your catalogue is empty</p><p style="font-size:12px;margin-top:4px;">Add items to showcase your products.</p></div>'
+      : '<div style="text-align:center;padding:40px 16px;color:var(--grey-dark);"><div style="font-size:40px;margin-bottom:12px;">📦</div><p style="font-size:14px;font-weight:600;">No catalogue items yet</p><p style="font-size:12px;margin-top:4px;">Check back later or contact the business.</p></div>';
+    content.innerHTML = emptyMsg + (state.isOwner ? '<button class="btn" style="width:100%;" onclick="openItemModal()">+ Add to Catalogue</button>' : '');
+    return;
+  }
+
+  catKeys.sort();
+  var html = '<div style="margin-bottom:12px;font-size:14px;font-weight:600;color:var(--grey-dark);">' + catKeys.length + ' categor' + (catKeys.length === 1 ? 'y' : 'ies') + '</div>';
+  html += '<div class="cat-vert-list">';
+  catKeys.forEach(function(cat) {
+    var count = state.catMap[cat].length;
+    html += '<div class="cat-vert-row" onclick="selectCatalogueCategory(\'' + cat.replace(/'/g, "\\'") + '\')">' +
+      '<div class="cat-vert-name">' + cat + '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<div class="cat-vert-count">' + count + '</div>' +
+        '<span class="cat-vert-arrow">\u203A</span>' +
+      '</div>' +
+      '</div>';
+  });
+  html += '</div>';
+
+  if (state.isOwner) {
+    html += '<button class="btn" style="width:100%;margin-top:16px;" onclick="openItemModal()">+ Add to Catalogue</button>';
+  }
+  content.innerHTML = html;
+}
+
+function renderCatalogueListedItems(selectedCat) {
+  var state = _bizCatalogueState;
+  if (!state) return;
+  var view = document.getElementById('view-biz-catalogue-listed-catalogue');
+  if (!view) return;
+
+  var catItems = state.catMap[selectedCat] || [];
+
+  var listedHtml = '';
+
+  // Top bar
+  listedHtml += '<div class="biz-profile-card-nav" style="flex-shrink:0;">' +
+    '<div style="display:flex;align-items:center;gap:8px;" onclick="backToCatalogueCategories()">' +
+      '<img src="assets/icons/solid/chevron-left_white.webp" style="width:20px;height:20px;cursor:pointer;">' +
+      '<div style="font-weight:700;font-size:15px;color:#fff;">' + selectedCat + '</div>' +
+    '</div>' +
+  '</div>';
+
+  // Items list
+  listedHtml += '<div id="biz-listed-items" style="flex:1;overflow-y:auto;padding:12px;">';
+
+  if (catItems.length === 0) {
+    listedHtml += '<div style="text-align:center;padding:32px 16px;color:var(--grey-dark);"><p>No items in this category.</p></div>';
+  } else {
+    catItems.forEach(function(it) {
+      var price = (it.pricingResult && it.pricingResult.unitPrice) || it.basePrice || it.price || 0;
+      var unit = it.unit || 'each';
+      var img = it.images && it.images[0] ? it.images[0] : '';
+      var isMyItem = state.isOwner && (it.businessId === 'biz_user' || !it.businessId);
+      var isStaffRestricted = UserState.businessRole === 'staff' && !it.allowStaffEdits;
+      var tagsHtml = '';
+      if (it.tags && it.tags.length) {
+        tagsHtml = '<div class="cat-item-tags">' + it.tags.slice(0, 3).map(function(t) { return '<span class="pill">' + t + '</span>'; }).join('') + (it.tags.length > 3 ? ' <span style="font-size:11px;color:var(--grey-dark);">+' + (it.tags.length - 3) + '</span>' : '') + '</div>';
+      }
+      var nameEsc = (it.title || '').replace(/'/g, "\\'");
+      var descEsc = (it.desc || '').replace(/'/g, "\\'");
+      var bizNameEsc = (state.businessName || '').replace(/'/g, "\\'");
+      var unitEsc = unit.replace(/'/g, "\\'");
+
+      listedHtml += '<div class="cat-item-card" id="cat-item-' + it.id + '">';
+      // Image area
+      listedHtml += '<div class="cat-item-img-wrap">';
+      if (img) {
+        listedHtml += '<img src="' + img + '" class="cat-item-img" onerror="this.style.display=\'none\'">';
+        listedHtml += '<div class="cat-item-img-fallback" style="display:none;">' + (it.emoji || '\ud83d\udce6') + '</div>';
+      } else {
+        listedHtml += '<div class="cat-item-img-ph"><span class="cat-item-emoji">' + (it.emoji || '\ud83d\udce6') + '</span></div>';
+      }
+      if (isMyItem) listedHtml += '<div class="cat-item-own-badge">Your Item</div>';
+      listedHtml += '</div>';
+      // Details
+      listedHtml += '<div class="cat-item-details">';
+      listedHtml += '<div class="cat-item-title">' + nameEsc + '</div>';
+      if (descEsc) listedHtml += '<div class="cat-item-desc">' + descEsc + '</div>';
+      listedHtml += tagsHtml;
+      listedHtml += '<div class="cat-item-price-row"><span class="cat-item-price">P ' + price.toFixed(2) + '</span> <span class="cat-item-unit">' + unit + '</span></div>';
+      listedHtml += '<div class="cat-item-qty-row">' +
+        '<button class="qty-btn" onclick="catItemQty(\'' + it.id + '\',-1,' + price + ')">\u2212</button>' +
+        '<span class="cat-qv" id="cat-qv-' + it.id + '">1</span>' +
+        '<button class="qty-btn" onclick="catItemQty(\'' + it.id + '\',1,' + price + ')">+</button>' +
+        '</div>';
+      // Actions
+      listedHtml += '<div class="cat-item-actions">';
+      listedHtml += '<button class="action-btn" onclick="addToNoteQuick(\'' + it.id + '\',\'' + nameEsc + '\',' + price + ',\'' + unitEsc + '\',\'' + bizNameEsc + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;"></button>';
+      listedHtml += '<button class="action-btn" onclick="shareCatalogueItem(\'' + nameEsc + '\',\'' + bizNameEsc + '\',' + price + ',\'' + unitEsc + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>';
+      if (isMyItem && !isStaffRestricted) {
+        listedHtml += '<button class="action-btn" onclick="editPromo(\'' + it.id + '\')"><img src="assets/icons/solid/pen_orange.webp" style="height:14px;vertical-align:middle;"></button>';
+        listedHtml += '<button class="action-btn" onclick="deleteItem(\'' + it.id + '\')"><img src="assets/icons/solid/delete_icon_orange.webp" style="height:14px;vertical-align:middle;"></button>';
+      }
+      listedHtml += '</div></div></div>';
+    });
+  }
+
+  listedHtml += '</div>';
+
+  // Bottom bar (reuse _bizDropdownData from openBizCatalogue)
+  var stateData = _bizCatalogueState;
+  if (stateData) {
+    var heartIcon = UserState.isFavourite(stateData.bizId) ? 'heart_active_icon' : 'heart_inactive_icon';
+    listedHtml += '<div class="biz-bottom-bar">' +
+      '<button onclick="backToCatalogueCategories()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>' +
+      '<div id="biz-bar-actions">' +
+        '<img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'call\')">' +
+        '<img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'facebook\')">' +
+        '<img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'gps\')">' +
+        '<img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'whatsapp\')">' +
+        '<img src="assets/icons/' + heartIcon + '.png" class="biz-bar-icon" onclick="toggleFavBiz(\'' + stateData.bizId + '\')" id="biz-listed-heart-icon">' +
+      '</div>' +
+    '</div>';
+  }
+
+  view.innerHTML = listedHtml;
+}
+
+function selectCatalogueCategory(mainCat) {
+  if (!_bizCatalogueState) return;
+  _bizCatalogueState.selectedCat = mainCat;
+  goTo('view-biz-catalogue-listed-catalogue');
+  renderCatalogueListedItems(mainCat);
+}
+
+function backToCatalogueCategories() {
+  if (!_bizCatalogueState) return;
+  _bizCatalogueState.selectedCat = null;
+  goTo('view-business-catalogue');
+  renderCatalogueCategories();
+}
+
+function catItemQty(itemId, delta) {
+  var qv = document.getElementById('cat-qv-' + itemId);
+  if (!qv) return;
+  var q = parseInt(qv.innerText) + delta;
+  if (q < 1) q = 1;
+  qv.innerText = q;
+}
+
+function shareCatalogueItem(title, businessName, price, unit) {
+  var text = 'Check out ' + title + ' (' + unit + ') - P' + price.toFixed(2) + ' from ' + businessName + ' on Wirog Supply Solutions!';
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
 window.renderAlphaNav = renderAlphaNav;
 window.renderDirectory = renderDirectory;
 window.openBizProfile = openBizProfile;
@@ -637,3 +879,10 @@ window.openDirTypeModal = openDirTypeModal;
 window.selectDirType = selectDirType;
 window.toggleBizPromo = toggleBizPromo;
 window.openProProfile = openProProfile;
+window.toggleBizDropdown = toggleBizDropdown;
+window.closeBizDropdown = closeBizDropdown;
+window.selectCatalogueCategory = selectCatalogueCategory;
+window.renderCatalogueListedItems = renderCatalogueListedItems;
+window.backToCatalogueCategories = backToCatalogueCategories;
+window.catItemQty = catItemQty;
+window.shareCatalogueItem = shareCatalogueItem;

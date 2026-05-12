@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wirog Dashboard Prototype</title>
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* --- CSS Variables & Resets --- */
+    :root {
+      --orange: #e87722;
+      --orange-light: #fbe6d8;
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f4f4f4;
+      --color-background-tertiary: #eaeaea;
+      --color-border-secondary: #e0e0e0;
+      --color-border-tertiary: #f0f0f0;
+      --color-text-primary: #333333;
+      --color-text-secondary: #666666;
+      --color-text-tertiary: #999999;
+      --color-text-success: #27500A;
+      --color-text-danger: #993C1D;
+      --border-radius-lg: 12px;
+      --border-radius-md: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: #333; display: flex; justify-content: center; padding: 20px 0; }
+
+    /* Mobile Emulator Container */
+    .app-container {
+      width: 100%;
+      max-width: 400px;
+      height: 850px;
+      max-height: 100vh;
+      background: var(--color-background-secondary);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      border: 8px solid #222;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .view { display: none; height: 100%; overflow-y: auto; background: var(--color-background-secondary); }
+    .view.active { display: block; }
+
+    /* --- Shared UI Components --- */
+    .top-bar { background: var(--orange); padding: 16px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; color: #fff;}
+    .top-bar-title { font-size: 16px; font-weight: 600; flex: 1; }
+    .top-bar-back { font-size: 18px; cursor: pointer; width: 30px; }
+
+    .section-head { font-size: 11px; font-weight: 600; color: var(--color-text-tertiary); padding: 16px 14px 6px; letter-spacing: .05em; text-transform: uppercase; }
+    .section-divider { height: 6px; background: var(--color-background-tertiary); }
+
+    .list-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--color-background-primary); border-bottom: 1px solid var(--color-border-tertiary); font-size: 13px; color: var(--color-text-primary); }
+    .list-row-sub { font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; }
+    .list-row-right { font-size: 13px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 6px; font-weight: 500; }
+
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 14px; background: var(--color-background-primary); }
+    .stat-card { background: var(--color-background-secondary); border-radius: 8px; padding: 12px; border: 1px solid var(--color-border-secondary); }
+    .stat-num { font-size: 22px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 2px; }
+    .stat-label { font-size: 11px; color: var(--color-text-secondary); font-weight: 500; }
+    .stat-delta { font-size: 11px; margin-top: 6px; font-weight: 500; }
+
+    .pill-row { display: flex; gap: 8px; padding: 10px 14px; flex-wrap: wrap; background: var(--color-background-primary); border-bottom: 1px solid var(--color-border-tertiary); }
+    .pill { font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--color-border-secondary); color: var(--color-text-secondary); background: var(--color-background-primary); cursor: pointer; }
+    .pill.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+    .progress-row { padding: 12px 14px; background: var(--color-background-primary); }
+    .progress-label-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 6px; }
+    .prog-track { height: 6px; background: var(--color-border-tertiary); border-radius: 4px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+
+    .tabs-row { display: flex; background: var(--color-background-primary); border-bottom: 1px solid var(--color-border-tertiary); position: sticky; top: 53px; z-index: 9; }
+    .tab-item { flex: 1; text-align: center; font-size: 12px; font-weight: 500; padding: 12px 4px; color: var(--color-text-secondary); border-bottom: 2px solid transparent; cursor: pointer; }
+    .tab-item.on { color: var(--orange); border-bottom-color: var(--orange); }
+
+    .btn { background: var(--orange); color: #fff; border: none; border-radius: var(--border-radius-md); font-size: 13px; padding: 10px 14px; font-weight: 600; cursor: pointer; text-align: center; display: inline-block; width: 100%; }
+    .btn-outline { background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; padding: 9px 14px; font-weight: 600; cursor: pointer; width: 100%; text-align: center; }
+
+    /* Account Accordion Styles */
+    .acc-header { display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--color-background-primary); border-bottom: 1px solid var(--color-border-tertiary); font-size: 14px; font-weight: 500; color: var(--color-text-primary); cursor: pointer; }
+    .acc-body { display: none; background: var(--color-background-primary); padding: 0 14px 14px 14px; border-bottom: 1px solid var(--color-border-tertiary); }
+    .acc-body.open { display: block; }
+
+    /* Admin Queue Styles */
+    .admin-queue-card { background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--color-border-secondary); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .admin-queue-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 8px; }
+    .admin-queue-type { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--orange); letter-spacing: 0.5px; }
+    .admin-queue-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+    .fb-calendar-day { background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 8px; border-left: 4px solid var(--orange); }
+    .fb-slot-item { background: var(--color-background-secondary); padding: 8px; border-radius: 4px; font-size: 12px; margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- 1. ACCOUNT SCREEN (Entry Point) -->
+  <div id="view-account" class="view active">
+    <div class="top-bar">
+      <div class="top-bar-title">My Account</div>
+    </div>
+    
+    <div style="padding: 20px 14px; background: #fff; border-bottom: 1px solid var(--color-border-tertiary); display:flex; align-items:center; gap:12px;">
+      <div style="width:50px; height:50px; border-radius:50%; background:#333; color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:bold;">BK</div>
+      <div>
+        <div style="font-weight:600; font-size:16px;">Board Kings</div>
+        <div style="font-size:12px; color:var(--color-text-secondary);">Business Account</div>
+      </div>
+    </div>
+
+    <div class="acc-header" onclick="toggleAcc('acc-budget')">
+      <div><i class="fas fa-wallet" style="color:var(--orange); width:20px;"></i> Budget & Analytics</div>
+      <i class="fas fa-chevron-down" id="acc-budget-icon"></i>
+    </div>
+    <div class="acc-body" id="acc-budget">
+      <div style="background:var(--color-background-secondary);padding:10px 12px; border-radius:8px; margin-top:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div class="stat-card" style="background:#fff; padding:10px;">
+            <div class="stat-num" style="font-size:18px;">P700</div>
+            <div class="stat-label">Spent this month</div>
+          </div>
+          <div class="stat-card" style="background:#fff; padding:10px;">
+            <div class="stat-num" style="font-size:18px;">8/12</div>
+            <div class="stat-label">Promo credits used</div>
+          </div>
+        </div>
+        <button class="btn" style="display:flex; justify-content:space-between; align-items:center;" onclick="goTo('view-analytics')">
+          <span>View full analytics</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="acc-header" onclick="goTo('view-admin')">
+      <div><i class="fas fa-shield-alt" style="color:var(--orange); width:20px;"></i> Super Admin Dashboard</div>
+      <i class="fas fa-chevron-right" style="color:var(--color-text-tertiary)"></i>
+    </div>
+
+    <div class="acc-header">
+      <div><i class="fas fa-user" style="color:var(--orange); width:20px;"></i> Personal Details</div>
+      <i class="fas fa-chevron-right" style="color:var(--color-text-tertiary)"></i>
+    </div>
+  </div>
+
+  <!-- 2. BUSINESS ANALYTICS DASHBOARD -->
+  <div id="view-analytics" class="view">
+    <div class="top-bar">
+      <div class="top-bar-back" onclick="goTo('view-account')"><i class="fas fa-chevron-left"></i></div>
+      <div class="top-bar-title">Analytics</div>
+    </div>
+    <div class="pill-row">
+      <div class="pill active">This month</div>
+      <div class="pill">Last month</div>
+      <div class="pill">3 months</div>
+      <div class="pill">All time</div>
+    </div>
+    
+    <div class="section-head">SPENDING OVERVIEW</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num" style="color:#e87722">P700</div>
+        <div class="stat-label">Total spent</div>
+        <div class="stat-delta" style="color:var(--color-text-success)">P350 plan + P350 add-on</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">P2,450</div>
+        <div class="stat-label">Spent this year</div>
+        <div class="stat-delta" style="color:var(--color-text-tertiary)">7 months active</div>
+      </div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-label-row"><span>Promo credits</span><span>8 of 12 used</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:66%;background:#e87722"></div></div>
+    </div>
+    <div class="progress-row" style="padding-top:0">
+      <div class="progress-label-row"><span>Facebook slots</span><span>5 of 12 used</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:41%;background:#378ADD"></div></div>
+    </div>
+    <div class="list-row">
+      <div>
+        <div>Renewal date</div>
+        <div class="list-row-sub">P350 / month plan</div>
+      </div>
+      <div class="list-row-right">1 Jun 2026</div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">CATALOGUE PERFORMANCE</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">342</div>
+        <div class="stat-label">Catalogue views</div>
+        <div class="stat-delta" style="color:var(--color-text-success)">+18% vs last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">12</div>
+        <div class="stat-label">Items listed</div>
+        <div class="stat-delta" style="color:var(--color-text-tertiary)">2 with zero views</div>
+      </div>
+    </div>
+    <div class="list-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:24px;height:24px;background:#FAECE7;color:#993C1D;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;">1</div>
+        <div>
+          <div style="font-size:13px; font-weight:500;">Meranti Planks 22×144mm</div>
+          <div class="list-row-sub">Boards & Timber</div>
+        </div>
+      </div>
+      <div class="list-row-right" style="color:#e87722">84 views</div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">MONTHLY HISTORY</div>
+    <div style="font-size:11px;color:var(--color-text-tertiary);padding:4px 14px 8px;font-style:italic;">Tap a month to see the full breakdown</div>
+    
+    <div class="list-row" style="cursor:pointer;" onclick="openMonthlyDrilldown('May 2026')">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--orange);"></div>
+        <div>
+          <div style="font-size:13px; font-weight:600;">May 2026</div>
+          <div class="list-row-sub">P700 · 1,840 impressions</div>
+        </div>
+      </div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--color-text-tertiary)"></i>
+    </div>
+    <div class="list-row" style="cursor:pointer;" onclick="openMonthlyDrilldown('April 2026')">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:8px;height:8px;border-radius:50%;background:#D3D1C7;"></div>
+        <div>
+          <div style="font-size:13px; font-weight:600;">April 2026</div>
+          <div class="list-row-sub">P350 · 1,220 impressions</div>
+        </div>
+      </div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--color-text-tertiary)"></i>
+    </div>
+  </div>
+
+  <!-- 3. MONTHLY DRILL-DOWN ANALYTICS -->
+  <div id="view-analytics-month" class="view">
+    <div class="top-bar">
+      <div class="top-bar-back" onclick="goTo('view-analytics')"><i class="fas fa-chevron-left"></i></div>
+      <div class="top-bar-title" id="month-title">May 2026</div>
+    </div>
+    <div class="tabs-row">
+      <div class="tab-item on" onclick="switchMonthTab('spending', this)">Spending</div>
+      <div class="tab-item" onclick="switchMonthTab('catalogue', this)">Catalogue</div>
+      <div class="tab-item" onclick="switchMonthTab('promos', this)">Promos</div>
+      <div class="tab-item" onclick="switchMonthTab('facebook', this)">Facebook</div>
+    </div>
+    <div id="month-content" style="padding-bottom: 20px;">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- 4. SUPER ADMIN DASHBOARD -->
+  <div id="view-admin" class="view">
+    <div class="top-bar">
+      <div class="top-bar-back" onclick="goTo('view-account')"><i class="fas fa-chevron-left"></i></div>
+      <div class="top-bar-title">Admin Dashboard</div>
+    </div>
+    <div class="tabs-row">
+      <div class="tab-item on" onclick="switchAdminTab('overview', this)">Overview</div>
+      <div class="tab-item" onclick="switchAdminTab('approvals', this)">Approvals</div>
+      <div class="tab-item" onclick="switchAdminTab('facebook', this)">Facebook</div>
+      <div class="tab-item" onclick="switchAdminTab('directory', this)">Directory</div>
+    </div>
+    <div id="admin-tab-overview" class="admin-content-area" style="padding: 14px;"></div>
+    <div id="admin-tab-approvals" class="admin-content-area" style="padding: 14px; display: none;"></div>
+    <div id="admin-tab-facebook" class="admin-content-area" style="padding: 14px; display: none;"></div>
+    <div id="admin-tab-directory" class="admin-content-area" style="padding: 14px; display: none;"></div>
+  </div>
+
+</div>
+
+<!-- --- JAVASCRIPT LOGIC --- -->
+<script>
+  // 1. MOCK DATABASE (Simulating LocalStorage / IndexedDB)
+  let MOCK_DB = {
+    requests: [
+      { id: 'req_1', type: 'payment', typeLabel: 'Payment Proof', date: new Date('2026-05-10T10:00:00'), status: 'pending', data: { businessName: 'Board Kings', method: 'BTC Smega', amount: '350', purpose: 'Monthly Plan' } },
+      { id: 'req_2', type: 'promo', typeLabel: 'Promo Request', date: new Date('2026-05-09T15:30:00'), status: 'pending', data: { businessName: 'Tile Express', title: 'Quarry Tiles Clearance', durationDays: 3, amount: '75' } },
+      { id: 'req_3', type: 'artwork', typeLabel: 'FB Artwork', date: new Date('2026-05-08T09:15:00'), status: 'pending', data: { businessName: 'BuildIt Gabs', boostDay: 'Wednesday', imageCount: 4, category: 'Paint' } }
+    ],
+    approvedArtwork: [
+      { id: 'art_1', businessName: 'Hardware Kings', boostDay: 'Monday', imageCount: 2, category: 'Tools' },
+      { id: 'art_2', businessName: 'Francistown Steel', boostDay: 'Monday', imageCount: 5, category: 'Steel' },
+      { id: 'art_3', businessName: 'Roofing Masters', boostDay: 'Wednesday', imageCount: 3, category: 'Roofing' }
+    ],
+    businesses: [
+      { name: 'Board Kings', spend: 1245, promos: 8, views: 3410 },
+      { name: 'BuildIt Gabs', spend: 550, promos: 4, views: 1840 },
+      { name: 'Tile Express', spend: 890, promos: 6, views: 2200 },
+      { name: 'Francistown Steel', spend: 350, promos: 2, views: 600 }
+    ]
+  };
+
+  // 2. NAVIGATION & UI HELPERS
+  function goTo(viewId) {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    
+    // Auto-render admin if going there
+    if(viewId === 'view-admin') {
+      switchAdminTab('overview', document.querySelector('#view-admin .tab-item'));
+    }
+  }
+
+  function toggleAcc(id) {
+    const el = document.getElementById(id);
+    const icon = document.getElementById(id + '-icon');
+    if (el.classList.contains('open')) {
+      el.classList.remove('open');
+      icon.className = 'fas fa-chevron-down';
+    } else {
+      el.classList.add('open');
+      icon.className = 'fas fa-chevron-up';
+    }
+  }
+
+  // 3. MONTHLY DRILL-DOWN LOGIC
+  function openMonthlyDrilldown(monthStr) {
+    document.getElementById('month-title').innerText = monthStr;
+    switchMonthTab('spending', document.querySelector('#view-analytics-month .tab-item'));
+    goTo('view-analytics-month');
+  }
+
+  function switchMonthTab(tabId, element) {
+    document.querySelectorAll('#view-analytics-month .tab-item').forEach(el => el.classList.remove('on'));
+    element.classList.add('on');
+    
+    let html = '';
+    if(tabId === 'spending') {
+      html = `
+        <div class="section-head">WHAT YOU PAID FOR</div>
+        <div class="list-row">
+          <div><div style="font-weight:600;">P350 monthly plan</div><div class="list-row-sub">Renewed 1 May</div></div>
+          <div class="list-row-right">P350.00</div>
+        </div>
+        <div class="list-row">
+          <div><div style="font-weight:600;">Facebook promo add-on</div><div class="list-row-sub">+12 slots purchased 4 May</div></div>
+          <div class="list-row-right">P200.00</div>
+        </div>
+        <div class="list-row">
+          <div><div style="font-weight:600;">Promo boost</div><div class="list-row-sub">Chipboard (3 days)</div></div>
+          <div class="list-row-right">P75.00</div>
+        </div>
+        <div class="list-row" style="background:var(--color-background-secondary); border-top:1px solid #ddd;">
+          <div style="font-weight:600;">Total</div>
+          <div class="list-row-right" style="color:var(--orange); font-weight:700;">P625.00</div>
+        </div>
+      `;
+    } else if (tabId === 'catalogue') {
+      html = `
+        <div class="section-head">CATALOGUE ITEM BREAKDOWN</div>
+        <div class="list-row"><div>Meranti Planks 22×144mm</div><div class="list-row-right" style="color:var(--orange);">84 views</div></div>
+        <div class="list-row"><div>Chipboard 18mm</div><div class="list-row-right" style="color:var(--orange);">61 views</div></div>
+        <div class="list-row"><div>Postform Top Glacier White</div><div class="list-row-right" style="color:var(--orange);">55 views</div></div>
+        <div class="list-row"><div style="color:var(--color-text-danger);">PVC Foil oak woodgrain</div><div class="list-row-right" style="color:var(--color-text-tertiary);">0 views</div></div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);padding:8px 14px;font-style:italic;">Items with 0 views may need a better image.</div>
+      `;
+    } else {
+      html = `<div style="padding:30px; text-align:center; color:var(--color-text-tertiary); font-size:13px;">Analytics for ${tabId} will appear here.</div>`;
+    }
+    document.getElementById('month-content').innerHTML = html;
+  }
+
+  // 4. SUPER ADMIN DASHBOARD LOGIC
+  function switchAdminTab(tabId, element) {
+    document.querySelectorAll('#view-admin .tab-item').forEach(el => el.classList.remove('on'));
+    element.classList.add('on');
+    document.querySelectorAll('.admin-content-area').forEach(el => el.style.display = 'none');
+    document.getElementById('admin-tab-' + tabId).style.display = 'block';
+
+    if (tabId === 'overview') renderAdminOverview();
+    if (tabId === 'approvals') renderAdminApprovals();
+    if (tabId === 'facebook') renderAdminFacebook();
+    if (tabId === 'directory') renderAdminDirectory();
+  }
+
+  function renderAdminOverview() {
+    let pendingCount = MOCK_DB.requests.filter(r => r.status === 'pending').length;
+    let html = `
+      <div class="stat-row" style="padding:0; background:transparent; margin-bottom:16px;">
+        <div class="stat-card" style="background:#fff;">
+          <div class="stat-num" style="color:var(--orange)">142</div>
+          <div class="stat-label">Active Promos</div>
+        </div>
+        <div class="stat-card" style="background:#fff;">
+          <div class="stat-num" style="color:${pendingCount > 0 ? '#e74c3c' : 'var(--color-text-primary)'}">${pendingCount}</div>
+          <div class="stat-label">Pending Requests</div>
+        </div>
+      </div>
+      <div class="section-head" style="padding:0 0 8px 0;">EXPIRING THIS WEEK</div>
+      <div class="list-row" style="border-radius:8px; border:1px solid var(--color-border-secondary); margin-bottom:8px;">
+        <div>
+          <div style="font-weight:600;">Dulux Paint 20L</div>
+          <div class="list-row-sub">BuildIt Gabs • Expires in 2 days</div>
+        </div>
+        <button class="btn-outline" style="border-color:#e74c3c; color:#e74c3c; width:auto; padding:6px 12px;" onclick="alert('Promo suspended')">Suspend</button>
+      </div>
+    `;
+    document.getElementById('admin-tab-overview').innerHTML = html;
+  }
+
+  function renderAdminApprovals() {
+    let pending = MOCK_DB.requests.filter(r => r.status === 'pending');
+    let html = `<div style="font-size:12px; margin-bottom:12px; font-weight:600; color:var(--grey-dark);">🔴 ${pending.length} PENDING REQUESTS</div>`;
+    
+    if (pending.length === 0) {
+      html += `<div style="text-align:center; padding:30px; color:var(--color-text-tertiary);">Queue is clear!</div>`;
+    }
+
+    pending.forEach(item => {
+      let d = item.data;
+      html += `
+        <div class="admin-queue-card">
+          <div class="admin-queue-header">
+            <span class="admin-queue-type"><i class="fas fa-circle" style="font-size:8px;margin-right:4px;"></i> ${item.typeLabel}</span>
+            <span style="font-size:11px; color:var(--color-text-tertiary)">Just now</span>
+          </div>
+          <div style="font-size:14px; font-weight:600; margin-bottom:4px;">${d.businessName}</div>
+      `;
+      if (item.type === 'payment') {
+        html += `<div style="font-size:12px; color:var(--color-text-secondary);">Method: <strong>${d.method}</strong> • Amount: P${d.amount}</div>`;
+      } else if (item.type === 'promo') {
+        html += `<div style="font-size:12px; color:var(--color-text-secondary);">Boost: <strong>${d.title}</strong> for ${d.durationDays} days (P${d.amount})</div>`;
+      } else if (item.type === 'artwork') {
+        html += `<div style="font-size:12px; color:var(--color-text-secondary);">Target Day: <strong>${d.boostDay}</strong> • Images: ${d.imageCount}</div>`;
+      }
+      html += `
+          <div class="admin-queue-actions">
+            <button class="btn" style="padding:8px;" onclick="handleApproval('${item.id}', 'approve')">Approve</button>
+            <button class="btn-outline" style="padding:8px; border-color:#e74c3c; color:#e74c3c;" onclick="handleApproval('${item.id}', 'reject')">Reject</button>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('admin-tab-approvals').innerHTML = html;
+  }
+
+  function handleApproval(id, action) {
+    let index = MOCK_DB.requests.findIndex(r => r.id === id);
+    if(index > -1) {
+      if(action === 'approve' && MOCK_DB.requests[index].type === 'artwork') {
+        // Move to approved artwork calendar
+        MOCK_DB.approvedArtwork.push({
+          id: 'art_new',
+          businessName: MOCK_DB.requests[index].data.businessName,
+          boostDay: MOCK_DB.requests[index].data.boostDay,
+          imageCount: MOCK_DB.requests[index].data.imageCount,
+          category: MOCK_DB.requests[index].data.category || 'General'
+        });
+      }
+      // Remove from pending
+      MOCK_DB.requests.splice(index, 1);
+    }
+    renderAdminApprovals();
+  }
+
+  function renderAdminFacebook() {
+    let html = `<div class="section-head" style="padding:0 0 8px 0;">UPCOMING POST SLOTS</div>`;
+    const days = ['Monday', 'Wednesday', 'Friday'];
+    
+    days.forEach(day => {
+      let posts = MOCK_DB.approvedArtwork.filter(a => a.boostDay === day);
+      html += `
+        <div class="fb-calendar-day">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:14px; font-weight:700;">${day}</div>
+            <div style="font-size:11px; padding:2px 8px; border-radius:10px; background:${posts.length > 0 ? '#EAF3DE' : '#f0f0f0'}; color:${posts.length > 0 ? '#27500A' : '#999'};">${posts.length} scheduled</div>
+          </div>
+      `;
+      if(posts.length === 0) {
+        html += `<div style="font-size:12px; color:var(--color-text-tertiary);">No posts scheduled.</div>`;
+      } else {
+        posts.forEach(p => {
+          html += `
+            <div class="fb-slot-item">
+              <span><strong>${p.businessName}</strong> (${p.category})</span>
+              <span style="color:var(--orange); font-size:11px;">${p.imageCount} imgs</span>
+            </div>
+          `;
+        });
+      }
+      html += `</div>`;
+    });
+    document.getElementById('admin-tab-facebook').innerHTML = html;
+  }
+
+  function renderAdminDirectory() {
+    let html = `<input type="text" placeholder="Search businesses..." style="width:100%; padding:10px; border:1px solid var(--color-border-secondary); border-radius:6px; margin-bottom:16px;">`;
+    
+    MOCK_DB.businesses.forEach(biz => {
+      html += `
+        <div class="list-row" style="border-radius:8px; border:1px solid var(--color-border-secondary); margin-bottom:8px; display:block; cursor:pointer;" onclick="alert('Would open Admin drill-down for ${biz.name}')">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:600; font-size:14px;">${biz.name}</div>
+            <i class="fas fa-chevron-right" style="color:var(--color-text-tertiary); font-size:12px;"></i>
+          </div>
+          <div class="list-row-sub" style="display:flex; gap:12px; margin-top:8px;">
+            <span><i class="fas fa-bullhorn" style="color:var(--orange);"></i> ${biz.promos} promos</span>
+            <span><i class="fas fa-money-bill-wave" style="color:#27500A;"></i> P${biz.spend}</span>
+            <span><i class="fas fa-eye" style="color:#378ADD;"></i> ${biz.views} views</span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('admin-tab-directory').innerHTML = html;
+  }
+</script>
+</body>
+</html>

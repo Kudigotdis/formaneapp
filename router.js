@@ -57,7 +57,7 @@ function manageUI(viewId) {
   const bottomNav = document.getElementById('bottom-nav');
   const filterBar = document.getElementById('filter-bar');
 
-  if (viewId === 'view-welcome' || viewId === 'view-admin') {
+  if (viewId === 'view-welcome' || viewId === 'view-admin' || viewId === 'view-analytics' || viewId === 'view-analytics-month') {
     if (header) header.classList.add('shell-hidden');
     if (bottomNav) bottomNav.style.display = 'none';
     if (filterBar) filterBar.style.display = 'none';

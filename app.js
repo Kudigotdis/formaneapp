@@ -11,6 +11,15 @@ async function init() {
     console.error('IndexedDB unavailable, running in offline mode:', err);
   }
 
+  // Init DriveAPI (silent — checks for saved OAuth token, no popup)
+  try {
+    if (typeof DriveAPI !== 'undefined' && DriveAPI.init) {
+      await DriveAPI.init();
+    }
+  } catch(e) {
+    console.warn('DriveAPI init failed (non-fatal):', e);
+  }
+
   await loadProductCategories();
 
   try {
@@ -24,32 +33,25 @@ async function init() {
     const account = window.DEMO_ACCOUNTS.find(a => a.id === savedId);
     if (account) {
       UserState.set(account.id, account.name, account.role, '', account.town, '');
-      if (account.id === 'supplier') {
-        UserState.business = { name: 'Board Kings', category: 'Boards & Timber', town: 'Gaborone', phone: '+267 71234567', subscription: 'full' };
-        UserState.kpi = { ads: 14, views: 1204, likes: 85, noteAdds: 32 };
-        UserState.interests = ['Boards & Timber', 'Tools & Equipment', 'Hardware & Fasteners'];
-      } else if (account.id === 'owner-biz2') {
-        UserState.business = { name: 'BuildIt Gabs', category: 'Paint', town: 'Gaborone', phone: '+267 72345678', subscription: 'full' };
-        UserState.kpi = { ads: 22, views: 890, likes: 62, noteAdds: 18 };
-        UserState.interests = ['Paint', 'Hardware & Fasteners', 'Tools & Equipment'];
-      } else if (account.id === 'owner-biz3') {
-        UserState.business = { name: 'Francistown Steel', category: 'Steel & Metal Products', town: 'Francistown', phone: '+267 73456789', subscription: 'full' };
-        UserState.kpi = { ads: 18, views: 720, likes: 48, noteAdds: 14 };
-        UserState.interests = ['Steel & Metal Products', 'Cement & Aggregates', 'Roofing & Ceiling'];
-      } else if (account.id === 'owner-biz4') {
-        UserState.business = { name: 'Gabs Plumbing Depot', category: 'Plumbing', town: 'Gaborone', phone: '+267 74567890', subscription: 'full' };
-        UserState.kpi = { ads: 15, views: 560, likes: 38, noteAdds: 20 };
-        UserState.interests = ['Plumbing', 'Sanitaryware', 'Bathroom & Kitchen'];
-      } else if (account.id === 'user-gerald') {
+      var assoc = window.BUSINESS_ASSOCIATIONS ? window.BUSINESS_ASSOCIATIONS[savedId] : null;
+      if (assoc) {
+        var biz = window.SAMPLE_BUSINESSES.find(function(b) { return b.id === assoc.businessId; });
+        if (biz) {
+          UserState.business = {
+            id: biz.id, name: biz.name, category: biz.category,
+            town: biz.location.split(',').pop().trim(),
+            phone: biz.phone || '', subscription: biz.subscription || 'free'
+          };
+          UserState.businessRole = assoc.role;
+        }
+        UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0, interactions: 0 };
+        UserState.interests = biz ? [biz.category] : [];
+      } else if (savedId === 'user-gerald') {
         UserState.interests = ['Building Materials', 'Cement & Aggregates', 'Steel & Metal Products'];
-      } else if (account.id === 'trade') {
+      } else if (savedId === 'trade') {
         UserState.interests = ['Paint', 'Plumbing', 'Electrical'];
-      } else if (account.id === 'general') {
+      } else if (savedId === 'general') {
         UserState.interests = ['Tiles & Flooring', 'Lighting', 'Paint'];
-      } else if (account.id.startsWith('staff-')) {
-        UserState.business = null;
-        UserState.kpi = { ads: 0, views: 35, likes: 8, noteAdds: 18 };
-        UserState.interests = ['Boards & Timber', 'Hardware & Fasteners', 'Tools & Equipment'];
       }
     }
   }
@@ -78,12 +80,34 @@ async function init() {
     console.error('Failed to load categories:', err);
   }
 
+  try {
+    await WirogMediaCache.init();
+  } catch(err) {
+    console.warn('WirogMediaCache init failed (non-fatal):', err);
+  }
+
   if (savedId && savedId !== 'guest') {
     enterApp();
     updateAccountUI();
     updateKPI();
     renderPromos();
+    WIROG_IMG_MODE.updateUI();
     renderNotes();
+    
+    // Check for business approval if online
+    if (navigator.onLine && window.fetchUserBusiness) {
+       window.fetchUserBusiness(savedId).then(biz => {
+         if (biz && biz.status === 'active') {
+           // If it was pending locally but now active in cloud
+           if (UserState.business && UserState.business.status === 'pending') {
+             showToast("🎉 Your business has been APPROVED!");
+             UserState.business.status = 'active';
+             WirogDB.put('businesses', { ...UserState.business, id: 'biz_user' });
+             updateAccountUI();
+           }
+         }
+       });
+    }
   } else {
     document.getElementById('view-welcome')?.classList.add('active');
   }
@@ -141,7 +165,7 @@ async function loadBusinessFromDB() {
     const saved = await WirogDB.get('businesses', 'biz_user');
     if (saved) {
       if (saved.name === 'Botswana Timber Ltd') saved.name = 'Board Kings';
-      UserState.business = { name: saved.name, category: saved.category, town: saved.town, phone: saved.phone, subscription: saved.subscription || 'free' };
+      UserState.business = { id: saved.id, name: saved.name, category: saved.category, town: saved.town, phone: saved.phone, subscription: saved.subscription || 'free' };
     }
   } catch(e) { console.error('Failed to load business:', e); }
 }
@@ -151,7 +175,7 @@ async function loadKpiFromDB() {
   try {
     const saved = await WirogDB.get('kpi', UserState.id);
     if (saved) {
-      UserState.kpi = { ads: saved.ads || 0, views: saved.views || 0, likes: saved.likes || 0, noteAdds: saved.noteAdds || 0 };
+      UserState.kpi = { ads: saved.ads || 0, views: saved.views || 0, likes: saved.likes || 0, noteAdds: saved.noteAdds || 0, interactions: saved.interactions || 0 };
     }
   } catch(e) { console.error('Failed to load KPI:', e); }
 }
@@ -162,8 +186,24 @@ async function loadProductCategories() {
   }
 }
 
-window.addEventListener('online', () => showToast('Back online'));
-window.addEventListener('offline', () => showToast('Offline - data saved locally'));
+function updateHeaderLogo(isOnline) {
+  const logo = document.querySelector('#app-header .logo img');
+  if (!logo) return;
+  logo.src = isOnline
+    ? 'assets/images/company_logos_dummy/new_wirog_logo_icon.webp'
+    : 'assets/images/company_logos_dummy/new_wirog_logo_icon_offline.webp';
+}
+
+window.addEventListener('online', () => {
+  showToast('Back online');
+  updateHeaderLogo(true);
+});
+window.addEventListener('offline', () => {
+  showToast('Offline - data saved locally');
+  updateHeaderLogo(false);
+});
+
+updateHeaderLogo(navigator.onLine);
 
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();

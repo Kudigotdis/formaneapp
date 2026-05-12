@@ -40,11 +40,30 @@ const googleConfig = {
       "tools-equipment": "123qo8WM_lLgt7rYfzzCkgqS-UYttLgMQ"
     }
   },
-  clientsRootId: "1PEvHwhoxe0eQ75G2Gs_bfMsUBV5mMGPA"
+  clientsRootId: "1PEvHwhoxe0eQ75G2Gs_bfMsUBV5mMGPA",
+  usersFolderId: null,
+  prosFolderId: null,
+  businessesFolderId: null,
+  folderSchema: {
+    user: {
+      subfolders: ["profile_picture", "notes", "documents"],
+      files: ["liked_promos.json", "favourite_suppliers.json", "notes_index.json", "kpi_cache.json", "subscription.json"]
+    },
+    pro: {
+      subfolders: ["portfolio", "promos", "catalogue", "cover_photo", "documents", "staff", "reviews"],
+      files: ["profile.json"]
+    },
+    business: {
+      subfolders: ["logo", "profile", "promos", "catalogue", "cover_photo", "staff", "documents", "reviews"],
+      files: ["business_profile.json"]
+    }
+  }
 };
 
 function getCategoryFolderId(slug) {
   return googleConfig.appSystem.categories[slug] || null;
 }
 
-module.exports = { googleConfig, getCategoryFolderId };
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { googleConfig, getCategoryFolderId };
+}

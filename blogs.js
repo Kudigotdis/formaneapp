@@ -122,7 +122,7 @@ function renderBlogList() {
     html += '<div style="font-size:13px;font-weight:700;color:var(--grey-dark);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">' + month + '</div>';
     html += '<div class="blog-grid">';
     grouped[month].forEach(function(post) {
-      html += '<div class="blog-thumb-btn" onclick="openBlogPost(\'' + post.slug + '\')" style="background-image:url(\'' + post.image + '\');" onerror="this.style.backgroundImage=\'none\';this.style.background=\'var(--grey-light)\';this.innerHTML=\'<span style=font-size:24px;opacity:0.3;>📰</span>\';">';
+      html += '<div class="blog-thumb-btn" onclick="openBlogPost(\'' + post.slug + '\')" style="background-image:url(\'assets/media/wirog_place_holder_image_blank.webp\');" onerror="this.style.backgroundImage=\'none\';this.style.background=\'var(--grey-light)\';this.innerHTML=\'<span style=font-size:24px;opacity:0.3;>📰</span>\';">';
       html += '<div class="blog-thumb-overlay">' + post.title + '</div>';
       html += '</div>';
     });

@@ -22,7 +22,10 @@ function openModal(id) {
 }
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  el.style.display = '';
 }
 
 document.querySelectorAll('.modal-overlay').forEach(overlay => {

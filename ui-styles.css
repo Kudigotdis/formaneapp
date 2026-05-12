@@ -1,0 +1,62 @@
+/* ════════════════════════════════════════════════════════
+   WIROG UI - Mode Toggle & Layout Styles
+   ════════════════════════════════════════════════════════ */
+
+.promo-type-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 12px;
+}
+
+.mode-toggle-group {
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 4px;
+    border-radius: 12px;
+}
+
+.mode-toggle-group button {
+    border: 2px solid transparent;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    color: #fff;
+}
+
+/* Online Mode: Orange */
+.btn-mode-online {
+    background-color: #ed6626; /* Primary Wirog Orange */
+    opacity: 0.5;
+}
+
+/* Offline Mode: Charcoal Grey */
+.btn-mode-offline {
+    background-color: #333333;
+    opacity: 0.4;
+}
+
+/* Saved Mode: Green */
+.btn-mode-saved {
+    background-color: #26d848;
+    opacity: 0.5;
+}
+
+/* Active State */
+.mode-toggle-group button.active {
+    opacity: 1;
+    border-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.mode-toggle-group button:hover:not(.active) {
+    opacity: 0.8;
+}

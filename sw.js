@@ -24,7 +24,19 @@ const ASSETS = [
   '/account.js',
   '/admin.js',
   '/items.js',
-  '/app.js'
+  '/app.js',
+  '/blogs.js',
+  '/sync.js',
+  '/media-cache.js',
+  '/path-utils.js',
+  '/mode-controller.js',
+  '/ui-helpers.js',
+  '/backend-logic.js',
+  '/ui-styles.css',
+  '/sw-register.js',
+  '/drive-api.js',
+  '/google-config.js',
+  '/locations.json'
 ];
 
 self.addEventListener('install', e => {
