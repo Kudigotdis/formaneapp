@@ -2,3 +2,8 @@ node_modules/
 .env
 *.log
 node_modules
+
+# Secrets (do not commit)
+wirog-config.json
+wirog-config-oauth.json
+drive-oauth-token.json

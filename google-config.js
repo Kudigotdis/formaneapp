@@ -67,3 +67,7 @@ function getCategoryFolderId(slug) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { googleConfig, getCategoryFolderId };
 }
+
+console.log('google-config loaded. Update redirect URIs in Google Cloud Console for production:');
+console.log('  Firebase: https://wirog-app-93318.web.app/oauth-callback');
+console.log('  GitHub:   https://kudigotdis.github.io/wirogapp/oauth-callback');
