@@ -36,9 +36,9 @@ const ClientListTab = {
     return '';
   },
 
-  getAvatarHtml(name, initials, color, fallback = 'demo-profile') {
+  getAvatarHtml(name, initials, color, image = null, fallback = 'demo-profile') {
     const safeName = name ? encodeURIComponent(name.replace(/\s+/g, ' ')) : '';
-    const imgSrc = safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/${fallback}.jpg`;
+    const imgSrc = image || (safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/${fallback}.jpg`);
     return `<img src="${imgSrc}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:block;"
       onerror="this.outerHTML='<div class=\\'client-avatar-fallback\\' style=\\'background:${color || '#2a4a8c'};\\'>${initials || 'U'}</div>'">`;
   },
@@ -63,7 +63,7 @@ const ClientListTab = {
     return filtered.map(u => `
       <div class="client-row">
         <div class="client-avatar-wrap">
-          ${this.getAvatarHtml(u.name, u.initials, u.color, 'demo-profile')}
+          ${this.getAvatarHtml(u.name, u.initials, u.color, u.image, 'demo-profile')}
         </div>
         <div class="client-info">
           <div class="client-name">${u.name || 'Unknown'}</div>
@@ -101,8 +101,8 @@ const ClientListTab = {
     return filtered.map(b => `
       <div class="client-row">
         <div class="client-avatar-wrap">
-          <div class="client-avatar" style="background:${b.color || '#ed6626'};">
-            ${b.initials || 'B'}
+          <div class="client-avatar" style="background:${b.color || '#ed6626'}; overflow:hidden;">
+            ${b.logo ? `<img src="${b.logo}" style="width:100%;height:100%;object-fit:cover;display:block;">` : (b.initials || 'B')}
           </div>
         </div>
         <div class="client-info">
@@ -137,7 +137,7 @@ const ClientListTab = {
     return filtered.map(p => `
       <div class="client-row">
         <div class="client-avatar-wrap">
-          ${this.getAvatarHtml(p.name, p.initials, p.color, 'demo-profile')}
+          ${this.getAvatarHtml(p.name, p.initials, p.color, p.image, 'demo-profile')}
         </div>
         <div class="client-info">
           <div class="client-name">${p.name || 'Unknown'}</div>

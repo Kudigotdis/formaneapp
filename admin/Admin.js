@@ -731,7 +731,7 @@ const Admin = {
     const biz = assoc ? this.data.businessMap[assoc.businessId] : null;
     
     const safeName = user.name ? encodeURIComponent(user.name.replace(/\s+/g, ' ')) : '';
-    const imgSrc = safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/demo-profile.jpg`;
+    const imgSrc = user.image || (safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/demo-profile.jpg`);
     
     const modal = document.getElementById('user-detail-modal') || this.createUserDetailModal();
     document.body.appendChild(modal);
@@ -788,7 +788,7 @@ const Admin = {
     if (!pro) return;
     
     const safeName = pro.name ? encodeURIComponent(pro.name.replace(/\s+/g, ' ')) : '';
-    const imgSrc = safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/demo-profile.jpg`;
+    const imgSrc = pro.image || (safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/demo-profile.jpg`);
     
     const modal = document.getElementById('pro-detail-modal') || this.createProDetailModal();
     document.body.appendChild(modal);

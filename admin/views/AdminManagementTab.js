@@ -35,9 +35,9 @@ const AdminManagementTab = {
     }
   },
 
-  getAvatarHtml(name, initials, color) {
+  getAvatarHtml(name, initials, color, image = null) {
     const safeName = name ? encodeURIComponent(name.replace(/\s+/g, ' ')) : '';
-    const imgSrc = safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/demo-profile.jpg`;
+    const imgSrc = image || (safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/demo-profile.jpg`);
     return `<img src="${imgSrc}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:block;"
       onerror="this.outerHTML='<div class=\\'admin-avatar-fallback\\' style=\\'background:${color || '#2a2a2a'};\\'>${initials || 'A'}</div>'">`;
   },
@@ -46,7 +46,7 @@ const AdminManagementTab = {
     return `
       <div class="admin-row">
         <div class="admin-avatar-wrap">
-          ${this.getAvatarHtml(admin.name, admin.initials, admin.color)}
+          ${this.getAvatarHtml(admin.name, admin.initials, admin.color, admin.image)}
         </div>
         <div class="admin-info">
           <div class="admin-name">${admin.name || 'Unknown'}</div>
@@ -87,7 +87,7 @@ const AdminManagementTab = {
 
     results.innerHTML = users.map(u => {
       const safeName = u.name ? encodeURIComponent(u.name.replace(/\s+/g, ' ')) : '';
-      const imgSrc = safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/demo-profile.jpg`;
+      const imgSrc = u.image || (safeName ? `assets/images/profile_pictures_dummy/${safeName}.jpg` : `assets/images/profile_pictures_dummy/demo-profile.jpg`);
       return `
         <div class="user-search-row" onclick="Admin.addAdmin('${u.id}')">
           <div class="user-search-avatar-wrap">
