@@ -177,7 +177,7 @@ function openBlogPost(slug) {
       '<img src="assets/icons/LinkedIn_On.png" class="blog-social-icon" onclick="showToast(\'Wirog Supply Solutions\')">' +
       '<img src="assets/icons/TikTok_On.png" class="blog-social-icon" onclick="showToast(\'@wirog_bw\')">' +
       '<img src="assets/icons/Twitter_On.png" class="blog-social-icon" onclick="showToast(\'@wirog_bw\')">' +
-      '<img src="assets/icons/whatsApp_icon_on.png" class="blog-social-icon" onclick="openWhatsApp(\'26772000002\',\'Wirog\')">' +
+      '<img src="assets/icons/solid/share-nodes_whatsapp_green.webp" class="blog-social-icon" onclick="openWhatsApp(\'26772000002\',\'Wirog\')">' +
       '<img src="assets/icons/YouTube_On.png" class="blog-social-icon" onclick="showToast(\'Wirog Supply Solutions\')">' +
     '</div>';
 

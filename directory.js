@@ -2,7 +2,8 @@
    WIROG DIRECTORY - Business & Pro listings with A-Z nav
    ════════════════════════════════════════════════════════ */
 
-let dirMode = 'companies';
+let dirMode = 'pros';
+let selectedTrades = [];
 
 const DIR_TYPES = ['Companies', 'Pros', 'Council & Public'];
 
@@ -20,10 +21,88 @@ function selectDirType(label) {
   dirMode = modeMap[label] || 'companies';
   document.getElementById('dir-type-btn').textContent = label;
   closeModal('dir-type-modal');
+
+  var serviceRow = document.getElementById('service-and-location-filter-row');
+  var tradesmanRow = document.getElementById('tradesman-type-and-location-filter-row');
+  if (dirMode === 'pros') {
+    if (serviceRow) serviceRow.style.display = 'none';
+    if (tradesmanRow) tradesmanRow.style.display = '';
+  } else {
+    if (serviceRow) serviceRow.style.display = '';
+    if (tradesmanRow) tradesmanRow.style.display = 'none';
+  }
+
   renderDirectory();
 }
 
 const dirModeLabels = { 'companies': 'Companies', 'pros': 'Pros', 'council': 'Council & Public' };
+
+function getTradeKeys() {
+  return window.TRADE_SPECIFIC ? Object.keys(window.TRADE_SPECIFIC) : [];
+}
+
+function formatTradeKey(key) {
+  return key.split('_').map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+}
+
+function openTradesmenSheet() {
+  renderTradesmenCheckboxes();
+  openModal('tradesmen-modal');
+}
+
+function renderTradesmenCheckboxes() {
+  var body = document.getElementById('tradesmen-sheet-body');
+  if (!body) return;
+  var keys = getTradeKeys();
+  var allChecked = selectedTrades.length === 0;
+  var html = '<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); cursor:pointer; font-size:15px; font-weight:600; background:' + (allChecked ? 'var(--orange-light)' : 'transparent') + ';" onclick="toggleTradesmenCheckbox(\'All Tradesmen\', true)">' +
+    '<input type="checkbox" ' + (allChecked ? 'checked' : '') + ' style="margin-right:10px; accent-color:var(--orange);">All Tradesmen' +
+  '</div>';
+  keys.forEach(function(key) {
+    var isChecked = selectedTrades.indexOf(key) !== -1;
+    var label = formatTradeKey(key);
+    html += '<div style="padding:10px 16px; border-bottom:1px solid var(--grey-light); font-size:14px; cursor:pointer;" onclick="toggleTradesmenCheckbox(\'' + key.replace(/'/g, "\\'") + '\', ' + (!isChecked) + ')">' +
+      '<input type="checkbox" ' + (isChecked ? 'checked' : '') + ' style="margin-right:10px; accent-color:var(--orange);" onclick="event.stopPropagation(); toggleTradesmenCheckbox(\'' + key.replace(/'/g, "\\'") + '\', this.checked)">' + label +
+    '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleTradesmenCheckbox(key, isChecked) {
+  if (key === 'All Tradesmen') {
+    selectedTrades = [];
+    renderTradesmenCheckboxes();
+    return;
+  }
+  if (isChecked) {
+    if (selectedTrades.indexOf(key) === -1) selectedTrades.push(key);
+  } else {
+    selectedTrades = selectedTrades.filter(function(t) { return t !== key; });
+  }
+  renderTradesmenCheckboxes();
+}
+
+function updateTradesmenFilterText() {
+  var btn = document.getElementById('tradesmen-filter-btn');
+  if (!btn) return;
+  if (selectedTrades.length === 0) {
+    btn.textContent = 'All Tradesmen';
+  } else if (selectedTrades.length === 1) {
+    btn.textContent = formatTradeKey(selectedTrades[0]);
+  } else {
+    btn.textContent = '+' + selectedTrades.length + ' Tradesmen';
+  }
+}
+
+function applyTradesmenFilter() {
+  updateTradesmenFilterText();
+  closeModal('tradesmen-modal');
+  renderDirectory();
+}
+
+window.openTradesmenSheet = openTradesmenSheet;
+window.toggleTradesmenCheckbox = toggleTradesmenCheckbox;
+window.applyTradesmenFilter = applyTradesmenFilter;
 
 function renderDirectory() {
   const el = document.getElementById('directory-list');
@@ -109,7 +188,20 @@ function renderDirectory() {
 }
 
 function renderPros(el, alphaNav) {
-  const pros = window.SAMPLE_PROFESSIONALS || [];
+  var allProfiles = window.DEMO_PROFILES || [];
+  var pros = allProfiles.filter(function(p) {
+    return p.role === 'Tradesperson (Contractor)' || p.role === 'Business & Materials Supplier';
+  });
+  if (selectedTrades.length > 0) {
+    pros = pros.filter(function(p) {
+      return selectedTrades.some(function(tradeKey) {
+        var pId = p.id || '';
+        var pName = (p.name || '').toLowerCase();
+        var tradeWords = tradeKey.replace(/_/g, ' ').toLowerCase();
+        return pId.toLowerCase().indexOf(tradeKey.replace(/_.*$/, '')) !== -1 || tradeWords.split(' ').some(function(w) { return pName.indexOf(w) !== -1; });
+      });
+    });
+  }
   if (pros.length === 0) {
     el.innerHTML = '<div style="text-align:center;padding:48px 16px;color:var(--grey-dark);"><i class="fas fa-user-tie" style="font-size:40px;margin-bottom:12px;display:block;color:var(--grey-mid);"></i><p>No pros listed yet.</p></div>';
     if (alphaNav) alphaNav.innerHTML = '';
@@ -139,18 +231,19 @@ function renderPros(el, alphaNav) {
       var d = document.createElement('div');
       d.className = 'dir-card';
       d.onclick = function() { openProProfile(p.id); };
-      var skillsHtml = p.skills && p.skills.length > 0
-        ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">' +
-          p.skills.slice(0, 3).map(function(s) { return '<span style="font-size:10px;background:var(--grey-light);padding:2px 8px;border-radius:8px;color:var(--text-main);">' + s + '</span>'; }).join('') +
-          (p.skills.length > 3 ? '<span style="font-size:10px;color:var(--grey-dark);">+' + (p.skills.length - 3) + '</span>' : '') +
-          '</div>'
-        : '';
+      var roleName = p.role || '';
+      var locStr = p.town || '';
+      var init = p.initials || (p.name ? p.name.split(' ').map(function(w) { return w[0]; }).join('').slice(0, 2).toUpperCase() : '?');
+      var col = p.color || window.APP_COLORS[init.charCodeAt(0) % window.APP_COLORS.length];
+      var profileImg = p.image || null;
+      var avatarHtml = profileImg
+        ? '<img src="' + profileImg + '" class="dir-avatar" style="object-fit:cover;" alt="">'
+        : '<div class="dir-avatar" style="background:' + col + ';">' + init + '</div>';
       d.innerHTML =
-        '<div class="dir-avatar" style="background:' + p.color + ';">' + p.initials + '</div>' +
+        avatarHtml +
         '<div class="dir-info">' +
           '<h3>' + p.name + '</h3>' +
-          '<p>' + p.trade + ' &middot; ' + p.location + '</p>' +
-          skillsHtml +
+          '<p>' + roleName + ' &middot; ' + locStr + '</p>' +
         '</div>' +
         '<button onclick="event.stopPropagation();toggleFavDir(this,\'' + p.id + '\')" style="background:none;border:none;cursor:pointer;padding:4px 8px;flex-shrink:0;margin-left:auto;" title="Toggle favourite">' +
           '<img src="assets/icons/' + (UserState.isFavourite(p.id) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png" style="width:22px;height:22px;display:block;">' +
@@ -212,17 +305,43 @@ function openBizProfile(bizId, name, init, color, location, phone, isPublic, des
 
   // Store data for bottom-bar dropdowns
   _bizDropdownData = { bizId: bizId, name: name, phone: phoneClean, phoneWa: phoneWa, location: location };
-  _bizDropdownState = null;
 
-  const catPills = categories.map(c => `<span class="pill">${c}</span>`).join('');
+  const catItems = categories.map(c => `<div class="biz-cat-line" onclick="event.stopPropagation();openBizCatalogue('${bizId}','${nameEsc}','${locationEsc}','${phoneWa}','${color}','${init}','${c.replace(/'/g, "\\'")}')">${c}</div>`).join('');
+
+  var bizLogo = window.getBusinessLogo(bizId);
+  var avatarHtml = bizLogo
+    ? '<img src="' + bizLogo + '" class="biz-avatar-img" alt="' + nameEsc + '" onclick="event.stopPropagation();openBizLogoPreview(\'' + bizLogo.replace(/'/g,"\\'") + '\',\'' + nameEsc + '\')">'
+    : '<div class="biz-avatar-img" style="background:' + color + ';">' + init + '</div>';
+
+  // Location breakdown: extract town and area
+  var townPart = location || '';
+  var areaPart = '';
+  if (biz && biz.location) {
+    townPart = biz.location;
+  }
+  // Try to split location into town and area
+  var locParts = townPart.split(',').map(function(s) { return s.trim(); });
+  if (locParts.length > 1) {
+    townPart = locParts[0];
+    areaPart = locParts.slice(1).join(' \u00B7 ');
+  } else {
+    townPart = locParts[0];
+    areaPart = '';
+  }
 
   content.innerHTML = `
-    <div style="text-align:center; margin-bottom:20px;">
-      <div class="avatar" style="width:72px; height:72px; font-size:26px; margin:0 auto; background:${color};">${init}</div>
-      <h2 style="font-family:var(--font-head); font-size:24px; font-weight:700; margin-top:10px;">${name}</h2>
-      <p style="color:var(--grey-dark); font-size:13px;"><i class="fas fa-map-marker-alt" style="color:var(--orange);"></i> ${location}</p>
-      ${description ? `<p style="font-size:13px; color:var(--text-sub); margin-top:8px; padding:0 20px;">${description}</p>` : ''}
-      ${catCount > 0 ? `<div class="biz-categories">${catPills}</div>` : ''}
+    <div style="padding:12px;">
+      <div class="biz-header-card" id="biz-header-${bizId}">
+        <div class="biz-header-card-inner">
+          ${avatarHtml}
+          <div class="biz-header-details" onclick="toggleBizCategories('${bizId}')">
+            <div class="biz-header-name">${name}</div>
+            <div class="biz-header-location">${townPart}${areaPart ? ' <span style="opacity:0.4;">\u00B7</span> ' + areaPart : ''}</div>
+          </div>
+        </div>
+        ${description ? '<p class="biz-desc-text">' + description + '</p>' : ''}
+        ${catCount > 0 ? '<div class="biz-categories-accordion">' + catItems + '</div>' : ''}
+      </div>
     </div>
     <div class="accordion">
       <div class="accordion-header" onclick="openBizPromos('${bizId}','${nameEsc}')">
@@ -236,77 +355,221 @@ function openBizProfile(bizId, name, init, color, location, phone, isPublic, des
         <span style="color:var(--orange);font-size:14px;font-weight:700;">${catCount}</span>
       </div>
     </div>
-    <div class="biz-bottom-bar">
-      <button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
-      <div id="biz-bar-actions">
-        <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
-        <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
-        <img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
-        <img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
-        <img src="assets/icons/${UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon'}.png" class="biz-bar-icon" onclick="toggleFavBiz('${bizId}')" id="biz-heart-icon">
+    <div class="biz-bottom-wrapper">
+      <div class="biz-bottom-bar">
+        <button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
+        <div id="biz-bar-actions">
+          <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
+          <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
+          <img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
+          <img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
+          <img src="assets/icons/${UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon'}.png" class="biz-bar-icon" onclick="toggleFavBiz('${bizId}')" id="biz-heart-icon">
+        </div>
       </div>
+      ${_renderDropdownContainers()}
     </div>
   `;
 
   goTo('view-business');
 }
 
+function toggleBizCategories(bizId) {
+  var card = document.getElementById('biz-header-' + bizId);
+  if (!card) return;
+  card.classList.toggle('open');
+}
+
+function openBizLogoPreview(src, name) {
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+  overlay.onclick = function() { document.body.removeChild(overlay); };
+  overlay.innerHTML = '<img src="' + src.replace(/'/g,"\\'") + '" style="max-width:90%;max-height:90%;border-radius:8px;object-fit:contain;" alt="' + name.replace(/'/g,"\\'") + '">';
+  document.body.appendChild(overlay);
+}
+
+function getProDemoProjects(proId, pro) {
+  var saved = getProProfile(proId);
+  if (saved && saved.projects && saved.projects.length > 0) return saved.projects;
+  var name = pro.name || '';
+  var imgBase = 'assets/images/categories_examples';
+  var demos = [
+    { id: 'p1', title: name + ' Job 1', desc: 'Completed project for a client in ' + (pro.location && pro.location.town || 'Gaborone') + '.', image: imgBase + '/boards-timber/timber/structural-timber/000002.webp' },
+    { id: 'p2', title: name + ' Job 2', desc: 'Ongoing project showcasing professional expertise.', image: imgBase + '/attire-uniform/corporate-uniforms/shirts/000001.jpg' },
+    { id: 'p3', title: name + ' Job 3', desc: 'Before and after transformation. Customer was very satisfied.', image: imgBase + '/attire-uniform/workwear/high-vis/000001.webp' },
+    { id: 'p4', title: name + ' Job 4', desc: 'Another successful project completed in record time.', image: imgBase + '/attire-uniform/workwear/safety-boots/000001.jpg' }
+  ];
+  return demos;
+}
+
+function getProDemoRate(proId, pro) {
+  var saved = getProProfile(proId);
+  if (saved && saved.rateType && saved.rate) return { type: saved.rateType, amount: saved.rate };
+  var cat = pro.tradeCategory || '';
+  if (cat.indexOf('Automotive') > -1 || cat.indexOf('Transport') > -1) return { type: 'hourly', amount: 350 };
+  if (cat.indexOf('Electrical') > -1 || cat.indexOf('Plumbing') > -1 || cat.indexOf('HVAC') > -1) return { type: 'hourly', amount: 400 };
+  if (cat.indexOf('Building') > -1 || cat.indexOf('Civil') > -1 || cat.indexOf('Construction') > -1) return { type: 'hourly', amount: 300 };
+  if (cat.indexOf('Cleaning') > -1 || cat.indexOf('Delivery') > -1) return { type: 'hourly', amount: 180 };
+  if (cat.indexOf('Design') > -1 || cat.indexOf('Tech') > -1) return { type: 'fixed', amount: 1500 };
+  return { type: 'quote', amount: 0 };
+}
+
+function getProDemoServices(proId, pro) {
+  var saved = window.getProServices(proId);
+  if (saved && saved.length > 0) return saved;
+  var skills = pro.skills || [];
+  var imgBase = 'assets/images/categories_examples';
+  var defaultImgs = [
+    imgBase + '/access-control-security/biometric-access/security_biometric_fingerprint.jpg',
+    imgBase + '/attire-uniform/corporate-uniforms/shirts/000001.jpg',
+    imgBase + '/attire-uniform/workwear/high-vis/000001.webp',
+    imgBase + '/attire-uniform/workwear/safety-boots/000001.jpg'
+  ];
+  return skills.slice(0, 6).map(function(s, i) {
+    return {
+      id: 'svc-' + i,
+      name: s,
+      desc: 'Professional ' + s.toLowerCase() + ' service. Quality work guaranteed with years of experience.',
+      price: 'P' + (Math.floor(Math.random() * 800) + 200),
+      image: defaultImgs[i % defaultImgs.length]
+    };
+  });
+}
+
+function openProImagePreview(src, name) {
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+  overlay.onclick = function() { document.body.removeChild(overlay); };
+  overlay.innerHTML = '<img src="' + src.replace(/'/g,"\\'") + '" style="max-width:92%;max-height:92%;border-radius:4px;object-fit:contain;" alt="' + name.replace(/'/g,"\\'") + '">';
+  document.body.appendChild(overlay);
+}
+
+function _getProData(proId) {
+  var profile = (window.DEMO_PROFILES || []).find(function(p) { return p.id === proId; });
+  if (!profile) return null;
+  var isSupplier = profile.role === 'Business & Materials Supplier';
+  var bizInfo = profile.businessInfo || null;
+  var tradeName = isSupplier ? (bizInfo ? bizInfo.name + ' — ' + profile.role : profile.role) : profile.role;
+  var locStr = profile.town || '';
+  var proInit = profile.initials || (profile.name ? profile.name.split(' ').map(function(w) { return w[0]; }).join('').slice(0, 2).toUpperCase() : '?');
+  var proCol = profile.color || window.APP_COLORS[proInit.charCodeAt(0) % window.APP_COLORS.length];
+  var proImg = profile.image || null;
+  var proBizLogo = isSupplier && bizInfo ? (bizInfo.logo || null) : null;
+  var phoneRaw = profile.phone || (bizInfo ? bizInfo.phone : '') || '';
+  var phoneClean = phoneRaw.replace(/[^0-9+]/g, '');
+  var phoneWa = phoneRaw.replace(/[^0-9]/g, '');
+  var description = isSupplier && bizInfo ? (bizInfo.description || '') : '';
+  var rating = 0;
+  return {
+    id: profile.id, name: profile.name, nameEsc: profile.name.replace(/'/g, "\\'"),
+    role: profile.role, tradeName: tradeName, locStr: locStr,
+    proInit: proInit, proCol: proCol, proImg: proImg, proBizLogo: proBizLogo,
+    phoneClean: phoneClean, phoneWa: phoneWa, description: description, rating: rating
+  };
+}
+
 function openProProfile(proId) {
   const content = document.getElementById('pro-profile-content');
   if (!content) return;
 
-  const pro = (window.SAMPLE_PROFESSIONALS || []).find(function(p) { return p.id === proId; });
+  var pro = _getProData(proId);
   if (!pro) { showToast('Professional not found'); return; }
 
-  const phoneClean = pro.phone ? pro.phone.replace(/[^0-9+]/g, '') : '';
-  const phoneWa = pro.phone ? pro.phone.replace(/[^0-9]/g, '') : '';
-  const nameEsc = pro.name.replace(/'/g, "\\'");
+  var avatarHtml = pro.proBizLogo
+    ? '<img src="' + pro.proBizLogo + '" class="pro-avatar" style="object-fit:cover;" onclick="openProImagePreview(\'' + pro.proBizLogo.replace(/'/g,"\\'") + '\',\'' + pro.nameEsc + '\')" alt="">'
+    : pro.proImg
+    ? '<img src="' + pro.proImg + '" class="pro-avatar" style="object-fit:cover;" onclick="openProImagePreview(\'' + pro.proImg.replace(/'/g,"\\'") + '\',\'' + pro.nameEsc + '\')" alt="">'
+    : '<div class="pro-avatar pro-avatar-initials" style="background:' + pro.proCol + ';">' + pro.proInit + '</div>';
 
-  const skillPills = (pro.skills || []).map(function(s) { return '<span class="pill">' + s + '</span>'; }).join('');
+  var starsHtml = pro.rating
+    ? '\u2B50'.repeat(Math.floor(pro.rating)) + ' <span style="font-size:12px;color:var(--grey-dark);font-weight:600;">' + pro.rating.toFixed(1) + '</span>'
+    : '';
 
-  let promos = window._promos.filter(function(p) { return p.businessId === proId || p.businessName === pro.name; });
-  const promoCount = promos.length;
+  var skillsBody = '<p style="font-size:12px;color:var(--grey-dark);padding:8px 0;">No skills listed yet.</p>';
 
-  var starsHtml = '';
-  if (pro.rating) {
-    var full = Math.floor(pro.rating);
-    var half = pro.rating - full >= 0.5;
-    for (var i = 0; i < full; i++) starsHtml += '\u2B50';
-    if (half) starsHtml += '\u2B50';
-    starsHtml += ' <span style="font-size:12px;color:var(--grey-dark);font-weight:600;">' + pro.rating.toFixed(1) + '</span>';
-  }
+  var projectsBody = '<div class="project-carousel">' +
+    '<div class="project-card">' +
+      '<div class="project-card-body"><p style="font-size:12px;color:var(--grey-dark);">No projects listed yet.</p></div>' +
+    '</div>' +
+  '</div>';
 
-  // Store data for bottom-bar dropdowns
-  _bizDropdownData = { bizId: proId, name: pro.name, phone: phoneClean, phoneWa: phoneWa, location: pro.location };
-  _bizDropdownState = null;
+  var ratesBody = '<div class="rates-card">' +
+    '<div class="rate-row"><span class="rate-label">Rate</span><span class="rate-value">Contact for pricing</span></div>' +
+    (pro.locStr ? '<div class="rate-row"><span class="rate-label">Service Area</span><span class="rate-value" style="font-size:13px;color:var(--text-main);font-weight:400;">' + pro.locStr + '</span></div>' : '') +
+  '</div>';
+
+  var servicesBody = '<div class="services-grid">' +
+    '<div style="text-align:center;padding:16px;font-size:12px;color:var(--grey-dark);">No services listed.</div>' +
+  '</div>';
+
+  var descHtml = pro.description
+    ? '<p style="font-size:13px;color:var(--text-sub);padding:0 16px 10px;line-height:1.4;">' + pro.description + '</p>'
+    : '';
+
+  _bizDropdownData = { bizId: pro.id, name: pro.name, phone: pro.phoneClean, phoneWa: pro.phoneWa, location: pro.locStr };
 
   content.innerHTML =
-    '<div style="text-align:center; margin-bottom:20px;">' +
-      '<div class="avatar" style="width:72px; height:72px; font-size:26px; margin:0 auto; background:' + pro.color + ';">' + pro.initials + '</div>' +
-      '<h2 style="font-family:var(--font-head); font-size:24px; font-weight:700; margin-top:10px;">' + nameEsc + '</h2>' +
-      '<p style="color:var(--orange); font-size:14px; font-weight:600;">' + pro.trade + '</p>' +
-      '<p style="color:var(--grey-dark); font-size:13px;"><i class="fas fa-map-marker-alt" style="color:var(--orange);"></i> ' + pro.location + '</p>' +
-      (starsHtml ? '<div style="margin-top:6px;">' + starsHtml + '</div>' : '') +
-      (pro.description ? '<p style="font-size:13px; color:var(--text-sub); margin-top:8px; padding:0 20px;">' + pro.description + '</p>' : '') +
-      (skillPills ? '<div class="biz-categories" style="margin-top:10px;">' + skillPills + '</div>' : '') +
-    '</div>' +
-    '<div class="accordion">' +
-      '<div class="accordion-header" onclick="openBizPromos(\'' + proId + '\',\'' + nameEsc + '\')">' +
-        '<span><i class="fas fa-bullhorn" style="color:var(--orange);margin-right:8px;"></i> Promos</span>' +
-        '<span style="color:var(--orange);font-size:14px;font-weight:700;">' + promoCount + '</span>' +
+    '<div style="padding:10px 12px 0;">' +
+      '<div class="pro-header-card">' +
+        avatarHtml +
+        '<div class="pro-details">' +
+          '<h2>' + pro.name + '</h2>' +
+          '<div class="pro-trade">' + pro.tradeName + '</div>' +
+          '<div class="pro-location"><i class="fas fa-map-marker-alt" style="color:var(--orange);margin-right:4px;"></i>' + pro.locStr + '</div>' +
+          (starsHtml ? '<div style="margin-top:4px;font-size:14px;">' + starsHtml + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      descHtml +
+      '<div class="accordion">' +
+        '<div class="accordion-header" onclick="toggleAcc(this)">' +
+          '<span><i class="fas fa-list" style="color:var(--orange);margin-right:8px;"></i> Skills</span>' +
+          '<span class="chevron" style="color:var(--grey-dark);font-size:12px;">\u25BC</span>' +
+        '</div>' +
+        '<div class="accordion-body">' + skillsBody + '</div>' +
+      '</div>' +
+      '<div class="accordion">' +
+        '<div class="accordion-header" onclick="toggleAcc(this)">' +
+          '<span><i class="fas fa-images" style="color:var(--orange);margin-right:8px;"></i> Projects</span>' +
+          '<span class="chevron" style="color:var(--grey-dark);font-size:12px;">\u25BC</span>' +
+        '</div>' +
+        '<div class="accordion-body">' + projectsBody + '</div>' +
+      '</div>' +
+      '<div class="accordion">' +
+        '<div class="accordion-header" onclick="toggleAcc(this)">' +
+          '<span><i class="fas fa-tag" style="color:var(--orange);margin-right:8px;"></i> Rates</span>' +
+          '<span class="chevron" style="color:var(--grey-dark);font-size:12px;">\u25BC</span>' +
+        '</div>' +
+        '<div class="accordion-body">' + ratesBody + '</div>' +
+      '</div>' +
+      '<div class="accordion">' +
+        '<div class="accordion-header" onclick="toggleAcc(this)">' +
+          '<span><i class="fas fa-concierge-bell" style="color:var(--orange);margin-right:8px;"></i> Services</span>' +
+          '<span class="chevron" style="color:var(--grey-dark);font-size:12px;">\u25BC</span>' +
+        '</div>' +
+        '<div class="accordion-body">' + servicesBody + '</div>' +
       '</div>' +
     '</div>' +
-    '<div class="biz-bottom-bar">' +
-      '<button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>' +
-      '<div id="biz-bar-actions">' +
-        '<img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'call\')">' +
-        '<img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'whatsapp\')">' +
-        '<img src="assets/icons/' + (UserState.isFavourite(proId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png" class="biz-bar-icon" onclick="toggleFavBiz(\'' + proId + '\')" id="pro-heart-icon">' +
+    '<div class="biz-bottom-wrapper">' +
+      '<div class="biz-bottom-bar">' +
+        '<button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>' +
+        '<div id="biz-bar-actions">' +
+          '<img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'call\')">' +
+          '<img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'facebook\')">' +
+          '<img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'gps\')">' +
+          '<img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'whatsapp\')">' +
+          '<img src="assets/icons/' + (UserState.isFavourite(proId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png" class="biz-bar-icon" onclick="toggleFavBiz(\'' + proId + '\')" id="pro-heart-icon">' +
+        '</div>' +
       '</div>' +
+      '<div id="dd-call" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div><div id="dd-facebook" class="biz-dropdown-container biz-dd-facebook"><div class="biz-dropdown-inner"></div></div><div id="dd-gps" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div><div id="dd-whatsapp" class="biz-dropdown-container biz-dd-whatsapp"><div class="biz-dropdown-inner"></div></div>' +
     '</div>';
 
   goTo('view-pro-profile');
 }
+
+window.calculateProCost = function(hourlyRate) {
+  var hours = parseFloat(document.getElementById('rate-hours-input').value) || 1;
+  var total = hourlyRate * hours;
+  document.getElementById('rate-calc-result').textContent = 'P' + total.toFixed(2);
+};
 
 function openBizPromos(bizId, businessName) {
   const promos = window._promos.filter(p => p.businessId === bizId || p.businessName === businessName);
@@ -318,6 +581,10 @@ function openBizPromos(bizId, businessName) {
   const loc = biz ? biz.location : '';
   const init = biz ? biz.initials : '?';
   const color = biz ? biz.color : '#999';
+  var bizLogo = window.getBusinessLogo(bizId);
+  var bizThumbHtml = bizLogo
+    ? '<img src="' + bizLogo + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
+    : '<div class="biz-profile-thumb" style="background:' + color + ';">' + init + '</div>';
 
   let promoHtml = '';
 
@@ -370,19 +637,20 @@ function openBizPromos(bizId, businessName) {
           '</div>' +
           '<div class="promo-details">' +
             '<div class="promo-supplier" onclick="goBack()">' +
-              '<div class="avatar-square" style="background:' + (p.businessColor || '#999') + ';">' + (p.businessInit || '?') + '</div>' +
+              (bizLogo
+                ? '<img src="' + bizLogo + '" class="avatar-square" style="object-fit:cover;" alt="">'
+                : '<div class="avatar-square" style="background:' + (p.businessColor || '#999') + ';">' + (p.businessInit || '?') + '</div>') +
               '<div>' +
                 '<div style="font-size:14px;">' + (p.businessName || businessName) + '</div>' +
                 '<div style="font-size:11px;color:var(--grey-dark);font-weight:400;">' + (p.location || (biz ? biz.location : '')) + '</div>' +
               '</div>' +
             '</div>' +
             (isOwner ? '<div style="font-size:10px;color:var(--orange);font-weight:600;margin-bottom:4px;">Your Promo</div>' : '') +
-            '<div class="promo-cat">' + (p.category || 'General') + '</div>' +
             '<div class="promo-title">' + p.title + '</div>' +
             '<div class="promo-desc">' + (p.desc || '') + '</div>' +
             tagsHtml +
             '<div class="qty-row">' +
-              '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--grey-dark);">' + (p.unit || 'each') + '</span></div>' +
+              '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--orange);">' + (p.unit || 'each') + '</span></div>' +
               '<div class="qty-controls">' +
                 '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ')">\u2212</button>' +
                 '<span class="qv" style="min-width:20px;text-align:center;font-weight:600;">' + (p.qty || 1) + '</span>' +
@@ -411,7 +679,7 @@ function openBizPromos(bizId, businessName) {
       ${promoHtml}
     </div>
     <div class="biz-profile-card-nav" onclick="goTo('view-business')">
-      <div class="biz-profile-thumb" style="background:${color};">${init}</div>
+      ${bizThumbHtml}
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${businessName}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc}</div>
@@ -436,7 +704,7 @@ function openBizPromos(bizId, businessName) {
   goTo('view-business-promos');
 }
 
-function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
+function openBizCatalogue(bizId, businessName, location, phoneWa, color, init, selectedCat) {
   const view = document.getElementById('view-business-catalogue');
   if (!view) return;
 
@@ -449,29 +717,20 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
   var catPhoneClean = biz ? biz.phone.replace(/[^0-9+]/g, '') : '+26770000000';
   var catPhoneWaClean = phoneWa || (biz ? biz.phone.replace(/[^0-9]/g, '') : '26770000000');
   _bizDropdownData = { bizId: bizId, name: businessName, phone: catPhoneClean, phoneWa: catPhoneWaClean, location: loc };
-  _bizDropdownState = null;
+
+
+  var bizLogo2 = window.getBusinessLogo(bizId);
+  var bizThumbHtml2 = bizLogo2
+    ? '<img src="' + bizLogo2 + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
+    : '<div class="biz-profile-thumb" style="background:' + color + ';">' + init + '</div>';
 
   const navHtml = `
     <div class="biz-profile-card-nav" onclick="goTo('view-business')">
-      <div class="biz-profile-thumb" style="background:${color};">${init}</div>
+      ${bizThumbHtml2}
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${businessName}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc}</div>
         <div style="font-size:12px;color:var(--orange);font-weight:600;" id="catalogue-nav-label">Catalogue</div>
-      </div>
-      <span style="font-size:20px;color:rgba(255,255,255,0.3);margin-left:8px;">›</span>
-    </div>
-  `;
-
-  const bottomBarHtml = `
-    <div class="biz-bottom-bar">
-      <button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
-      <div id="biz-bar-actions">
-        <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
-        <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
-        <img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
-        <img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
-        <img src="assets/icons/heart_inactive_icon.png" class="biz-bar-icon" onclick="toggleFavBiz('${bizId}')" id="biz-heart-icon">
       </div>
     </div>
   `;
@@ -495,7 +754,6 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
         </div>
       </div>
       ${navHtml}
-      ${bottomBarHtml}
     `;
     goTo('view-business-catalogue');
     return;
@@ -529,10 +787,13 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init) {
     selectedCat: null
   };
 
-  // Set up the shell with nav, content, and bottom bar, then render categories
-  view.innerHTML = navHtml + '<div id="biz-catalogue-content" style="flex:1;overflow-y:auto;padding:12px;"></div>' + bottomBarHtml;
+  // Set up the shell with content and bottom nav, then render categories
+  view.innerHTML = '<div id="biz-catalogue-content" style="flex:1;overflow-y:auto;padding:12px;"></div>' + navHtml;
   goTo('view-business-catalogue');
   renderCatalogueCategories();
+  if (selectedCat && _bizCatalogueState && _bizCatalogueState.catMap[selectedCat]) {
+    setTimeout(function() { selectCatalogueCategory(selectedCat); }, 50);
+  }
 }
 
 function requestCatalogueAccess(businessName, phone) {
@@ -541,6 +802,7 @@ function requestCatalogueAccess(businessName, phone) {
 }
 
 function toggleFavBiz(bizId) {
+  closeBizDropdowns();
   UserState.toggleFavourite(bizId);
   const src = 'assets/icons/' + (UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png';
   var icon = document.getElementById('biz-heart-icon');
@@ -602,9 +864,9 @@ function toggleBizPromo(id) {
 }
 
 /* ─── BOTTOM BAR DROPDOWN HELPERS ─── */
-let _bizDropdownData = null;
-let _bizDropdownState = null;
+var _bizDropdownData = null;
 let _bizCatalogueState = null;
+var _bizDropdownActive = null;
 
 function _getBizDropdownItems(type) {
   var d = _bizDropdownData;
@@ -639,40 +901,63 @@ function _getBizDropdownItems(type) {
   return map[type] || [];
 }
 
-function toggleBizDropdown(type) {
-  var actions = document.getElementById('biz-bar-actions');
-  if (!actions) return;
-  // Toggle off if same type
-  if (_bizDropdownState && _bizDropdownState.type === type) {
-    closeBizDropdown();
-    return;
-  }
-  // Save icons HTML on first toggle
-  if (!_bizDropdownState) _bizDropdownState = { iconsHtml: null, type: null };
-  if (!_bizDropdownState.iconsHtml) _bizDropdownState.iconsHtml = actions.innerHTML;
-
-  _bizDropdownState.type = type;
-  var items = _getBizDropdownItems(type);
-  var html = items.map(function(i) {
-    var p1 = (i.phone || i.query || '').replace(/'/g, "\\'");
-    var p2 = (i.name || '').replace(/'/g, "\\'");
-    var p3 = (i.location || '').replace(/'/g, "\\'");
-    var label = i.label.replace(/'/g, "\\'");
-    return '<div class="biz-dd-item" onclick="closeBizDropdown();doBizDropdownAction(\'' + i.action + '\',\'' + p1 + '\',\'' + p2 + '\',\'' + p3 + '\')">' + label + '</div>';
-  }).join('');
-  html += '<div class="biz-dd-close" onclick="closeBizDropdown()"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;"></div>';
-  actions.innerHTML = html;
+function _renderDropdownContainers() {
+  return '<div id="dd-call" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div>' +
+    '<div id="dd-facebook" class="biz-dropdown-container biz-dd-facebook"><div class="biz-dropdown-inner"></div></div>' +
+    '<div id="dd-gps" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div>' +
+    '<div id="dd-whatsapp" class="biz-dropdown-container biz-dd-whatsapp"><div class="biz-dropdown-inner"></div></div>';
 }
 
-function closeBizDropdown() {
-  var actions = document.getElementById('biz-bar-actions');
-  if (!actions || !_bizDropdownState || !_bizDropdownState.iconsHtml) return;
-  actions.innerHTML = _bizDropdownState.iconsHtml;
-  _bizDropdownState.type = null;
+function toggleBizDropdown(type) {
+  var container = document.getElementById('dd-' + type);
+  if (!container) return;
+
+  // If tapping same icon, close it
+  if (_bizDropdownActive === type) {
+    container.classList.remove('active');
+    _bizDropdownActive = null;
+    return;
+  }
+
+  // Close all dropdowns
+  document.querySelectorAll('.biz-dropdown-container').forEach(function(el) {
+    el.classList.remove('active');
+  });
+
+  // Populate items if empty
+  var inner = container.querySelector('.biz-dropdown-inner');
+  if (inner && !inner.hasChildNodes()) {
+    var items = _getBizDropdownItems(type);
+    inner.innerHTML = items.map(function(i) {
+      var p1 = (i.phone || i.query || '').replace(/'/g, "\\'");
+      var p2 = (i.name || '').replace(/'/g, "\\'");
+      var p3 = (i.location || '').replace(/'/g, "\\'");
+      var label = i.label.replace(/'/g, "\\'");
+      var iconName = i.action === 'call' ? 'phone-alt' : i.action === 'facebook' ? 'facebook-f' : i.action === 'maps' ? 'map-marker-alt' : i.action === 'whatsapp' ? 'whatsapp' : 'store';
+      var sub = '';
+      if (i.action === 'call' && i.phone) sub = 'Call for inquiries';
+      else if (i.action === 'whatsapp' && i.phone) sub = 'Message for inquiries';
+      else if (i.action === 'maps' && i.location) sub = i.location;
+      return '<div class="biz-dd-row" onclick="closeBizDropdowns();doBizDropdownAction(\'' + i.action + '\',\'' + p1 + '\',\'' + p2 + '\',\'' + p3 + '\')">' +
+        '<div class="biz-dd-icon"><i class="fas fa-' + iconName + '"></i></div>' +
+        '<div class="biz-dd-text"><h4>' + label + '</h4>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  container.classList.add('active');
+  _bizDropdownActive = type;
+}
+
+function closeBizDropdowns() {
+  document.querySelectorAll('.biz-dropdown-container').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  _bizDropdownActive = null;
 }
 
 function doBizDropdownAction(action, p1, p2, p3) {
-  closeBizDropdown();
+  closeBizDropdowns();
   if (action === 'call')        callBusiness(p1);
   else if (action === 'facebook') openFacebook(p1);
   else if (action === 'maps')    openMaps(p2, p3);
@@ -750,14 +1035,6 @@ function renderCatalogueListedItems(selectedCat) {
 
   var listedHtml = '';
 
-  // Top bar
-  listedHtml += '<div class="biz-profile-card-nav" style="flex-shrink:0;">' +
-    '<div style="display:flex;align-items:center;gap:8px;" onclick="backToCatalogueCategories()">' +
-      '<img src="assets/icons/solid/chevron-left_white.webp" style="width:20px;height:20px;cursor:pointer;">' +
-      '<div style="font-weight:700;font-size:15px;color:#fff;">' + selectedCat + '</div>' +
-    '</div>' +
-  '</div>';
-
   // Items list
   listedHtml += '<div id="biz-listed-items" style="flex:1;overflow-y:auto;padding:12px;">';
 
@@ -815,19 +1092,22 @@ function renderCatalogueListedItems(selectedCat) {
 
   listedHtml += '</div>';
 
-  // Bottom bar (reuse _bizDropdownData from openBizCatalogue)
+  // Bottom business nav bar (navigates back to view-business)
   var stateData = _bizCatalogueState;
   if (stateData) {
-    var heartIcon = UserState.isFavourite(stateData.bizId) ? 'heart_active_icon' : 'heart_inactive_icon';
-    listedHtml += '<div class="biz-bottom-bar">' +
-      '<button onclick="backToCatalogueCategories()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>' +
-      '<div id="biz-bar-actions">' +
-        '<img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'call\')">' +
-        '<img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'facebook\')">' +
-        '<img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'gps\')">' +
-        '<img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'whatsapp\')">' +
-        '<img src="assets/icons/' + heartIcon + '.png" class="biz-bar-icon" onclick="toggleFavBiz(\'' + stateData.bizId + '\')" id="biz-listed-heart-icon">' +
+    var bizLogo2 = window.getBusinessLogo(stateData.bizId);
+    var navThumbHtml = bizLogo2
+      ? '<img src="' + bizLogo2 + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
+      : '<div class="biz-profile-thumb" style="background:' + stateData.color + ';">' + stateData.init + '</div>';
+    var bizNameEsc2 = (stateData.businessName || '').replace(/'/g, "\\'");
+    listedHtml += '<div class="biz-profile-card-nav" onclick="goTo(\'view-business\')">' +
+      navThumbHtml +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + bizNameEsc2 + '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + stateData.location + '</div>' +
+        '<div style="font-size:12px;color:var(--orange);font-weight:600;" id="catalogue-nav-label">Catalogue</div>' +
       '</div>' +
+      '<span style="font-size:20px;color:rgba(255,255,255,0.3);margin-left:8px;">\u203A</span>' +
     '</div>';
   }
 
@@ -880,9 +1160,10 @@ window.selectDirType = selectDirType;
 window.toggleBizPromo = toggleBizPromo;
 window.openProProfile = openProProfile;
 window.toggleBizDropdown = toggleBizDropdown;
-window.closeBizDropdown = closeBizDropdown;
+window.closeBizDropdowns = closeBizDropdowns;
 window.selectCatalogueCategory = selectCatalogueCategory;
 window.renderCatalogueListedItems = renderCatalogueListedItems;
 window.backToCatalogueCategories = backToCatalogueCategories;
 window.catItemQty = catItemQty;
 window.shareCatalogueItem = shareCatalogueItem;
+window.openBizLogoPreview = openBizLogoPreview;

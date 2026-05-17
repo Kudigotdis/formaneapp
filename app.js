@@ -11,6 +11,14 @@ async function init() {
     console.error('IndexedDB unavailable, running in offline mode:', err);
   }
 
+  try {
+    if (window.WIROG_MEDIA_READY) {
+      await window.WIROG_MEDIA_READY;
+    }
+  } catch(err) {
+    console.warn('Media cache module failed to load (non-fatal):', err);
+  }
+
   // Init DriveAPI (silent — checks for saved OAuth token, no popup)
   try {
     if (typeof DriveAPI !== 'undefined' && DriveAPI.init) {
@@ -91,7 +99,7 @@ async function init() {
     updateAccountUI();
     updateKPI();
     renderPromos();
-    WIROG_IMG_MODE.updateUI();
+    if (window.WIROG_IMG_MODE) WIROG_IMG_MODE.updateUI();
     renderNotes();
     
     // Check for business approval if online
@@ -138,7 +146,12 @@ async function loadSavedData() {
 
   try {
     const promoCount = await WirogDB.getAll('promos');
-    if (promoCount.length === 0) {
+    if (promoCount.length !== window.SAMPLE_PROMOS.length) {
+      if (promoCount.length > 0) {
+        for (const p of promoCount) {
+          await WirogDB.delete('promos', p.id);
+        }
+      }
       for (const promo of window.SAMPLE_PROMOS) {
         await WirogDB.put('promos', promo);
       }
@@ -161,10 +174,10 @@ async function loadProfileFromDB() {
 
 async function loadBusinessFromDB() {
   if (!WirogDB.db) return;
+  if (UserState.business) return; // Already set from BUSINESS_ASSOCIATIONS
   try {
     const saved = await WirogDB.get('businesses', 'biz_user');
     if (saved) {
-      if (saved.name === 'Botswana Timber Ltd') saved.name = 'Board Kings';
       UserState.business = { id: saved.id, name: saved.name, category: saved.category, town: saved.town, phone: saved.phone, subscription: saved.subscription || 'free' };
     }
   } catch(e) { console.error('Failed to load business:', e); }

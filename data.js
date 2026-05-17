@@ -55,6 +55,17 @@ window.ITEM_EMOJIS = {
 
 window.BG_CLASSES = ['img-amber','img-green','img-blue','img-rust','img-teal'];
 
+window.getBusinessLogo = function(bizId) {
+  if (!bizId || !window.SAMPLE_BUSINESSES) return null;
+  var biz = window.SAMPLE_BUSINESSES.find(function(b) { return b.id === bizId; });
+  return biz && biz.logo ? biz.logo : null;
+};
+
+window.getBusinessById = function(bizId) {
+  if (!bizId || !window.SAMPLE_BUSINESSES) return null;
+  return window.SAMPLE_BUSINESSES.find(function(b) { return b.id === bizId; }) || null;
+};
+
 window.DEMO_ACCOUNTS = [
   { id: 'guest', name: 'Browse as Guest', role: 'Browser', initials: '?', color: '#999', town: 'Gaborone' },
   { id: 'admin', name: 'Admin', role: 'Administrator', initials: 'AD', color: '#2a2a2a', town: 'Gaborone' },

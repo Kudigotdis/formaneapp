@@ -9,6 +9,8 @@ let prevView = null;
 function goTo(viewId) {
   prevView = currentView;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  // Close all accordions when navigating
+  document.querySelectorAll('.accordion').forEach(a => a.classList.remove('open'));
   const target = document.getElementById(viewId);
   if (target) {
     target.classList.add('active');
@@ -24,7 +26,7 @@ function goTo(viewId) {
 }
 
 function goBack() {
-  if (prevView && !['view-promos','view-directory','view-notes','view-account'].includes(prevView)) {
+  if (prevView && !['view-promos','view-directory','view-notes','view-account','view-pro-account'].includes(prevView)) {
     goTo(prevView);
   } else {
     goTo('view-promos');
@@ -57,10 +59,11 @@ function manageUI(viewId) {
   const bottomNav = document.getElementById('bottom-nav');
   const filterBar = document.getElementById('filter-bar');
 
-  if (viewId === 'view-welcome' || viewId === 'view-admin' || viewId === 'view-analytics' || viewId === 'view-analytics-month') {
+  if (viewId === 'view-welcome' || viewId === 'view-admin' || viewId === 'view-analytics' || viewId === 'view-analytics-month' || viewId === 'view-business-staff' || viewId === 'view-pro-account') {
     if (header) header.classList.add('shell-hidden');
     if (bottomNav) bottomNav.style.display = 'none';
     if (filterBar) filterBar.style.display = 'none';
+    if (viewId === 'view-pro-account' && window.renderProAccountPage) window.renderProAccountPage();
     return;
   }
 
@@ -75,6 +78,20 @@ function manageUI(viewId) {
 
   const bizTypeRow = document.getElementById('business-type-filter-row');
   if (bizTypeRow) bizTypeRow.style.display = viewId === 'view-directory' ? '' : 'none';
+
+  var serviceRow = document.getElementById('service-and-location-filter-row');
+  var tradesmanRow = document.getElementById('tradesman-type-and-location-filter-row');
+  if (viewId === 'view-promos') {
+    if (serviceRow) serviceRow.style.display = '';
+    if (tradesmanRow) tradesmanRow.style.display = 'none';
+  } else if (viewId === 'view-directory') {
+    var isPros = typeof dirMode !== 'undefined' && dirMode === 'pros';
+    if (serviceRow) serviceRow.style.display = isPros ? 'none' : '';
+    if (tradesmanRow) tradesmanRow.style.display = isPros ? '' : 'none';
+  } else {
+    if (serviceRow) serviceRow.style.display = 'none';
+    if (tradesmanRow) tradesmanRow.style.display = 'none';
+  }
 
   if (viewId === 'view-directory') {
     renderDirectory();

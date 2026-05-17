@@ -79,7 +79,7 @@ const UserState = {
   },
 
   clear() {
-    ["wirog_userId","wirog_name","wirog_firstName","wirog_surname","wirog_role","wirog_company","wirog_town","wirog_mobile","wirog_username","wirog_dob","wirog_gender","wirog_nationality","wirog_race","wirog_contacts","wirog_location","wirog_interests","wirog_favSuppliers"].forEach(k => localStorage.removeItem(k));
+    ["wirog_userId","wirog_name","wirog_firstName","wirog_surname","wirog_role","wirog_company","wirog_town","wirog_mobile","wirog_username","wirog_dob","wirog_gender","wirog_nationality","wirog_race","wirog_contacts","wirog_location","wirog_interests","wirog_favSuppliers","wirog_professional_"+this.id].forEach(k => localStorage.removeItem(k));
     this.id = 'guest';
     this.name = "Guest User";
     this.firstName = "";
@@ -229,7 +229,23 @@ const UserState = {
   isSupplier() { return this.role === "Business & Materials Supplier"; },
   isTradesperson() { return this.role === "Tradesperson (Contractor)"; },
   isGeneralUser() { return this.role === "General User"; },
-  hasBusiness() { return this.business !== null; }
+  hasBusiness() { return this.business !== null; },
+  // ─── Role helpers ───
+  isBrowser() { return this.id === 'guest'; },
+  isSubscriber() { return this.role === 'General User' && this.id !== 'guest'; },
+  isPro() { return this.role === 'Tradesperson (Contractor)'; },
+  isBusinessOwner() { return this.role === 'Business & Materials Supplier' || this.hasBusiness(); },
+  isStaff() { return this.businessRole === 'staff'; },
+  isAdmin() { return this.role === 'Administrator'; },
+  // ─── Professional profile ───
+  _proProfileKey() { return 'wirog_professional_' + this.id; },
+  get professional() {
+    try { return JSON.parse(localStorage.getItem(this._proProfileKey())); }
+    catch { return null; }
+  },
+  set professional(data) {
+    localStorage.setItem(this._proProfileKey(), JSON.stringify(data));
+  }
 };
 
 window.UserState = UserState;

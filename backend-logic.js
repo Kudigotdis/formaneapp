@@ -4,7 +4,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-aut
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import firebaseConfig from './firebase-config.js';
 import { generateHierarchyPath } from './path-utils.js';
-import { WirogMediaCache } from './media-cache.js';
+// WirogMediaCache available via window.WirogMediaCache
 
 // ==========================================
 // 1. FIREBASE INITIALIZATION (v10+ Modular)
@@ -53,7 +53,7 @@ export async function syncBusinessOnboarding(businessData) {
 
     // 2. Cache locally to IndexedDB for offline-first speed
     try {
-      await WirogMediaCache.put(logoPath, businessData.logoFile);
+      await window.WirogMediaCache.put(logoPath, businessData.logoFile);
       console.log("📍 Logo cached locally at:", logoPath);
     } catch (e) {
       console.warn("Local cache failed, falling back to cloud URL.");

@@ -84,7 +84,7 @@ function renderNotes() {
           <div><h3 style="font-size:15px;">${note.title}</h3><p class="note-meta">${count} items for P ${total.toFixed(2)}</p></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <img src="assets/icons/whatsApp_icon_on.png" style="width:36px;height:36px;cursor:pointer;" onclick="event.stopPropagation();shareNoteWhatsApp('${note.id}')">
+          <img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;cursor:pointer;" onclick="event.stopPropagation();shareNoteWhatsApp('${note.id}')">
           <span style="font-size:18px;color:var(--grey-mid);">\u203A</span>
         </div>
       </div>
@@ -101,18 +101,13 @@ function openNote(noteId) {
 
   document.getElementById('note-title-display').textContent = note.title;
 
-  const img = document.getElementById('note-thumbnail-img');
-  const placeholder = document.getElementById('note-thumbnail-placeholder');
-  const container = document.getElementById('note-thumbnail');
   if (note.thumbnail) {
-    img.src = note.thumbnail;
-    img.style.display = 'block';
-    placeholder.style.display = 'none';
-    container.classList.remove('empty');
+    document.getElementById('note-thumbnail-img').src = note.thumbnail;
+    document.getElementById('media-empty-state').style.display = 'none';
+    document.getElementById('media-filled-state').style.display = 'block';
   } else {
-    img.style.display = 'none';
-    placeholder.style.display = 'flex';
-    container.classList.add('empty');
+    document.getElementById('media-empty-state').style.display = 'flex';
+    document.getElementById('media-filled-state').style.display = 'none';
   }
 
   document.getElementById('note-body-input').textContent = note.body || '';
@@ -126,9 +121,8 @@ function openNote(noteId) {
   } else {
     list.innerHTML = note.items.map((item, idx) => `
       <div class="note-item-row">
-        <div class="note-item-icon" onclick="openNoteItemView('${noteId}',${idx})" style="cursor:pointer;">${item.emoji || '\ud83d\udce6'}</div>
         <div class="ni-info">
-          <h4>${item.title}</h4>
+          <h4 onclick="openNoteItemView('${noteId}',${idx})" style="cursor:pointer;">${item.title}</h4>
           <p class="ni-cost">P ${item.price.toFixed(2)} ${item.unit} \u00d7 ${item.qty || 1}</p>
           <p class="ni-business">${item.business}</p>
         </div>
@@ -216,43 +210,32 @@ async function createNote() {
   openNote(note.id);
 }
 
-function editNoteTitle(noteId) {
-  const id = noteId || window._currentNoteId;
-  const note = window._notes.find(n => n.id === id);
+function editNoteTitle() {
+  const note = window._notes.find(n => n.id === window._currentNoteId);
   if (!note) return;
-  const newTitle = prompt('Enter note title:', note.title);
-  if (newTitle && newTitle.trim()) {
-    note.title = newTitle.trim();
-    const titleEl = document.getElementById('note-title-display');
-    if (titleEl) titleEl.textContent = note.title;
-    renderNotes();
-  }
+  const titleEl = document.getElementById('note-title-display');
+  note.title = titleEl.textContent;
+  renderNotes();
 }
 
 function changeNoteThumbnail() {
+  document.getElementById('hidden-image-upload').click();
+}
+
+function handleImageSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
   const note = window._notes.find(n => n.id === window._currentNoteId);
   if (!note) return;
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      const dataUrl = ev.target.result;
-      note.thumbnail = dataUrl;
-      const img = document.getElementById('note-thumbnail-img');
-      const placeholder = document.getElementById('note-thumbnail-placeholder');
-      const container = document.getElementById('note-thumbnail');
-      img.src = dataUrl;
-      img.style.display = 'block';
-      placeholder.style.display = 'none';
-      container.classList.remove('empty');
-    };
-    reader.readAsDataURL(file);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    note.thumbnail = dataUrl;
+    document.getElementById('note-thumbnail-img').src = dataUrl;
+    document.getElementById('media-empty-state').style.display = 'none';
+    document.getElementById('media-filled-state').style.display = 'block';
   };
-  input.click();
+  reader.readAsDataURL(file);
 }
 
 function saveNoteBody() {
@@ -272,7 +255,11 @@ function saveNoteBody() {
 }
 
 function deleteCurrentNote() {
-  if (!confirm('Delete this note and all its items?')) return;
+  openModal('delete-note-modal');
+}
+
+function confirmDeleteNote() {
+  closeModal('delete-note-modal');
   const idx = window._notes.findIndex(n => n.id === window._currentNoteId);
   if (idx === -1) return;
   window._notes.splice(idx, 1);
@@ -324,37 +311,84 @@ function openNoteItemView(noteId, itemIdx) {
   const content = document.getElementById('item-view-content');
   if (!content) return;
   const totalCost = (item.price * (item.qty || 1)).toFixed(2);
-  const tags = promo && promo.tags && promo.tags.length ? promo.tags.map(t => '<span style="background:var(--grey-light);padding:3px 8px;border-radius:4px;font-size:12px;">' + t + '</span>').join(' ') : '';
-  const categories = promo && promo.category ? '<p style="font-size:12px;color:var(--grey-dark);margin-bottom:4px;">Category: <strong>' + promo.category + '</strong></p>' : '';
-  const images = promo && promo.images && promo.images.length ? promo.images.slice(0, 3).map(function(img) { return '<img src="' + img + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;">'; }).join('') : '';
+  var totalCostNum = (item.price * (item.qty || 1));
+  var bizColor = (promo && promo.businessColor) || '#999';
+  var bizInit = (promo && promo.businessInit) || (item.business ? item.business.charAt(0).toUpperCase() : '?');
+  var bizLocation = (promo && promo.location) || '';
+  var tags = promo && promo.tags && promo.tags.length ? promo.tags.map(function(t) { return '<span class="tag-pill">' + t + '</span>'; }).join('') : '';
+  var images = promo && promo.images && promo.images.length ? promo.images : [];
+
+  var carouselHtml = '';
+  if (images.length > 0) {
+    var trackItems = images.map(function(img) {
+      return '<img class="carousel-item" src="' + img + '" alt="' + item.title.replace(/"/g, '&quot;') + '">';
+    }).join('');
+    var dots = images.map(function(_, i) {
+      return '<div class="carousel-dot' + (i === 0 ? ' active' : '') + '"></div>';
+    }).join('');
+    carouselHtml =
+      '<div class="media-carousel-container">' +
+        '<div class="carousel-track" id="media-track">' + trackItems + '</div>' +
+        '<div class="carousel-indicators" id="media-indicators">' + dots + '</div>' +
+      '</div>';
+  }
+
   content.innerHTML =
-    '<div style="margin-bottom:16px;">' +
-      '<div style="font-size:32px;margin-bottom:8px;">' + (item.emoji || '\ud83d\udce6') + '</div>' +
-      '<h3 style="font-size:20px;font-weight:700;margin-bottom:4px;">' + item.title + '</h3>' +
-      categories +
-      (promo && promo.desc ? '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:8px;">' + promo.desc + '</p>' : '') +
+    /* ── 1. SWIPEABLE MEDIA CAROUSEL ── */
+    carouselHtml +
+    /* ── 2. HEADER ── */
+    '<div class="item-header">' +
+      '<h3 class="item-title">' + item.title + '</h3>' +
+      (promo && promo.category ? '<p class="item-category">Category: <strong>' + promo.category + '</strong></p>' : '') +
     '</div>' +
-    '<div style="background:var(--grey-light);border-radius:8px;padding:12px;margin-bottom:12px;">' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">' +
-        '<span style="font-size:13px;color:var(--grey-dark);">Unit Price</span>' +
-        '<strong style="font-size:14px;">P ' + item.price.toFixed(2) + ' ' + item.unit + '</strong>' +
+    /* ── 3. PRICE CARD ── */
+    '<div class="price-card">' +
+      '<div class="price-row">' +
+        '<span class="price-label">Unit Price</span>' +
+        '<span class="price-value">P ' + item.price.toFixed(2) + ' ' + (item.unit || 'each') + '</span>' +
       '</div>' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">' +
-        '<span style="font-size:13px;color:var(--grey-dark);">Quantity</span>' +
-        '<strong style="font-size:14px;">' + (item.qty || 1) + '</strong>' +
+      '<div class="price-row">' +
+        '<span class="price-label">Quantity</span>' +
+        '<span class="price-value">' + (item.qty || 1) + '</span>' +
       '</div>' +
-      '<div style="display:flex;justify-content:space-between;border-top:1px solid var(--grey-mid);padding-top:6px;">' +
-        '<span style="font-size:13px;color:var(--grey-dark);">Total</span>' +
-        '<strong style="font-size:16px;color:var(--orange);">P ' + totalCost + '</strong>' +
+      '<div class="price-row price-total">' +
+        '<span class="price-label">Total</span>' +
+        '<span class="total-value">P ' + totalCostNum.toFixed(2) + '</span>' +
       '</div>' +
     '</div>' +
-    '<div style="margin-bottom:12px;">' +
-      '<p style="font-size:12px;color:var(--grey-dark);margin-bottom:4px;">Service Provider</p>' +
-      '<p style="font-size:14px;font-weight:600;">' + item.business + '</p>' +
-    '</div>' +
-    (tags ? '<div><p style="font-size:12px;color:var(--grey-dark);margin-bottom:6px;">Tags</p><div style="display:flex;flex-wrap:wrap;gap:6px;">' + tags + '</div></div>' : '') +
-    (images ? '<div style="margin-top:12px;"><p style="font-size:12px;color:var(--grey-dark);margin-bottom:6px;">Images</p><div style="display:flex;gap:8px;">' + images + '</div></div>' : '');
+    /* ── 4. DESCRIPTION ── */
+    (promo && promo.desc ?
+    '<p class="section-heading">Description</p>' +
+    '<p class="item-desc">' + promo.desc + '</p>' : '') +
+    /* ── 5. PROVIDER + TAGS ── */
+    '<div class="provider-section">' +
+      '<div class="meta-group">' +
+        '<p class="section-heading">Service Provider</p>' +
+        '<div class="provider-row" onclick="openBizFromPromo(\'' + (promo && promo.businessId ? promo.businessId.replace(/'/g,"\\'") : '') + '\',\'' + item.business.replace(/'/g,"\\'") + '\')">' +
+          (function(bId, col, init){ var logo = bId ? window.getBusinessLogo(bId) : null; return logo ? '<img src="' + logo + '" class="provider-thumb" style="object-fit:cover;" alt="">' : '<div class="provider-thumb" style="background:' + col + ';">' + init + '</div>'; })(promo && promo.businessId, bizColor, bizInit) +
+          '<div>' +
+            '<p class="provider-name">' + item.business + '</p>' +
+            (bizLocation ? '<p class="provider-location">' + bizLocation + '</p>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
   openModal('item-view-modal');
+
+  // Bind carousel scroll listener after render
+  setTimeout(function() {
+    var track = document.getElementById('media-track');
+    var dots = document.querySelectorAll('#media-indicators .carousel-dot');
+    if (track && dots.length > 0) {
+      track.addEventListener('scroll', function() {
+        var idx = Math.round(track.scrollLeft / track.clientWidth);
+        dots.forEach(function(d, i) {
+          d.classList.toggle('active', i === idx);
+        });
+      });
+    }
+  }, 0);
 }
 
 window.renderNotes = renderNotes;
@@ -365,7 +399,9 @@ window.shareNoteWhatsApp = shareNoteWhatsApp;
 window.updateNoteItemQty = updateNoteItemQty;
 window.editNoteTitle = editNoteTitle;
 window.changeNoteThumbnail = changeNoteThumbnail;
+window.handleImageSelected = handleImageSelected;
 window.deleteCurrentNote = deleteCurrentNote;
+window.confirmDeleteNote = confirmDeleteNote;
 window.saveNoteBody = saveNoteBody;
 window.seedDemoNotes = seedDemoNotes;
 window.reloadNotesForUser = reloadNotesForUser;

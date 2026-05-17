@@ -81,11 +81,32 @@ function renderPromoTags(tags) {
     '</div>';
 }
 
+function getPromoImgMode() {
+  return window.WIROG_IMG_MODE || {
+    getImgSrc: function(originalUrl) {
+      return originalUrl || 'assets/media/wirog_place_holder_image_blank.webp';
+    },
+    needsAsyncResolve: function() {
+      return false;
+    },
+    resolve: async function(originalUrl) {
+      return originalUrl || 'assets/media/no_link.png';
+    }
+  };
+}
+
 /* ─── MAIN RENDER ─── */
 function renderPromos() {
   const feed = document.getElementById('promo-feed');
   if (!feed) return;
 
+  const mode = window.WIROG_IMG_MODE ? window.WIROG_IMG_MODE.current : 'live';
+  if (mode === 'text-mode' || mode === 'lite') {
+    renderTextPromos();
+    return;
+  }
+
+  const imgMode = getPromoImgMode();
   const promos = (typeof applyFilters === 'function') ? applyFilters() : (window._promos || []);
 
   if (promos.length === 0) {
@@ -105,7 +126,6 @@ function renderPromos() {
     const isOwnPromo = p.businessId === 'biz_user';
     const status = p.promo ? getPromoRemaining(p.promo.expiresAt) : { text: '', expired: false };
     const kpiHtml = renderKpiStrip(p.kpi);
-    const tagsHtml = renderPromoTags(p.tags);
 
     const card = document.createElement('div');
     card.className = 'promo-card';
@@ -126,9 +146,9 @@ function renderPromos() {
     if (p.images && p.images.length > 1) {
       imgHtml = '<div class="promo-carousel" id="carousel-' + p.id + '">';
       p.images.forEach(function(img) {
-        var src = WIROG_IMG_MODE.getImgSrc(img);
+        var src = imgMode.getImgSrc(img);
         imgHtml += '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'"' +
-          (WIROG_IMG_MODE.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
+          (imgMode.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
       });
       imgHtml += '</div>' +
         '<div class="carousel-dots" id="dots-' + p.id + '">';
@@ -138,9 +158,9 @@ function renderPromos() {
       imgHtml += '</div>';
     } else if (p.images && p.images.length === 1) {
       var img = p.images[0];
-      var src = WIROG_IMG_MODE.getImgSrc(img);
+      var src = imgMode.getImgSrc(img);
       imgHtml = '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'"' +
-        (WIROG_IMG_MODE.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
+        (imgMode.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
     } else {
       imgHtml = '<div class="promo-img-ph ' + (p.bg || 'img-amber') + '"><span class="promo-img-emoji">' + (p.emoji || '\ud83d\udce6') + '</span></div>';
     }
@@ -152,19 +172,17 @@ function renderPromos() {
       '</div>' +
       '<div class="promo-details">' +
         '<div class="promo-supplier" onclick="openBizFromPromo(\'' + p.businessId + '\',\'' + p.businessName.replace(/'/g,"\\'") + '\')">' +
-          '<div class="avatar-square" style="background:' + p.businessColor + ';">' + p.businessInit + '</div>' +
+          (function(bId, init, col){ var logo = window.getBusinessLogo(bId); return logo ? '<img src="' + logo + '" class="avatar-square" style="object-fit:cover;" alt="">' : '<div class="avatar-square" style="background:' + col + ';">' + init + '</div>'; })(p.businessId, p.businessInit, p.businessColor) +
           '<div>' +
             '<div style="font-size:14px;">' + p.businessName + '</div>' +
             '<div style="font-size:11px;color:var(--grey-dark);font-weight:400;">' + p.location + '</div>' +
           '</div>' +
         '</div>' +
         (isOwnPromo ? '<div style="font-size:10px;color:var(--orange);font-weight:600;margin-bottom:4px;">Your Promo</div>' : '') +
-        '<div class="promo-cat">' + (p.category || 'General') + '</div>' +
         '<div class="promo-title">' + p.title + '</div>' +
         '<div class="promo-desc">' + (p.desc || '') + '</div>' +
-        tagsHtml +
         '<div class="qty-row">' +
-          '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--grey-dark);">' + (p.unit || 'each') + '</span></div>' +
+          '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--orange);">' + (p.unit || 'each') + '</span></div>' +
           '<div class="qty-controls">' +
             '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ')">\u2212</button>' +
             '<span class="qv" style="min-width:20px;text-align:center;">' + (p.qty || 1) + '</span>' +
@@ -181,11 +199,12 @@ function renderPromos() {
         (_isGuest ? '' :
         '<div class="promo-actions">' +
           '<button class="action-btn" onclick="addToNote(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
+          '<span class="action-divider">|</span>' +
           '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
           (isOwnPromo || window.Auth?.isAdmin() ?
-          '<button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
+          '<span class="action-divider">|</span><button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
           (isOwnPromo ? '' :
-          '<button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
+          '<span class="action-divider">|</span><button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
             '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
           '</button>') +
         '</div>') +
@@ -200,7 +219,7 @@ function renderPromos() {
           var imgs = c.querySelectorAll('.promo-img[data-original-url]');
           for (var j = 0; j < imgs.length; j++) {
             (function(img) {
-              WIROG_IMG_MODE.resolve(img.getAttribute('data-original-url')).then(function(resolved) {
+              imgMode.resolve(img.getAttribute('data-original-url')).then(function(resolved) {
                 if (resolved) img.src = resolved;
               });
             })(imgs[j]);
@@ -248,6 +267,70 @@ function togglePromo(id) {
   if (!wasOpen) current.classList.add('open');
 }
 
+/* ─── TEXT PROMO CARD (for text-mode / lite) ─── */
+
+function renderTextPromos() {
+  var feed = document.getElementById('promo-feed');
+  if (!feed) return;
+  var promos = (typeof applyFilters === 'function') ? applyFilters() : (window._promos || []);
+  if (promos.length === 0) {
+    feed.innerHTML =
+      '<div style="text-align:center;padding:48px 16px;color:var(--grey-dark);">' +
+      '<p style="font-size:14px;font-weight:600;">No promos available in this mode</p>' +
+      '</div>';
+    return;
+  }
+  feed.innerHTML = '';
+  var _isGuest = window.Auth && window.Auth.isGuest();
+  promos.forEach(function(p) {
+    var card = document.createElement('div');
+    card.className = 'promo-text-card';
+    card.id = 'ptext-' + p.id;
+    card.innerHTML =
+      '<div class="promo-text-main" onclick="toggleTextPromo(\'' + p.id + '\')">' +
+        '<div class="promo-title">' + p.title + '</div>' +
+        '<div class="qty-row" style="margin-top:0;">' +
+          '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--orange);">' + (p.unit || 'each') + '</span></div>' +
+          '<div class="qty-controls">' +
+            '<button class="qty-btn" onclick="event.stopPropagation();changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ')">\u2212</button>' +
+            '<span class="qv" style="min-width:20px;text-align:center;">' + (p.qty || 1) + '</span>' +
+            '<button class="qty-btn" onclick="event.stopPropagation();changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ')">+</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="promo-text-extra">' +
+        '<div class="promo-text-thumb-flex">' +
+          (function(bId){ var logo = window.getBusinessLogo(bId); return logo ? '<img src="' + logo + '" class="promo-text-thumb" alt="">' : ''; })(p.businessId) +
+          '<div class="promo-text-biz-info" onclick="openBizFromPromo(\'' + p.businessId + '\',\'' + (p.businessName || '').replace(/'/g,"\\'") + '\')">' +
+            '<div class="promo-text-biz-name">' + (p.businessName || 'Unknown') + '</div>' +
+            '<div class="promo-text-biz-location">' + (typeof p.location === 'object' && p.location ? (p.location.town || '') + (p.location.area ? ' \u00B7 ' + p.location.area : '') : (p.location || 'Category: ' + (p.category || 'General'))) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="promo-desc">' + (p.desc || '') + '</div>' +
+        (_isGuest ? '' :
+        '<div class="promo-actions">' +
+          '<button class="action-btn add-to-note-btn" onclick="openAddToNoteModal(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
+          '<span style="color:rgba(128,128,128,0.25);">|</span>' +
+          '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
+          '<span style="color:rgba(128,128,128,0.25);">|</span>' +
+          '<button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
+            '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
+          '</button>' +
+        '</div>') +
+      '</div>';
+    feed.appendChild(card);
+  });
+}
+
+function toggleTextPromo(id) {
+  var cards = document.querySelectorAll('.promo-text-card.open');
+  var current = document.getElementById('ptext-' + id);
+  if (!current) return;
+  var wasOpen = current.classList.contains('open');
+  cards.forEach(function(c) { c.classList.remove('open'); });
+  if (!wasOpen) current.classList.add('open');
+}
+
 function changeQty(promoId, delta, basePrice) {
   const card = document.getElementById('promo-' + promoId);
   if (!card) return;
@@ -291,39 +374,102 @@ async function toggleLike(id, btnEl) {
   updateKPI();
 }
 
-async function addToNote(promoId) {
+function openAddToNoteModal(promoId) {
   const p = window._promos.find(x => String(x.id) === String(promoId));
   if (!p) return;
   const card = document.getElementById('promo-' + promoId);
   if (!card) return;
   const qv = card.querySelector('.qv');
   const qty = parseInt(qv.innerText);
+  window._pendingPromoItem = { promoId, qty, promo: p };
+  openModal('add-to-note-modal');
+}
 
-  let note = window._notes.find(n => n.title === 'Saved from Promos');
-  if (!note) {
-    note = { id: 'note_' + Date.now(), title: 'Saved from Promos', userId: UserState.id, items: [] };
-    window._notes.push(note);
-  }
-
+async function createNewNoteWithItem() {
+  closeModal('add-to-note-modal');
+  const item = window._pendingPromoItem;
+  if (!item) return;
+  const note = { id: 'note_' + Date.now(), title: 'New Note', thumbnail: '', body: '', userId: UserState.id, items: [] };
   note.items.push({
-    title: p.title, emoji: p.emoji || '\ud83d\udce6', price: p.basePrice || p.price || 0,
-    unit: p.unit || 'each', business: p.businessName, qty: qty
+    title: item.promo.title, emoji: item.promo.emoji || '\ud83d\udce6',
+    price: item.promo.basePrice || item.promo.price || 0,
+    unit: item.promo.unit || 'each', business: item.promo.businessName, qty: item.qty
   });
-
-  try { await WirogDB.put('notes', note); } catch(e) { console.error('Failed to save note to DB:', e); }
-
-  // Enqueue note save for background sync
+  window._notes.push(note);
+  try { await WirogDB.put('notes', note); } catch(e) { console.error('Failed to save note:', e); }
   try {
     if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
       await window.SyncQueue.enqueue('notes', note, { clientId: UserState.id });
       if (window.requestBackgroundSync) window.requestBackgroundSync().catch(()=>{});
     }
   } catch(e) { console.warn('Failed to enqueue note for sync:', e); }
-
-  if (p.kpi) p.kpi.addedToNotes = (p.kpi.addedToNotes || 0) + 1;
+  if (item.promo.kpi) item.promo.kpi.addedToNotes = (item.promo.kpi.addedToNotes || 0) + 1;
   UserState.kpi.noteAdds++;
   updateKPI();
+  renderNotes();
+  openNote(note.id);
+}
+
+function openNoteSelection() {
+  closeModal('add-to-note-modal');
+  renderNoteSelection();
+  goTo('view-select-note-to-update');
+}
+
+function renderNoteSelection() {
+  const el = document.getElementById('note-selection-list');
+  if (!el) return;
+  const uid = UserState.id;
+  const userNotes = (window._notes || []).filter(function(n) { return n.userId === uid; });
+  if (userNotes.length === 0) {
+    el.innerHTML =
+      '<div style="text-align:center;padding:32px 16px;color:var(--grey-dark);">' +
+      '<p style="font-size:14px;margin-bottom:12px;">You don\'t have any notes yet.</p>' +
+      '</div>';
+    return;
+  }
+  el.innerHTML = userNotes.map(function(note) {
+    var count = note.items.reduce(function(s, i) { return s + (i.qty || 1); }, 0);
+    var total = note.items.reduce(function(s, i) { return s + (i.price * (i.qty || 1)); }, 0);
+    return '<div class="note-select-row" onclick="addItemToNote(\'' + note.id + '\')">' +
+      '<div style="font-size:24px;">' + (note.items[0] ? (note.items[0].emoji || '\ud83d\udccb') : '\ud83d\udccb') + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:14px;font-weight:600;">' + (note.title || 'Untitled') + '</div>' +
+        '<div style="font-size:11px;color:var(--grey-dark);">' + count + ' items \u00b7 P ' + total.toFixed(2) + '</div>' +
+      '</div>' +
+      '<span style="font-size:18px;color:var(--orange);">\u203A</span>' +
+    '</div>';
+  }).join('');
+}
+
+async function addItemToNote(noteId) {
+  const item = window._pendingPromoItem;
+  if (!item) return;
+  const note = window._notes.find(function(n) { return n.id === noteId; });
+  if (!note) return;
+  note.items.push({
+    title: item.promo.title, emoji: item.promo.emoji || '\ud83d\udce6',
+    price: item.promo.basePrice || item.promo.price || 0,
+    unit: item.promo.unit || 'each', business: item.promo.businessName, qty: item.qty
+  });
+  try { await WirogDB.put('notes', note); } catch(e) { console.error('Failed to save note:', e); }
+  try {
+    if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
+      await window.SyncQueue.enqueue('notes', note, { clientId: UserState.id });
+      if (window.requestBackgroundSync) window.requestBackgroundSync().catch(()=>{});
+    }
+  } catch(e) { console.warn('Failed to enqueue note for sync:', e); }
+  if (item.promo.kpi) item.promo.kpi.addedToNotes = (item.promo.kpi.addedToNotes || 0) + 1;
+  UserState.kpi.noteAdds++;
+  updateKPI();
+  renderNotes();
   showToast('\u2705 Added to note!');
+  goBack();
+}
+
+// Legacy alias for backward compatibility
+async function addToNote(promoId) {
+  openAddToNoteModal(promoId);
 }
 
 function sharePromo(id) {
@@ -369,8 +515,14 @@ window.togglePromo = togglePromo;
 window.changeQty = changeQty;
 window.toggleLike = toggleLike;
 window.addToNote = addToNote;
+window.openAddToNoteModal = openAddToNoteModal;
+window.createNewNoteWithItem = createNewNoteWithItem;
+window.openNoteSelection = openNoteSelection;
+window.addItemToNote = addItemToNote;
 window.sharePromo = sharePromo;
 window.renderPromos = renderPromos;
+window.renderTextPromos = renderTextPromos;
+window.toggleTextPromo = toggleTextPromo;
 window.trackPromoView = trackPromoView;
 window.checkPromoStatuses = checkPromoStatuses;
 

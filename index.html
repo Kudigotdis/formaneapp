@@ -91,7 +91,7 @@
         <div id="notes-list"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
           <button onclick="createNote()" style="background:white;border:1px solid var(--grey-light);border-radius:8px;padding:8px 16px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;">
-            <img src="assets/icons/solid/add-to-note_orange.webp" style="width:20px;height:20px;object-fit:contain;"> Add Note
+            <img src="assets/icons/solid/add-to-note_orange.webp" style="width:20px;height:20px;object-fit:contain;">
           </button>
           <div id="notes-remaining-counter" style="font-size:11px;color:var(--grey-mid);text-align:center;margin:0;"></div>
         </div>
@@ -104,21 +104,43 @@
         <div class="note-total-label">Total Estimate</div>
         <div class="note-total-val" id="note-total-val">P 0.00</div>
       </div>
-      <div class="note-meta-section">
-        <div class="note-thumbnail" id="note-thumbnail" onclick="changeNoteThumbnail()">
-          <img id="note-thumbnail-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
-          <div id="note-thumbnail-placeholder" class="note-thumbnail-placeholder" style="display:flex;align-items:center;justify-content:center;color:var(--grey-mid);font-size:14px;">
-            <i class="fas fa-camera"></i> Tap to add image
+      <div class="note-media-section" id="note-media-section">
+        <div class="media-empty-state" id="media-empty-state" onclick="changeNoteThumbnail()">
+          <div class="add-image-btn">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+              <line x1="12" y1="9" x2="12" y2="15"></line>
+              <line x1="9" y1="12" x2="15" y2="12"></line>
+            </svg>
+          </div>
+          <div class="add-image-text">Add Image</div>
+        </div>
+        <div class="media-filled-state" id="media-filled-state" style="display:none;">
+          <img id="note-thumbnail-img" class="note-thumbnail-img" src="" alt="Note Media">
+          <div class="change-image-overlay" onclick="changeNoteThumbnail()">
+            <svg style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            Edit
           </div>
         </div>
-        <div class="note-title-display" id="note-title-display" onclick="editNoteTitle()">Note Title</div>
+        <input type="file" id="hidden-image-upload" accept="image/*" style="display:none;" onchange="handleImageSelected(event)">
+      </div>
+      <div class="note-text-section">
+        <div class="note-title-display" id="note-title-display" contenteditable="true" oninput="editNoteTitle()">Note Title</div>
         <div contenteditable="true" id="note-body-input" class="note-body-input" oninput="saveNoteBody()" placeholder="Write your note here..."></div>
       </div>
-      <div id="note-items-list"></div>
+      <div class="note-items-container">
+        <div id="note-items-list"></div>
+      </div>
       <div class="note-bottom-bar">
-        <button onclick="goTo('view-notes')" style="width:36px;height:36px;border-radius:50%;background:var(--orange);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;"><img src="assets/icons/solid/chevron-left_white.webp" style="width:18px;height:18px;display:block;object-fit:contain;"></button>
-        <img src="assets/icons/whatsApp_icon_on.png" style="width:36px;height:36px;cursor:pointer;" onclick="shareNoteWhatsApp()">
-        <img src="assets/icons/solid/delete_icon_orange.webp" style="width:36px;height:36px;cursor:pointer;" onclick="deleteCurrentNote()">
+        <button class="btn-round" onclick="goTo('view-notes')">
+          <svg style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;margin-right:2px;" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="bottom-bar-actions">
+          <img src="assets/icons/solid/share-nodes_whatsapp_green.webp" class="icon-action" alt="Share" onclick="shareNoteWhatsApp()">
+          <img src="assets/icons/solid/delete_icon_orange.webp" class="icon-action" alt="Delete" onclick="deleteCurrentNote()">
+        </div>
       </div>
     </div>
 
@@ -133,13 +155,35 @@
     <!-- ═══ ANALYTICS MONTHLY DRILL-DOWN ═══ -->
     <div id="view-analytics-month" class="view"></div>
 
+    <!-- ═══ BUSINESS STAFF MANAGEMENT ═══ -->
+    <div id="view-business-staff" class="view no-pad">
+      <div id="business-staff-content"></div>
+    </div>
+
+    <!-- ═══ SELECT NOTE TO UPDATE ═══ -->
+    <div id="view-select-note-to-update" class="view no-pad">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--grey-light);">
+        <button onclick="goBack()" style="width:32px;height:32px;border-radius:50%;background:var(--orange);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;"><img src="assets/icons/solid/chevron-left_white.webp" style="width:16px;height:16px;display:block;object-fit:contain;"></button>
+        <span style="font-size:16px;font-weight:700;">Select Note</span>
+      </div>
+      <div id="note-selection-list" style="padding:8px 0;"></div>
+    </div>
+
     <!-- ═══ ACCOUNT TAB ═══ -->
     <div id="view-account" class="view app-tab">
-      <div class="profile-hero">
-        <div class="profile-avatar" id="acct-avatar" style="background: #2a2a2a;">?</div>
-        <div class="profile-name" id="acct-name">Guest User</div>
-        <div class="profile-role" id="acct-role">General User</div>
-        <div class="profile-badge" id="acct-badge">Active Free Plan</div>
+      <div class="accordion">
+        <div class="profile-hero accordion-header" onclick="toggleAcc(this); renderPersonalDetails()">
+          <div class="profile-avatar" id="acct-avatar" style="background: #2a2a2a;" onclick="event.stopPropagation();document.getElementById('acct-avatar-input').click()">?</div>
+          <input type="file" id="acct-avatar-input" accept="image/*" style="display:none;" onchange="handleAvatarChange(event)">
+          <div class="profile-info">
+            <div class="profile-name" id="acct-name">Guest User</div>
+            <div class="profile-role" id="acct-role">General User</div>
+          </div>
+          <span class="chevron" style="color:var(--orange);font-size:16px;">&#9660;</span>
+        </div>
+        <div class="accordion-body" id="personal-details-body">
+          <p style="font-size:13px; color:var(--grey-dark); padding-top:8px;">Loading...</p>
+        </div>
       </div>
 
       <!-- Guest CTA (shown only for guest users) -->
@@ -149,149 +193,50 @@
         <p style="font-size:12px;color:var(--grey-dark);margin-top:12px;">Create a profile to save notes, like promos, and more!</p>
       </div>
 
-      <!-- Personal Details -->
+      <!-- Notes -->
       <div class="accordion">
-        <div class="accordion-header" onclick="toggleAcc(this); renderPersonalDetails()">
-          <span><i class="fas fa-user" style="color:var(--orange); margin-right:8px;"></i> Personal Details</span>
+        <div class="accordion-header" onclick="toggleAcc(this); renderNotesAccordion()">
+          <span><i class="fas fa-sticky-note" style="color:var(--orange); margin-right:8px;"></i> Notes</span>
         </div>
-        <div class="accordion-body" id="personal-details-body">
+        <div class="accordion-body" id="notes-accordion-body">
           <p style="font-size:13px; color:var(--grey-dark); padding-top:8px;">Loading...</p>
         </div>
       </div>
 
-      <!-- Notes -->
+      <!-- Liked -->
       <div class="accordion">
-        <div class="accordion-header" onclick="toggleAcc(this)">
-          <span><i class="fas fa-sticky-note" style="color:var(--orange); margin-right:8px;"></i> Notes</span>
+        <div class="accordion-header" onclick="toggleAcc(this); renderFavSuppliersAccordion()">
+          <span><i class="fas fa-heart" style="color:var(--orange); margin-right:8px;"></i> Liked</span>
         </div>
-        <div class="accordion-body">
-          <div style="padding-top:8px;display:flex;flex-direction:column;gap:8px;">
-            <button class="btn btn-sm" onclick="navTab('view-notes','nav-notes')">View Notes</button>
-            <button class="btn btn-sm" onclick="openModal('buy-notes-modal')">Buy Notes</button>
-          </div>
+        <div class="accordion-body" id="fav-suppliers-accordion-body">
+          <p style="font-size:13px; color:var(--grey-dark); padding-top:8px;">Loading...</p>
         </div>
       </div>
 
-      <!-- Admin Dashboard -->
+      <!-- Business -->
+      <div class="accordion" id="biz-accordion">
+        <div class="accordion-header" onclick="toggleAcc(this); renderBusinessAccordion()">
+          <span><i class="fas fa-store" style="color:var(--orange); margin-right:8px;"></i> Business</span>
+        </div>
+        <div class="accordion-body" id="biz-accordion-body">
+          <p style="font-size:13px; color:var(--grey-dark); padding-top:8px;">Loading...</p>
+        </div>
+      </div>
+
+      <!-- Admin Dashboard (shown only for admin) -->
       <div class="accordion" id="admin-dashboard-entry" style="display:none;">
         <div class="accordion-header" onclick="renderAdmin();goTo('view-admin')">
           <span><i class="fas fa-chart-line" style="color:var(--orange);margin-right:8px;"></i> Super Admin</span>
         </div>
       </div>
 
-      <!-- Favourite Suppliers -->
-      <div class="accordion">
-        <div class="accordion-header" onclick="renderFavouriteSuppliers();goTo('view-favourite-suppliers')">
-          <span><i class="fas fa-heart" style="color:var(--orange); margin-right:8px;"></i> Favourite Suppliers</span>
-        </div>
-      </div>
-
-      <!-- My Business / Catalogue -->
-      <div class="accordion" id="biz-accordion">
-        <div class="accordion-header" onclick="toggleAcc(this)">
-          <span><i class="fas fa-store" style="color:var(--orange); margin-right:8px;"></i> Business Menu</span>
-        </div>
-        <div class="accordion-body" id="biz-accordion-body">
-          <div id="biz-card-content">
-            <p style="font-size:13px; color:var(--grey-dark); padding-top:8px; margin-bottom:12px;">No business registered yet.</p>
-            <button class="btn btn-sm" onclick="openCreateBiz()">+ Add Business</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- My Catalogue & Items -->
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAcc(this)">
-          <span><i class="fas fa-box" style="color:var(--orange); margin-right:8px;"></i> My Catalogue & Items</span>
-        </div>
-        <div class="accordion-body">
-          <div style="padding-top:8px;">
-            <div id="my-catalogue-list">
-              <p style="font-size:13px; color:var(--grey-dark); padding-top:8px; margin-bottom:12px;">No items in catalogue yet.</p>
-            </div>
-            <button class="btn btn-sm" onclick="openAddItemModal()" style="width:100%;">+ Add Item to Catalogue</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Facebook Boosts -->
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAcc(this)">
-          <span><i class="fab fa-facebook" style="color:var(--orange); margin-right:8px;"></i> Facebook Boosts</span>
-        </div>
-        <div class="accordion-body">
-          <div style="padding-top:8px;">
-            <div style="display:flex;align-items:center;margin-bottom:12px;">
-              <div style="font-size:13px;color:var(--grey-dark);">Boosts remaining this month</div>
-              <div id="boost-counter" style="color:var(--orange);font-weight:700;margin-left:auto;">12</div>
-            </div>
-            <button class="btn btn-sm" onclick="openArtworkSubmission()" style="width:100%;">Submit Artwork for Boost</button>
-            <div id="my-boost-submissions" style="margin-top:12px;font-size:13px;">
-              <p style="color:var(--grey-dark);">No boost submissions yet.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Promo Requests & Payments -->
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAcc(this)">
-          <span><i class="fas fa-receipt" style="color:var(--orange); margin-right:8px;"></i> Promo Requests & Payments</span>
-        </div>
-        <div class="accordion-body">
-          <div style="padding-top:8px;">
-            <div style="background:var(--orange-light);border-radius:8px;padding:10px;margin-bottom:12px;font-size:13px;">
-              <strong>Pay via Bank Transfer</strong>
-              <div style="margin-top:6px;font-size:12px;color:var(--grey-dark);">
-                FNB Botswana &middot; Game City Branch<br>
-                Account Name: Wirog Investments
-              </div>
-            </div>
-            <p style="font-size:12px;font-weight:600;margin-bottom:6px;">Select your bank:</p>
-            <div style="display:flex;gap:12px;margin-bottom:12px;align-items:center;justify-content:space-between;">
-              <img src="assets/logos/absa_logo.png" onclick="openPaymentProofModal('Absa','0','Promo boost')" style="height:40px;width:auto;object-fit:contain;cursor:pointer;flex:1;">
-              <img src="assets/logos/fnb_logo_2.png" onclick="openPaymentProofModal('FNB','0','Promo boost')" style="height:40px;width:auto;object-fit:contain;cursor:pointer;flex:1;">
-              <img src="assets/logos/stanbic_logo.png" onclick="openPaymentProofModal('Stanbic','0','Promo boost')" style="height:40px;width:auto;object-fit:contain;cursor:pointer;flex:1;">
-            </div>
-            <p style="font-size:12px;font-weight:600;margin-bottom:6px;">Or pay via Mobile Money:</p>
-            <div style="display:flex;gap:12px;margin-bottom:12px;align-items:center;justify-content:space-between;">
-              <img src="assets/logos/btc_logo.png" onclick="openPaymentProofModal('BTC','0','Promo boost')" style="width:36px;height:36px;object-fit:contain;cursor:pointer;flex:1;">
-              <img src="assets/logos/mascom_logo.png" onclick="openPaymentProofModal('Mascom','0','Promo boost')" style="width:36px;height:36px;object-fit:contain;cursor:pointer;flex:1;">
-              <img src="assets/logos/orange_logo.png" onclick="openPaymentProofModal('Orange','0','Promo boost')" style="width:36px;height:36px;object-fit:contain;cursor:pointer;flex:1;">
-            </div>
-            <div id="promo-requests-mini-list" style="max-height:40vh;overflow-y:auto;font-size:13px;">
-              <p style="color:var(--grey-dark);">No promo requests yet.</p>
-            </div>
-            <button class="btn btn-sm" onclick="renderPromoRequests()" style="width:100%;margin-top:8px;background:var(--orange);color:white;border:none;">View All Requests</button>
-          </div>
-        </div>
-      </div>
-
       <!-- KPI Dashboard -->
       <div class="accordion">
-        <div class="accordion-header" onclick="toggleAcc(this)">
+        <div class="accordion-header" onclick="toggleAcc(this); renderKpiAccordion()">
           <span><i class="fas fa-chart-line" style="color:var(--orange); margin-right:8px;"></i> KPI Dashboard</span>
         </div>
-        <div class="accordion-body">
-          <div class="kpi-grid" id="kpi-grid">
-            <div class="kpi-card">
-              <div class="kpi-value" id="kpi-ads">0</div>
-              <div class="kpi-label">Active Ads</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-value" id="kpi-views">0</div>
-              <div class="kpi-label">Total Views</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-value" id="kpi-likes">0</div>
-              <div class="kpi-label">Likes</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-value" id="kpi-note-adds">0</div>
-              <div class="kpi-label">Note Adds</div>
-            </div>
-          </div>
-          <div id="budget-summary" style="margin-top:12px;display:none;"></div>
+        <div class="accordion-body" id="kpi-accordion-body">
+          <p style="font-size:13px; color:var(--grey-dark); padding-top:8px;">Loading...</p>
         </div>
       </div>
 
@@ -345,6 +290,11 @@
 
     </div>
 
+    <!-- ═══ PRO ACCOUNT PAGE ═══ -->
+    <div id="view-pro-account" class="view no-pad">
+      <div id="pro-account-content"></div>
+    </div>
+
     <!-- ═══ BLOG ═══ -->
     <div id="view-blog" class="view no-pad">
       <div style="padding:12px;flex-shrink:0;">
@@ -374,22 +324,21 @@
       </div>
     </div>
 
-    <!-- ═══ FAVOURITE SUPPLIERS PAGE ═══ -->
+    <!-- ═══ LIKED PAGE ═══ -->
     <div id="view-favourite-suppliers" class="view" style="padding:0;">
-      <div style="padding:12px; border-bottom:1px solid var(--grey-light);">
-        <h2 style="font-size:18px; font-weight:700; margin:0;">Favourite Suppliers</h2>
+      <div style="padding:12px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--grey-light);">
+        <button class="back-btn" onclick="goTo('view-account')"><i class="fas fa-arrow-left"></i></button>
+        <h2 id="liked-page-title" style="font-size:18px; font-weight:700; margin:0;flex:1;">Liked</h2>
       </div>
       <div id="favourite-suppliers-list" style="padding:12px;"></div>
-      <div style="position:sticky;bottom:0;padding:12px;border-top:1px solid var(--grey-light);background:white;">
-        <button class="btn" onclick="goTo('view-account')" style="margin:0;">Back</button>
-      </div>
     </div>
 
     <!-- ═══ USER INTERESTS PAGE ═══ -->
     <div id="view-user-interests" class="view">
       <div style="padding:12px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--grey-light);">
         <button class="back-btn" onclick="goTo('view-account')"><i class="fas fa-arrow-left"></i></button>
-        <h2 style="font-size:18px; font-weight:700; margin:0;">My Interests</h2>
+        <h2 style="font-size:18px; font-weight:700; margin:0;flex:1;">My Interests</h2>
+        <button class="modal-close" onclick="goTo('view-account')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
       </div>
       <div id="interests-page-body" style="flex:1; overflow-y:auto; padding:0;"></div>
       <div style="padding:12px; border-top:1px solid var(--grey-light);">
@@ -408,20 +357,28 @@
   <div id="filter-bar" style="display:none;">
     <div class="filter-row" id="promo-type-row" style="justify-content:space-between; padding:6px 16px; background:#ffe2d4;">
       <button class="filter-btn" id="promo-type-btn" onclick="openPromoTypeModal()" style="color:#b84c1b;">Buy New</button>
-      <div class="mode-toggle-group">
-        <button class="btn-mode-saved active" onclick="WIROG_IMG_MODE.set('saved')">Saved</button>
-        <button class="btn-mode-online" onclick="WIROG_IMG_MODE.set('online')">Online</button>
-        <button class="btn-mode-offline" onclick="WIROG_IMG_MODE.set('offline')">Offline</button>
-      </div>
+      <span id="data-mode-label" style="font-size:13px;font-weight:600;color:#b84c1b;cursor:pointer;" onclick="openDataModeModal()">Live</span>
     </div>
     <div class="filter-row" id="business-type-filter-row" style="justify-content:center; padding:6px 16px; background:#ffe2d4; display:none;">
-      <button class="filter-btn" id="dir-type-btn" onclick="openDirTypeModal()" style="color:#b84c1b;">Companies</button>
+      <button class="filter-btn" id="dir-type-btn" onclick="openDirTypeModal()" style="color:#b84c1b;">Pros</button>
     </div>
-    <div class="filter-row" style="padding:6px 14px; background:#b84c1b;">
+    <div class="filter-row" id="service-and-location-filter-row" style="padding:6px 14px; background:#b84c1b;">
       <div style="display:flex; gap:10px; align-items:center;">
         <button class="filter-btn" onclick="openSearchModal()" style="color:white;"><img src="assets/icons/search_icon.svg" style="width:16px;height:16px;vertical-align:middle;"></button>
         <span style="color:rgba(149,58,17,0.35); font-weight:300;">|</span>
         <button class="filter-btn" id="category-filter-btn" onclick="openCategorySheet()" style="color:white;">All Services</button>
+      </div>
+      <div style="display:flex; gap:4px; align-items:center;">
+        <button class="filter-btn" id="place-a-btn" onclick="openLocationSheet('placeA')" style="color:white;">Nation Wide</button>
+        <span style="color:rgba(149,58,17,0.35); font-weight:300;">|</span>
+        <button class="filter-btn" id="place-b-btn" onclick="openLocationSheet('placeB')" style="color:white;">All Area</button>
+      </div>
+    </div>
+    <div class="filter-row" id="tradesman-type-and-location-filter-row" style="padding:6px 14px; background:#b84c1b; display:none;">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="filter-btn" onclick="openSearchModal()" style="color:white;"><img src="assets/icons/search_icon.svg" style="width:16px;height:16px;vertical-align:middle;"></button>
+        <span style="color:rgba(149,58,17,0.35); font-weight:300;">|</span>
+        <button class="filter-btn" id="tradesmen-filter-btn" onclick="openTradesmenSheet()" style="color:white;">All Tradesmen</button>
       </div>
       <div style="display:flex; gap:4px; align-items:center;">
         <button class="filter-btn" id="place-a-btn" onclick="openLocationSheet('placeA')" style="color:white;">Nation Wide</button>
@@ -561,6 +518,7 @@
         <p style="font-size:13px;line-height:1.6;margin-bottom:12px;">Botswana's premier supply solutions ecosystem connecting businesses, tradespeople, and customers. Browse building materials, compare prices, save notes, and share via WhatsApp.</p>
         <p style="font-size:12px;color:var(--grey-dark);margin-bottom:4px;">&copy; 2026 Wirog Investments</p>
         <p style="font-size:12px;color:var(--grey-dark);">Game City, Gaborone, Botswana</p>
+        <button onclick="window.location.href='wirog-about-faq.html'" style="margin-top:16px;padding:10px 24px;background:#ed6626;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Explore More About Wirog</button>
       </div>
     </div>
   </div>
@@ -578,6 +536,29 @@
         <p style="font-size:13px;color:var(--grey-dark);margin-bottom:16px;">This will permanently delete your account and all saved data. This action cannot be undone.</p>
         <button class="btn" style="background:#e74c3c;color:white;" onclick="confirmDeleteAccount()">Delete My Account</button>
         <p style="text-align:center;margin-top:8px;font-size:12px;color:var(--grey-mid);cursor:pointer;" onclick="closeModal('delete-account-modal')">Cancel</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DELETE NOTE CONFIRMATION MODAL ── -->
+  <div class="modal-overlay" id="delete-note-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Delete Note</span>
+        <button class="modal-close" onclick="closeModal('delete-note-modal')">
+          <img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;">
+        </button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="font-size:48px;margin-bottom:12px;">&#128465;&#65039;</div>
+        <p style="font-size:15px;font-weight:600;margin-bottom:8px;">Delete this note?</p>
+        <p style="font-size:13px;color:var(--grey-dark);margin-bottom:16px;">
+          All items in this note will be permanently removed. This cannot be undone.
+        </p>
+        <button class="btn" style="background:var(--orange);color:white;" onclick="confirmDeleteNote()">
+          Delete Note
+        </button>
+        <p style="text-align:center;margin-top:8px;font-size:12px;color:var(--grey-mid);cursor:pointer;" onclick="closeModal('delete-note-modal')">Cancel</p>
       </div>
     </div>
   </div>
@@ -811,6 +792,18 @@
         <button class="modal-close" onclick="closeModal('promo-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
       </div>
       <div class="modal-body">
+        <!-- Images at top -->
+        <label>Images (max 5)</label>
+        <div id="promo-image-dropzone" style="border:2px dashed var(--grey-light);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;margin-bottom:8px;" onclick="document.getElementById('promo-image-input').click()">
+          <div style="font-size:13px;color:var(--grey-dark);">Tap to select images</div>
+        </div>
+        <input type="file" id="promo-image-input" accept="image/*" multiple style="display:none" onchange="handlePromoImageUpload(this.files)">
+        <div id="promo-image-previews" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;"></div>
+        <div id="promo-image-calc" style="font-size:12px;color:var(--grey-dark);padding:8px;background:var(--grey-light);border-radius:var(--radius);margin-bottom:10px;display:none;">
+          <span id="promo-img-count">0 of 5</span> &bull;
+          <span id="promo-img-total-size">0 KB</span> total
+        </div>
+
         <label>Item Title</label><input type="text" id="promo-item-title" placeholder="e.g. Meranti Planks 22x144mm">
         <label>Description</label><textarea id="promo-item-desc" placeholder="Describe the item..." rows="2"></textarea>
 
@@ -822,8 +815,10 @@
           <option>For Auction</option>
         </select>
 
-        <label>Category</label>
-        <select id="promo-item-cat"></select>
+        <!-- Multi-category tick boxes -->
+        <label>Categories</label>
+        <div id="promo-category-checkboxes" style="max-height:200px;overflow-y:auto;border:1px solid var(--grey-light);border-radius:var(--radius);padding:8px;margin-bottom:8px;"></div>
+        <div id="promo-category-summary" style="font-size:11px;color:var(--grey-dark);margin-bottom:8px;"></div>
 
         <label>Tags</label>
         <div id="promo-tag-display" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;min-height:24px;"></div>
@@ -832,17 +827,6 @@
         <label>Price (P)</label><input type="number" id="promo-item-price" placeholder="0.00" oninput="updatePromoCost()">
         <label>Unit</label>
         <select id="promo-item-unit"><option>each</option><option>per meter</option><option>per kg</option><option>per hour</option><option>per day</option><option>per m²</option><option>per box</option><option>per set</option></select>
-
-        <label>Images (max 5)</label>
-        <div id="promo-image-dropzone" style="border:2px dashed var(--grey-light);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;margin-bottom:8px;" onclick="document.getElementById('promo-image-input').click()">
-          <div style="font-size:13px;color:var(--grey-dark);">Tap to select images</div>
-        </div>
-        <input type="file" id="promo-image-input" accept="image/*" multiple style="display:none" onchange="handlePromoImageUpload(this.files)">
-        <div id="promo-image-previews" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;"></div>
-        <div id="promo-image-calc" style="font-size:12px;color:var(--grey-dark);padding:8px;background:var(--grey-light);border-radius:var(--radius);margin-bottom:10px;display:none;">
-          <span id="promo-img-count">0 of 5</span> &bull;
-          <span id="promo-img-total-size">0 KB</span> total
-        </div>
 
         <label>Visibility</label>
         <select id="promo-region" onchange="updatePromoCost()">
@@ -872,6 +856,10 @@
             <span id="cost-days-label">Extra days (P15/day)</span>
             <span id="cost-days">+ P 0.00</span>
           </div>
+          <div class="cost-row" id="cost-category-row" style="display:none;">
+            <span id="cost-category-label">Extra categories</span>
+            <span id="cost-category">+ P 0.00</span>
+          </div>
           <div class="cost-divider"></div>
           <div class="cost-row cost-total">
             <span>Total Cost</span>
@@ -883,7 +871,7 @@
           Submit to Promos Feed
         </button>
         <p style="font-size:11px; color:var(--grey-dark); text-align:center; margin-top:8px;">
-          1 free promo per week &bull; P25/3 days &bull; +P15/day after &bull; Free local &bull; +P100 nationwide
+          1 free promo per week &bull; P25/3 days &bull; +P15/day after &bull; Free local &bull; +P100 nationwide &bull; 1 category free, P10 extra
         </p>
       </div>
     </div>
@@ -899,6 +887,20 @@
       <div class="modal-body" id="category-sheet-body" style="padding:0; flex:1; overflow-y:auto;"></div>
       <div style="padding:12px; border-top:1px solid var(--grey-light);">
         <button class="btn" onclick="applyCategoryFilter()">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TRADESMEN FILTER BOTTOM SHEET ── -->
+  <div class="modal-overlay" id="tradesmen-modal">
+    <div class="modal-sheet" style="max-height:80vh; display:flex; flex-direction:column;">
+      <div class="modal-header">
+        <span class="modal-title">Select Tradesmen</span>
+        <button class="modal-close" onclick="closeModal('tradesmen-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+      </div>
+      <div class="modal-body" id="tradesmen-sheet-body" style="padding:0; flex:1; overflow-y:auto;"></div>
+      <div style="padding:12px; border-top:1px solid var(--grey-light);">
+        <button class="btn" onclick="applyTradesmenFilter()">Apply Filters</button>
       </div>
     </div>
   </div>
@@ -922,7 +924,12 @@
         <button class="modal-close" onclick="closeModal('search-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
       </div>
       <div class="modal-body">
-        <input type="text" id="search-input" placeholder="Search by title, category, business..." style="width:100%; padding:12px; border:1px solid var(--grey-light); border-radius:var(--radius); font-size:14px; box-sizing:border-box;" oninput="doSearch(this.value)">
+        <div style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:4px;">
+           <div class="pill active" onclick="setSearchMode('all')">All</div>
+           <div class="pill" onclick="setSearchMode('brand')">Brand</div>
+           <div class="pill" onclick="setSearchMode('business')">Business</div>
+        </div>
+        <input type="text" id="search-input" placeholder="Search by name, brand, or store..." style="width:100%; padding:12px; border:1px solid var(--grey-light); border-radius:var(--radius); font-size:14px; box-sizing:border-box;" oninput="doSearch(this.value)">
         <div id="search-results" style="margin-top:12px; max-height:300px; overflow-y:auto;"></div>
       </div>
     </div>
@@ -1043,7 +1050,6 @@
         </div>
 
         <!-- Bank Logos -->
-        <p style="font-size:12px;font-weight:600;margin-bottom:6px;">Select your bank:</p>
         <div style="display:flex;gap:12px;margin-bottom:12px;align-items:center;justify-content:space-between;">
           <img src="assets/logos/absa_logo.png" onclick="openPaymentProofModal('Absa','0','Promo boost')" style="height:40px;width:auto;object-fit:contain;cursor:pointer;flex:1;">
           <img src="assets/logos/fnb_logo_2.png" onclick="openPaymentProofModal('FNB','0','Promo boost')" style="height:40px;width:auto;object-fit:contain;cursor:pointer;flex:1;">
@@ -1051,7 +1057,6 @@
         </div>
 
         <!-- Mobile Money Logos -->
-        <p style="font-size:12px;font-weight:600;margin-bottom:6px;">Or pay via Mobile Money:</p>
         <div style="display:flex;gap:8px;margin-bottom:12px;">
           <button class="btn-outline" onclick="openPaymentProofModal('BTC','0','Promo boost')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;">
             <img src="assets/logos/btc_logo.png" style="width:32px;height:32px;object-fit:contain;"> BTC
@@ -1124,14 +1129,69 @@
     </div>
   </div>
 
-  <!-- ── ITEM DETAIL VIEW ── -->
+  <!-- ── ITEM VIEW MODAL (tapped from note item title) ── -->
   <div class="modal-overlay" id="item-view-modal">
     <div class="modal-sheet" style="max-width:500px;">
       <div class="modal-header">
         <span class="modal-title">Item Details</span>
         <button class="modal-close" onclick="closeModal('item-view-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
       </div>
-      <div class="modal-body" id="item-view-content" style="padding:20px;"></div>
+      <div class="modal-body item-view-body" id="item-view-content"></div>
+    </div>
+  </div>
+
+  <!-- ── ADD TO NOTE MODAL ── -->
+  <div class="modal-overlay" id="add-to-note-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">Add to Note</span>
+        <button class="modal-close" onclick="closeModal('add-to-note-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+      </div>
+      <div class="modal-body" style="padding:20px 16px;">
+        <button class="note-action-btn" onclick="createNewNoteWithItem()">
+          <span class="note-action-icon"><img src="assets/icons/solid/add-to-note_orange.webp" style="width:22px;height:22px;display:block;filter:brightness(0)invert(1);"></span>
+          <span class="note-action-text">
+            <span class="note-action-title">Create New Note</span>
+            <span class="note-action-desc">Start a fresh note and save this item to it</span>
+          </span>
+        </button>
+        <button class="note-action-btn" onclick="openNoteSelection()">
+          <span class="note-action-icon"><img src="assets/icons/solid/add-to-note_orange.webp" style="width:22px;height:22px;display:block;filter:brightness(0)invert(1);"></span>
+          <span class="note-action-text">
+            <span class="note-action-title">Add to Note</span>
+            <span class="note-action-desc">Choose from your existing notes to save this item</span>
+          </span>
+        </button>
+        <button class="note-action-btn" onclick="closeModal('add-to-note-modal')">
+          <span class="note-action-icon"><img src="assets/icons/solid/xmark_orange.webp" style="width:22px;height:22px;display:block;"></span>
+          <span class="note-action-text">
+            <span class="note-action-title">Close</span>
+            <span class="note-action-desc">Return to browsing promos and deals</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DATA MODE MODAL ── -->
+  <div class="modal-overlay" id="data-mode-modal">
+    <div class="modal-sheet" style="overflow-y:hidden;">
+      <div class="modal-header">
+        <span class="modal-title">Data Mode</span>
+        <button class="modal-close" onclick="closeModal('data-mode-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+      </div>
+      <div class="modal-body data-mode-body" id="data-mode-body"></div>
+    </div>
+  </div>
+
+  <!-- ── GENERIC MODAL (used by pro profile, add project, etc.) ── -->
+  <div class="modal-overlay" id="generic-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title" id="generic-modal-title">Modal</span>
+        <button class="modal-close" onclick="closeModal('generic-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
+      </div>
+      <div class="modal-body" id="generic-modal-body"></div>
     </div>
   </div>
 
@@ -1145,7 +1205,7 @@
   <script src="demo-data.js"></script>
   <script src="demo-profiles.js"></script>
   <script src="db.js"></script>
-  <script type="module" src="media-cache.js"></script>
+  <script src="media-cache.js"></script>
   <script type="module" src="path-utils.js"></script>
   <script type="module" src="mode-controller.js"></script>
   <script type="module" src="ui-helpers.js"></script>
@@ -1155,10 +1215,12 @@
   <script src="utils.js"></script>
   <script src="pricing-engine.js"></script>
   <script src="wirog_product_categories.js"></script>
+  <script src="data/tradeSpecific.js"></script>
   <script src="filter.js"></script>
   <script src="navigation.js"></script>
   <script src="router.js"></script>
   <script src="promos.js"></script>
+  <script src="pro.js"></script>
   <script src="directory.js"></script>
   <script src="notes.js"></script>
   <script src="account.js"></script>
@@ -1177,6 +1239,7 @@
   <script src="items.js"></script>
   <script src="blogs.js"></script>
   <script src="app.js"></script>
+  <script src="staff.js"></script>
   <script src="account-views.js"></script>
 </body>
 </html>

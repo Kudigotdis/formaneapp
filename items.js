@@ -312,6 +312,122 @@ function removeItemVariable(id) {
   updatePricingPreview();
 }
 
+function getItemVariables() {
+  const rows = document.querySelectorAll('#item-variables-container > div');
+  return Array.from(rows).map(function(row) {
+    const inputs = row.querySelectorAll('input');
+    return {
+      name: inputs[0]?.value || 'Variable',
+      value: parseFloat(inputs[1]?.value) || 0,
+      rate: parseFloat(inputs[2]?.value) || 0
+    };
+  }).filter(function(v) {
+    return v.name || v.value || v.rate;
+  });
+}
+
+function getItemTiers() {
+  const type = document.getElementById('item-tier-type')?.value || 'none';
+  const rows = document.querySelectorAll('#item-tier-rules .tier-rule-row');
+  const rules = Array.from(rows).map(function(row) {
+    const inputs = row.querySelectorAll('input');
+    return {
+      minQty: parseFloat(inputs[0]?.value) || 0,
+      price: parseFloat(inputs[1]?.value) || 0
+    };
+  }).filter(function(rule) {
+    return rule.minQty > 0 && rule.price > 0;
+  });
+  return { type: type, rules: rules };
+}
+
+function onItemCategoryChange(category) {
+  _selectedItemCategory = category || _selectedItemCategory || '';
+  const display = document.getElementById('item-cat-display');
+  if (display && _selectedItemCategory) display.textContent = _selectedItemCategory;
+  populateItemUnits(_selectedItemCategory);
+  buildItemImagePicker(_selectedItemCategory);
+  updatePricingPreview();
+  updatePromoCostEstimate();
+  updateItemPreview();
+}
+
+function onTierTypeChange() {
+  const type = document.getElementById('item-tier-type')?.value || 'none';
+  const container = document.getElementById('item-tier-rules');
+  if (!container) return;
+  container.style.display = type === 'none' ? 'none' : 'block';
+  if (type !== 'none' && !container.children.length) addTierRule();
+  updatePricingPreview();
+}
+
+function addTierRule() {
+  const container = document.getElementById('item-tier-rules');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'tier-rule-row';
+  row.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px;';
+  row.innerHTML =
+    '<input type="number" placeholder="Min qty" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
+    '<input type="number" placeholder="Unit price" style="flex:1;margin:0;" oninput="updatePricingPreview()">' +
+    '<span style="cursor:pointer;color:var(--grey-mid);font-size:18px;" onclick="this.parentElement.remove();updatePricingPreview()">&times;</span>';
+  container.appendChild(row);
+}
+
+function initScheduleGrid() {
+  const container = document.getElementById('item-day-rows');
+  if (!container || container.children.length) return;
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  container.innerHTML = days.map(function(day) {
+    return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:4px;">' +
+      '<input type="checkbox" value="' + day + '" onchange="updateScheduleDay()">' +
+      '<span style="width:34px;">' + day + '</span>' +
+      '<input type="time" style="flex:1;margin:0;" onchange="updateScheduleDay()">' +
+      '<input type="time" style="flex:1;margin:0;" onchange="updateScheduleDay()">' +
+      '</label>';
+  }).join('');
+}
+
+function toggleScheduleDay() {
+  updateScheduleDay();
+}
+
+function updateScheduleDay() {
+  return Array.from(document.querySelectorAll('#item-day-rows label')).filter(function(row) {
+    return row.querySelector('input[type="checkbox"]')?.checked;
+  }).map(function(row) {
+    const inputs = row.querySelectorAll('input');
+    return { day: inputs[0].value, start: inputs[1].value, end: inputs[2].value };
+  });
+}
+
+function onItemRegionChange() {
+  window._itemRegion = document.getElementById('item-region')?.value || 'local';
+  const detail = document.getElementById('item-location-detail');
+  if (detail) detail.style.display = window._itemRegion === 'local' ? 'block' : 'none';
+}
+
+function updatePromoCostEstimate() {
+  const days = parseInt(document.getElementById('item-promo-days')?.value, 10) || 3;
+  const region = document.getElementById('item-region')?.value || window._itemRegion || 'local';
+  const town = UserState.business?.town || UserState.town || 'Gaborone';
+  const cost = window.PricingEngine.calcPromoCost(days, region, town, UserState.freePromoUsed);
+  const detail = document.getElementById('item-promo-cost-detail');
+  const total = document.getElementById('item-promo-cost-total');
+  if (detail) {
+    detail.innerHTML = cost.breakdown.map(function(row) {
+      return '<div class="cost-row"><span>' + row.label + '</span><span>P ' + row.amount.toFixed(2) + '</span></div>';
+    }).join('');
+  }
+  if (total) total.textContent = 'P ' + cost.total.toFixed(2);
+}
+
+function updateItemPreview() {
+  const title = document.getElementById('item-title')?.value || '';
+  const display = document.getElementById('item-preview-title');
+  if (display) display.textContent = title;
+}
+
 /* ─── PRICING PREVIEW ─── */
 function updatePricingPreview() {
   const basePrice = parseFloat(document.getElementById('item-price').value) || 0;

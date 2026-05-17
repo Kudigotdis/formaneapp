@@ -16,23 +16,7 @@ function toggleSubAcc(header) {
 function renderPersonalDetails() {
   const body = document.getElementById('personal-details-body');
   if (!body) return;
-  body.innerHTML = renderIdentitySection() + renderContactSection() + renderInterestsSection() + renderVIPSection() + renderAgentPortal() + renderSyncSection();
-}
-
-function renderSyncSection() {
-  return `<div class="sub-accordion">
-    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
-      <div style="display:flex; align-items:center; gap:8px;">
-         <span>🔄</span> Platform Sync
-      </div>
-    </div>
-    <div class="sub-accordion-body">
-      <div style="padding:10px 0;">
-        <p style="font-size:12px; color:var(--grey-dark); margin-bottom:8px;">Download latest industry icons for offline use.</p>
-        <button class="btn-sm" style="width:100%; background:var(--orange); color:white;" onclick="triggerPlatformSync()">Sync Assets Now</button>
-      </div>
-    </div>
-  </div>`;
+  body.innerHTML = renderIdentitySection() + renderSocialSection() + renderCategoriesSection() + renderProAccountSection();
 }
 
 function renderIdentitySection() {
@@ -47,29 +31,42 @@ function renderIdentitySection() {
       <div style="padding:4px 0;"><label>Gender</label><div class="gender-toggle"><button class="${s.gender==='Male'?'active':''}" onclick="setGender('Male')">Male</button><button class="${s.gender==='Female'?'active':''}" onclick="setGender('Female')">Female</button></div></div>
       <div style="padding:4px 0;"><label>Nationality</label><p class="editable" data-field="nationality" data-value="${(s.nationality||'').replace(/"/g,'&quot;')}" onclick="editField(this)">${s.nationality || '(tap to edit)'}</p></div>
       <div style="padding:4px 0;"><label>Race</label><p class="editable" data-field="race" data-value="${(s.race||'').replace(/"/g,'&quot;')}" onclick="editField(this)">${s.race || '(tap to edit)'}</p></div>
+      ${renderLocationSection()}
+      ${renderContactSection()}
+    </div>
+  </div>`;
+}
+
+function renderLocationSection() {
+  const s = UserState;
+  return `<div class="sub-accordion">
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Location</div>
+    <div class="sub-accordion-body">
+      <div style="padding:4px 0;"><label>Town / Village / City</label><p class="editable" data-field="town" data-section="location" data-value="${(s.location.town||'Gaborone').replace(/"/g,'&quot;')}" onclick="editLocationTown(this)">${s.location.town || 'Gaborone'}</p></div>
+      <div style="padding:4px 0;"><label>Area / Neighbourhood</label><p class="editable" data-field="area" data-section="location" data-value="${(s.location.area||'').replace(/"/g,'&quot;')}" onclick="editLocationArea(this)">${s.location.area || '(tap to edit)'}</p></div>
+      <div style="padding:4px 0;"><label>Google GPS Link</label><p class="editable" data-field="gps" data-section="location" data-value="${(s.location.gps||'').replace(/"/g,'&quot;')}" onclick="editField(this)">${s.location.gps || '(tap to add link)'}</p><button class="add-entry-btn" style="margin-top:4px;" onclick="openGpsMap()"><i class="fas fa-map-marked-alt"></i> Open in Google Maps</button></div>
     </div>
   </div>`;
 }
 
 function renderContactSection() {
+  return `<div class="sub-accordion">
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Contact</div>
+    <div class="sub-accordion-body">
+      ${renderMobileEntries()}
+      ${renderWhatsAppEntries()}
+    </div>
+  </div>`;
+}
+
+function renderSocialSection() {
   const s = UserState;
   let socialHTML = Object.entries(s.contacts.social).map(([k,v]) =>
     `<div style="padding:4px 0;"><label style="text-transform:capitalize;">${k}</label><p class="editable" data-field="${k}" data-section="social" data-value="${(v||'').replace(/"/g,'&quot;')}" onclick="editField(this)">${v || '(tap to edit)'}</p></div>`
   ).join('');
-
-  return `<div class="sub-accordion">
-    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Contact & Location</div>
-    <div class="sub-accordion-body">
-      ${renderMobileEntries()}
-      ${renderWhatsAppEntries()}
-      <div style="padding:4px 0;"><label>Town / Village / City</label><p class="editable" data-field="town" data-section="location" data-value="${(s.location.town||'Gaborone').replace(/"/g,'&quot;')}" onclick="editLocationTown(this)">${s.location.town || 'Gaborone'}</p></div>
-      <div style="padding:4px 0;"><label>Area / Neighbourhood</label><p class="editable" data-field="area" data-section="location" data-value="${(s.location.area||'').replace(/"/g,'&quot;')}" onclick="editLocationArea(this)">${s.location.area || '(tap to edit)'}</p></div>
-      <div style="padding:4px 0;"><label>Google GPS Link</label><p class="editable" data-field="gps" data-section="location" data-value="${(s.location.gps||'').replace(/"/g,'&quot;')}" onclick="editField(this)">${s.location.gps || '(tap to add link)'}</p><button class="add-entry-btn" style="margin-top:4px;" onclick="openGpsMap()"><i class="fas fa-map-marked-alt"></i> Open in Google Maps</button></div>
-      <div class="sub-accordion" style="margin-top:8px;">
-        <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Social Media</div>
-        <div class="sub-accordion-body">${socialHTML}</div>
-      </div>
-    </div>
+  return `<div class="accordion">
+    <div class="accordion-header" onclick="toggleAcc(this)"><span>Social Media</span></div>
+    <div class="accordion-body" style="padding:8px 12px;">${socialHTML}</div>
   </div>`;
 }
 
@@ -105,77 +102,38 @@ function renderWhatsAppEntries() {
   return html;
 }
 
-function renderInterestsSection() {
+function renderCategoriesSection() {
   const count = UserState.interests.length;
   return `<div class="sub-accordion">
-    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Interests & Categories</div>
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Categories</div>
     <div class="sub-accordion-body">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 0;">
         <span style="font-size:13px;font-weight:600;">🏷️ ${count} Selected</span>
       </div>
-      <p style="font-size:13px;color:var(--grey-dark);cursor:pointer;padding:8px 0;" onclick="goTo('view-user-interests');renderInterestsPage();">Tap to manage interests <span style="color:var(--orange);">→</span></p>
+      <p style="font-size:13px;color:var(--grey-dark);cursor:pointer;padding:8px 0;" onclick="goTo('view-user-interests');renderInterestsPage();">Tap to manage categories <span style="color:var(--orange);">→</span></p>
     </div>
   </div>`;
 }
 
-function renderVIPSection() {
+function renderProAccountSection() {
   const s = UserState;
-  const isVerified = s.isVerified;
-  
+  const isPro = s.isTradesperson();
+  const hasProListing = !!getClaimedProId(s.id);
   return `<div class="sub-accordion">
-    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
-      <div style="display:flex; align-items:center; gap:8px;">
-         <span>🏆</span> VIP & Rewards
-      </div>
-    </div>
+    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Pro Account</div>
     <div class="sub-accordion-body">
-      <div style="padding:10px 0; border-bottom:1px solid var(--grey-light);">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-size:14px; font-weight:700;">VIP Pass</div>
-            <div style="font-size:11px; color:var(--grey-dark);">Exclusive discounts & early access</div>
-          </div>
-          <button class="btn-sm" style="width:auto; min-width:80px; ${isVerified ? 'background:var(--orange); color:white;' : 'background:var(--grey-light); color:var(--grey-mid); cursor:not-allowed;'}" 
-            onclick="${isVerified ? 'showVIPPass()' : 'promptVerification()'}">
-            ${isVerified ? 'View' : '🔒 Locked'}
-          </button>
-        </div>
+      <div style="padding:8px 0;">
+        ${hasProListing
+          ? '<div class="pro-card-header" style="display:flex;align-items:center;gap:12px;padding:10px 0;">' +
+            '<span style="font-size:13px;color:var(--green, #27ae60);font-weight:600;">✓ Pro Account Active</span>' +
+            '<button class="btn-outline btn-sm" onclick="goTo(\'view-pro-account\')" style="margin-left:auto;"><i class="fas fa-chevron-right"></i> Manage</button>' +
+            '</div>'
+          : '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:10px;">Activate your Pro account to get discovered by customers looking for your services.</p>' +
+            '<button class="btn btn-sm" style="background:var(--orange);color:white;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;width:100%;font-weight:600;" onclick="goTo(\'view-pro-account\')"><i class="fas fa-user-tie"></i> Activate Pro Account</button>'
+        }
       </div>
-      
-      <div style="padding:10px 0;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-size:14px; font-weight:700;">Claim Prize</div>
-            <div style="font-size:11px; color:var(--grey-dark);">Redeem your Wirog reward tokens</div>
-          </div>
-          <button class="btn-sm" style="width:auto; min-width:80px; ${isVerified ? 'background:var(--orange); color:white;' : 'background:var(--grey-light); color:var(--grey-mid); cursor:not-allowed;'}" 
-            onclick="${isVerified ? 'claimPrize()' : 'promptVerification()'}">
-            ${isVerified ? 'Claim' : '🔒 Locked'}
-          </button>
-        </div>
-      </div>
-      
-      ${!isVerified ? `
-        <div style="margin-top:12px; padding:10px; background:var(--orange-light); border-radius:8px; border:1px dashed var(--orange);">
-          <p style="font-size:12px; color:var(--orange); margin:0;">
-            <strong>Verification Required:</strong> To unlock these features, please visit a <strong>Wirog Agent</strong> at your nearest hardware store for identity verification.
-          </p>
-        </div>
-      ` : ''}
     </div>
   </div>`;
-}
-
-function promptVerification() {
-  alert("⚠️ Account Not Verified\n\nPlease find a Wirog Agent at any partner store (e.g., Kago Timber or Builders Mart) to verify your account and unlock VIP rewards.");
-}
-
-function showVIPPass() {
-  showToast("🎟️ VIP Pass Active!");
-}
-
-function claimPrize() {
-  showToast("🎁 Connecting to Rewards Hub...");
 }
 
 // ─── INLINE EDITING ───
@@ -788,41 +746,117 @@ function updateWhatsAppField(id, field, value) {
   if (w) { w[field] = value; UserState._persistContacts(); }
 }
 
-// ─── FAVOURITE SUPPLIERS PAGE ───
-function renderFavouriteSuppliers() {
-  const list = document.getElementById('favourite-suppliers-list');
+// ─── LIKED PAGE ───
+function renderLikedList(mode) {
+  var titleEl = document.getElementById('liked-page-title');
+  if (titleEl) titleEl.textContent = mode === 'products' ? 'Liked Products' : mode === 'tradesmen' ? 'Liked Tradesmen' : 'Liked Suppliers';
+
+  var list = document.getElementById('favourite-suppliers-list');
   if (!list) return;
 
-  const favIds = UserState.favouriteSuppliers;
-  const allBiz = [...(window.SAMPLE_BUSINESSES || [])];
+  var favIds = UserState.favouriteSuppliers;
 
+  if (mode === 'products') {
+    var likedItems = JSON.parse(localStorage.getItem('wirog_liked_items') || '[]');
+    if (likedItems.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--grey-dark);"><i class="fas fa-box" style="font-size:40px;margin-bottom:12px;display:block;color:var(--grey-mid);"></i><p style="font-weight:600;">No liked products yet</p><p style="font-size:13px;margin-top:4px;">Browse the catalogue and heart items you like.</p></div>';
+    } else {
+      var cats = window.WIROG_PRODUCT_CATEGORIES ? (window.WIROG_PRODUCT_CATEGORIES.categories || []) : [];
+      var catMap = {};
+      cats.forEach(function(c) { catMap[c.name] = c; });
+
+      var grouped = {};
+      likedItems.forEach(function(id) {
+        var item = null;
+        if (window._catalogueItems) item = window._catalogueItems.find(function(i) { return i.id === id; });
+        var catName = item && item.category ? item.category : 'Other';
+        if (!grouped[catName]) grouped[catName] = [];
+        grouped[catName].push(item || { id: id, name: id, category: catName });
+      });
+
+      var sortedCats = Object.keys(grouped).sort();
+      var html = '';
+      sortedCats.forEach(function(cat) {
+        html += '<div style="padding:10px 0;border-bottom:1px solid var(--grey-light);cursor:pointer;" onclick="showLikedCategoryItems(\'' + cat.replace(/'/g,"\\'") + '\')">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+            '<span style="font-size:15px;font-weight:600;">' + cat + '</span>' +
+            '<span style="font-size:13px;color:var(--grey-dark);">' + grouped[cat].length + ' <span style="color:var(--orange);">→</span></span>' +
+          '</div></div>';
+      });
+      list.innerHTML = html;
+    }
+    return;
+  }
+
+  var allProfiles = window.DEMO_PROFILES || [];
+  var allBiz = [...(window.SAMPLE_BUSINESSES || [])];
   if (UserState.hasBusiness()) {
-    const biz = UserState.business;
+    var biz = UserState.business;
     allBiz.push({
       id: 'biz_user', name: biz.name, category: biz.category, location: biz.town,
-      initials: biz.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+      initials: biz.name.split(' ').map(function(w){return w[0]}).join('').slice(0,2).toUpperCase(),
       color: window.APP_COLORS[biz.name.charCodeAt(0) % window.APP_COLORS.length],
       phone: biz.phone || '', public: true, description: ''
     });
   }
 
-  const favourites = allBiz.filter(b => favIds.includes(b.id)).sort((a,b) => a.name.localeCompare(b.name));
+  var items;
+  if (mode === 'tradesmen') {
+    items = allProfiles.filter(function(p) {
+      return favIds.indexOf(p.id) !== -1 && (p.role === 'Tradesperson (Contractor)' || p.role === 'Business & Materials Supplier');
+    });
+  } else {
+    items = allBiz.filter(function(b) { return favIds.indexOf(b.id) !== -1; });
+  }
 
-  if (favourites.length === 0) {
-    list.innerHTML = `<div style="text-align:center;padding:48px 16px;color:var(--grey-dark);"><i class="fas fa-heart" style="font-size:40px;margin-bottom:12px;display:block;color:var(--grey-mid);"></i><p>No favourite suppliers yet.</p><p style="font-size:12px;margin-top:6px;">Save suppliers from the Directory to see them here.</p></div>`;
+  if (items.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--grey-dark);"><i class="fas fa-heart" style="font-size:40px;margin-bottom:12px;display:block;color:var(--grey-mid);"></i><p style="font-weight:600;">No liked ' + mode + ' yet</p><p style="font-size:13px;margin-top:4px;">Browse the directory and heart the ones you like.</p></div>';
     return;
   }
 
-  list.innerHTML = favourites.map(b => `
-    <div class="fav-card" onclick="openBizProfile('${b.id}','${b.name.replace(/'/g,"\\'")}','${b.initials}','${b.color}','${b.location}','${b.phone||''}',${b.public||false},'${(b.description||'').replace(/'/g,"\\'")}')">
-      <div class="fav-avatar" style="background:${b.color};">${b.initials}</div>
-      <div class="fav-info">
-        <div class="fav-name">${b.name}</div>
-        <div class="fav-meta">${b.category} · ${b.location}</div>
-      </div>
-      <button class="fav-remove" onclick="event.stopPropagation();removeFavourite('${b.id}')"><img src="assets/icons/solid/xmark_orange.webp" style="width:14px;height:14px;display:block;"></button>
-    </div>
-  `).join('');
+  items.sort(function(a, b) { return a.name.localeCompare(b.name); });
+  list.innerHTML = items.map(function(item) {
+    var init = item.initials || item.name.split(' ').map(function(w){return w[0]}).join('').slice(0,2).toUpperCase();
+    var col = item.color || window.APP_COLORS[init.charCodeAt(0) % window.APP_COLORS.length];
+    var loc = item.town || item.location || '';
+    var role = item.role || item.category || '';
+    var onClick = mode === 'tradesmen'
+      ? 'openProProfile(\'' + item.id + '\')'
+      : 'openBizProfile(\'' + item.id + '\',\'' + item.name.replace(/'/g,"\\'") + '\',\'' + init + '\',\'' + col + '\',\'' + loc + '\',\'' + (item.phone || '') + '\')';
+    return '<div class="dir-card" onclick="' + onClick + '">' +
+      '<div class="dir-avatar" style="background:' + col + ';">' + init + '</div>' +
+      '<div class="dir-info"><h3>' + item.name + '</h3><p>' + role + ' · ' + loc + '</p></div>' +
+      '<button onclick="event.stopPropagation();toggleFavDir(this,\'' + item.id + '\');renderLikedList(\'' + mode + '\')" style="background:none;border:none;cursor:pointer;padding:4px 8px;flex-shrink:0;margin-left:auto;" title="Remove">' +
+        '<img src="assets/icons/heart_active_icon.png" style="width:22px;height:22px;display:block;">' +
+      '</button></div>';
+  }).join('');
+}
+
+function showLikedCategoryItems(catName) {
+  var list = document.getElementById('favourite-suppliers-list');
+  if (!list) return;
+  var likedItems = JSON.parse(localStorage.getItem('wirog_liked_items') || '[]');
+  var items = likedItems.map(function(id) {
+    return window._catalogueItems ? window._catalogueItems.find(function(i) { return i.id === id; }) : null;
+  }).filter(Boolean).filter(function(i) { return i.category === catName; });
+
+  if (items.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--grey-dark);"><p>No items in this category.</p></div>';
+    return;
+  }
+
+  list.innerHTML = '<div style="padding:4px 0;">' +
+    '<button onclick="renderLikedList(\'products\')" style="background:none;border:none;color:var(--orange);cursor:pointer;font-size:13px;margin-bottom:8px;">← Back to Categories</button>' +
+    items.map(function(i) {
+      return '<div class="dir-card" style="cursor:default;">' +
+        '<div class="dir-avatar" style="background:var(--orange-light);color:var(--orange);font-size:16px;"><i class="fas fa-box"></i></div>' +
+        '<div class="dir-info"><h3>' + (i.name || i.id) + '</h3></div>' +
+      '</div>';
+    }).join('') + '</div>';
+}
+
+function renderFavouriteSuppliers() {
+  renderLikedList('suppliers');
 }
 
 function removeFavourite(id) {
@@ -921,42 +955,60 @@ function updateAccountHero() {
   const initials = isGuest ? '?' : (isAdmin ? 'AD' : name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase());
   const color = isGuest ? '#999' : (isAdmin ? '#2a2a2a' : window.APP_COLORS[initials.charCodeAt(0) % window.APP_COLORS.length]);
   const avatar = document.getElementById('acct-avatar');
-  avatar.style.background = color;
+  avatar.style.background = 'white';
+  avatar.style.color = color;
 
-  if (isGuest) {
-    avatar.innerHTML = '<img src="assets/images/company_logos_dummy/new_wirog_logo22.webp" style="width:112px;height:112px;border-radius:2px;object-fit:cover;display:block;">';
+  var customAvatar = s.customAvatar || localStorage.getItem('wirog_custom_avatar_' + s.id);
+  if (customAvatar) {
+    avatar.innerHTML = '<img src="' + customAvatar + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;">';
+  } else if (isGuest) {
+    avatar.innerHTML = '<img src="assets/images/company_logos_dummy/new_wirog_logo22.webp" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;">';
   } else if (isAdmin) {
     avatar.innerHTML = initials;
   } else {
-    const demoAcc = window.DEMO_ACCOUNTS.find(a => a.id === s.id);
-    const logo = demoAcc?.logo || null;
-    const imgSrc = logo || `assets/images/profile_pictures_dummy/${encodeURIComponent(name)}.jpg`;
-    avatar.innerHTML = `<img src="${imgSrc}" style="width:112px;height:112px;border-radius:2px;object-fit:cover;display:block;" onerror="this.outerHTML='${initials}'">`;
+    const demoAcc = window.DEMO_PROFILES ? window.DEMO_PROFILES.find(a => a.id === s.id) : null;
+    const fallbackImage = `assets/images/profile_pictures_dummy/${encodeURIComponent(name)}.jpg`;
+    const imgSrc = (demoAcc && demoAcc.image) || (demoAcc && demoAcc.logo) || fallbackImage;
+    avatar.innerHTML = '<img src="' + imgSrc + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;" onerror="this.outerHTML=\'' + initials + '\'">';
   }
 
   document.getElementById('acct-name').textContent = name;
   document.getElementById('acct-role').textContent = isAdmin ? 'Administrator' : s.role;
-  const badgeMap = {
-    'Browser': 'Guest',
-    'General User': 'Active Free Plan',
-    'Tradesperson (Contractor)': 'Tradesperson Plan',
-    'Business & Materials Supplier': 'Supplier Plan',
-    'Administrator': 'Admin'
-  };
-  document.getElementById('acct-badge').textContent = badgeMap[s.role] || 'Active Free Plan';
   const noteCount = (window._notes || []).filter(function(n) { return n.userId === s.id; }).length;
   const el = document.getElementById('pro-notes-count');
   if (el) el.textContent = noteCount + ' note' + (noteCount !== 1 ? 's' : '');
 }
 
+function handleAvatarChange(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    var avatar = document.getElementById('acct-avatar');
+    avatar.innerHTML = '<img src="' + dataUrl + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;">';
+    localStorage.setItem('wirog_custom_avatar_' + UserState.id, dataUrl);
+    if (UserState.customAvatar !== undefined) UserState.customAvatar = dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
 // ─── SWITCHER HELPERS ───
+function getSwitcherImg(id, name) {
+  if (id === 'guest' || id === 'admin') return '';
+  var p = window.DEMO_PROFILES ? window.DEMO_PROFILES.find(function(a) { return a.id === id || a.name === name; }) : null;
+  var src = (p && p.image) || 'assets/images/profile_pictures_dummy/' + id + '-avatar.jpg';
+  return '<img src="' + src + '" class="switcher-profile-img" onerror="this.outerHTML=\'\'">';
+}
+
 function renderSwitcherOption(id, name, role, initials, color, extraAttr) {
   const noteCount = (window._notes || []).filter(function(n) { return n.userId === id; }).length;
   const isActive = UserState.id === id;
   var clickHandler = extraAttr || (' onclick="switchTo(\'' + id + '\')" ');
   var checkHtml = isActive ? '<i class="fas fa-check-circle switcher-check"></i>' : '';
+  var img = getSwitcherImg(id, name);
   return '<div class="switcher-option"' + clickHandler + '>' +
-    '<div class="switcher-avatar" style="background:' + color + ';">' + initials + '</div>' +
+    '<div class="switcher-avatar" style="background:' + color + ';">' + (img || initials) + '</div>' +
     '<div class="switcher-info"><h4>' + name + '</h4><p>' + role + '</p></div>' +
     '<div style="display:flex;align-items:center;gap:8px;margin-left:auto;"><span class="note-count-badge">' + noteCount + '</span>' + checkHtml + '</div>' +
   '</div>';
@@ -1081,9 +1133,10 @@ async function switchTo(id) {
     UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0, interactions: 0 };
     UserState.interests = [];
   }
-  saveKpiToDB(); updateKPI(); closeSwitcher();
+  saveKpiToDB(); updateKPI(); renderAccount(); closeSwitcher();
   reloadNotesForUser();
   showToast(`Switched to ${account.name}`);
+  goTo('view-account');
 }
 
 // ─── OTHER USERS (from DEMO_PROFILES) ───
@@ -1195,6 +1248,7 @@ async function switchToOtherUser(id) {
   updateAccountHero();
   saveKpiToDB();
   updateKPI();
+  renderAccount();
   closeModal('other-users-modal');
   reloadNotesForUser();
   showToast('Switched to ' + profile.name);
@@ -1212,6 +1266,457 @@ async function saveKpiToDB() {
   } catch(e) { console.error('Failed to save KPI to DB:', e); }
 }
 
+// ─── ROLE-BASED ACCORDION RENDERERS ───
+
+function renderNotesAccordion() {
+  var body = document.getElementById('notes-accordion-body');
+  if (!body) return;
+  if (UserState.isBrowser()) {
+    body.innerHTML = '<div style="padding-top:8px;text-align:center;">' +
+      '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:12px;">Save and organise items from promos and catalogue. Create a profile to use Notes.</p>' +
+      '<button class="btn btn-sm" onclick="openModal(\'register-modal\')" style="margin-bottom:8px;">Create Profile</button>' +
+      '<button class="btn-outline btn-sm" onclick="openModal(\'login-modal\')">Sign In</button>' +
+    '</div>';
+  } else {
+    body.innerHTML = '<div style="padding-top:8px;display:flex;flex-direction:column;gap:8px;">' +
+      '<button class="btn btn-sm" onclick="navTab(\'view-notes\',\'nav-notes\')">View Notes</button>' +
+      '<button class="btn btn-sm" onclick="openModal(\'buy-notes-modal\')">Buy Notes</button>' +
+    '</div>';
+  }
+}
+
+function renderFavSuppliersAccordion() {
+  var body = document.getElementById('fav-suppliers-accordion-body');
+  if (!body) return;
+  if (UserState.isBrowser()) {
+    body.innerHTML = '<div style="padding-top:8px;text-align:center;">' +
+      '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:12px;">Like products, tradesmen, and suppliers for quick access. Create a profile to unlock this feature.</p>' +
+      '<button class="btn btn-sm" onclick="openModal(\'register-modal\')" style="margin-bottom:8px;">Create Profile</button>' +
+      '<button class="btn-outline btn-sm" onclick="openModal(\'login-modal\')">Sign In</button>' +
+    '</div>';
+  } else {
+    var favCount = UserState.favouriteSuppliers.length;
+    body.innerHTML = '<div style="padding-top:8px;display:flex;flex-direction:column;gap:8px;">' +
+      '<button class="btn" style="background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;width:100%;" onclick="renderLikedList(\'products\');goTo(\'view-favourite-suppliers\')"><i class="fas fa-box"></i> Products</button>' +
+      '<button class="btn" style="background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;width:100%;" onclick="renderLikedList(\'tradesmen\');goTo(\'view-favourite-suppliers\')"><i class="fas fa-user-tie"></i> Tradesmen' + (favCount > 0 ? ' <span style="background:rgba(255,255,255,0.3);padding:2px 8px;border-radius:10px;font-size:12px;">' + favCount + '</span>' : '') + '</button>' +
+      '<button class="btn" style="background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;width:100%;" onclick="renderLikedList(\'suppliers\');goTo(\'view-favourite-suppliers\')"><i class="fas fa-store"></i> Suppliers</button>' +
+    '</div>';
+  }
+}
+
+function renderBusinessCardHTML(biz) {
+  if (!biz) return '<p style="font-size:13px;color:var(--grey-dark);padding-top:8px;margin-bottom:12px;">No business registered yet.</p>' +
+    '<button class="btn" style="background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;width:100%;margin-bottom:8px;" onclick="openCreateBiz()"><i class="fas fa-plus"></i> + List Business</button>' +
+    '<button class="btn-outline btn-sm" onclick="openJoinBusiness()" style="width:100%;"><i class="fas fa-user-plus"></i> Join Business</button>';
+  var init = biz.name.split(' ').map(function(w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+  var col = window.APP_COLORS[init.charCodeAt(0) % window.APP_COLORS.length];
+  var nameEsc = biz.name.replace(/'/g, "\\'");
+  var isStaff = UserState.businessRole === 'staff';
+
+  var logoHtml = biz.logo
+    ? '<img src="' + biz.logo + '" class="biz-logo-img" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">'
+    : '<div class="biz-logo" style="background:' + col + ';">' + init + '</div>';
+
+  var headerHtml = '<div class="listed-header">Listed</div>' +
+    '<div class="biz-card-header" style="cursor:pointer;" onclick="toggleBizActions()">' +
+      logoHtml +
+      '<div class="biz-name-wrap"><h3>' + biz.name + '</h3><p>' + (biz.category || '') + ' \u00B7 ' + biz.town + '</p></div>' +
+    '</div>';
+
+  var actionsHtml = isStaff
+    ? '<div style="padding:8px 16px;border-top:1px solid var(--grey-light);font-size:12px;color:var(--grey-dark);"><span style="background:var(--grey-light);padding:4px 8px;border-radius:4px;">Staff \u00B7 View only</span></div>'
+    : '<div id="biz-actions-body" style="display:none;padding:10px 16px;border-top:1px solid var(--grey-light);">' +
+        '<div class="biz-actions-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<button class="biz-action-btn" onclick="openArtworkSubmission()"><i class="fab fa-facebook"></i> Facebook Boost</button>' +
+          '<button class="biz-action-btn" onclick="openPromoModal()"><i class="fas fa-bullhorn"></i> Promos</button>' +
+          '<button class="biz-action-btn" onclick="openBizCatalogue(\'' + (biz.id || 'biz_user') + '\',\'' + nameEsc + '\',\'' + biz.town + '\',\'' + (biz.phone || '') + '\',\'' + col + '\',\'' + init + '\')"><i class="fas fa-list"></i> Catalogue</button>' +
+          '<button class="biz-action-btn" onclick="openBusinessStaff(\'' + (biz.id || 'biz_user') + '\',\'' + nameEsc + '\')"><i class="fas fa-user-cog"></i> Staff</button>' +
+          '<button class="biz-action-btn" onclick="renderPromoRequestsList()"><i class="fas fa-receipt"></i> Requests</button>' +
+          '<button class="biz-action-btn" onclick="scrollToKPI()"><i class="fas fa-chart-line"></i> KPI Dashboard</button>' +
+        '</div>' +
+      '</div>';
+
+  return headerHtml + actionsHtml;
+}
+
+function renderBusinessAccordion() {
+  var body = document.getElementById('biz-accordion-body');
+  if (!body) return;
+  var s = UserState;
+
+  if (s.isBrowser()) {
+    body.innerHTML = '<div style="padding-top:8px;text-align:center;">' +
+      '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:12px;">List your business on Wirog to reach customers across Botswana. Create a profile to get started.</p>' +
+      '<button class="btn" style="background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;width:100%;margin-bottom:8px;" onclick="openModal(\'register-modal\')">Create Profile</button>' +
+      '<button class="btn-outline btn-sm" onclick="renderDirectory()" style="display:block;text-align:center;">Browse Directory</button>' +
+    '</div>';
+  } else if (s.isSubscriber()) {
+    var hasBiz = !!s.business;
+    var isProUser = s.isTradesperson();
+    body.innerHTML = '<div style="padding-top:8px;display:flex;flex-direction:column;gap:8px;">' +
+      (!hasBiz ? '<button class="btn" style="background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;width:100%;" onclick="openCreateBiz()"><i class="fas fa-plus"></i> + List Business</button>' : '') +
+      (!isProUser ? '<button class="btn-outline btn-sm" onclick="openCreateProProfile()" style="width:100%;"><i class="fas fa-user-tie"></i> List as Pro</button>' : '') +
+      (!hasBiz ? '<button class="btn-outline btn-sm" onclick="openJoinBusiness()" style="width:100%;"><i class="fas fa-user-plus"></i> Join Business</button>' : '') +
+      (hasBiz ? '<div style="border-top:1px solid var(--grey-light);padding-top:8px;margin-top:4px;">' + renderBusinessCardHTML(s.business) + '</div>' : '') +
+    '</div>';
+  } else if (s.isPro()) {
+    var html = '<div style="padding-top:8px;">' + renderProProfileAccordion() + '</div>' +
+      (s.business ? '<div style="border-top:1px solid var(--grey-light);margin-top:8px;padding-top:8px;">' + renderBusinessCardHTML(s.business) + '</div>' : '');
+    body.innerHTML = html;
+  } else if (s.isStaff()) {
+    var biz = s.business;
+    var content = biz ? renderBusinessCardHTML(biz) : '<p style="font-size:13px;color:var(--grey-dark);padding-top:8px;">No business associated.</p>';
+    body.innerHTML = '<div style="padding-top:8px;">' + content + '</div>';
+  } else if (s.isBusinessOwner()) {
+    var biz = s.business;
+    var proSection = s.isPro() ? renderProProfileAccordion() : '';
+    var bizCard = biz ? renderBusinessCardHTML(biz) : '<p style="font-size:13px;color:var(--grey-dark);padding-top:8px;margin-bottom:12px;">No business registered yet.</p>' +
+      '<button class="btn" style="background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;width:100%;margin-bottom:8px;" onclick="openCreateBiz()"><i class="fas fa-plus"></i> + List Business</button>' +
+      '<button class="btn-outline btn-sm" onclick="openJoinBusiness()" style="width:100%;"><i class="fas fa-user-plus"></i> Join Business</button>';
+    body.innerHTML = '<div style="padding-top:8px;">' + proSection + (proSection ? '<div style="height:12px;"></div>' : '') + bizCard + '</div>';
+  } else if (s.isAdmin()) {
+    body.innerHTML = '<div style="padding-top:8px;text-align:center;"><p style="font-size:13px;color:var(--grey-dark);">Manage the platform from the Super Admin panel above.</p></div>';
+  } else {
+    body.innerHTML = '<div style="padding-top:8px;text-align:center;"><p style="font-size:13px;color:var(--grey-dark);">Business features coming soon.</p></div>';
+  }
+}
+
+function renderKpiAccordion() {
+  var body = document.getElementById('kpi-accordion-body');
+  if (!body) return;
+  var s = UserState;
+
+  if (s.isBrowser()) {
+    body.innerHTML = '<div style="padding-top:8px;text-align:center;">' +
+      '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:12px;">Track your ad performance, views, likes, and more. Create a profile and list your business to access KPIs.</p>' +
+      '<button class="btn btn-sm" onclick="openModal(\'register-modal\')">Create Profile</button>' +
+    '</div>';
+  } else if (s.isSubscriber()) {
+    body.innerHTML = '<div style="padding-top:8px;text-align:center;">' +
+      '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:12px;">List your business to track views, likes, and ad performance.</p>' +
+      '<button class="btn btn-sm" onclick="openCreateBiz()">List Your Business</button>' +
+    '</div>';
+  } else if (s.isAdmin()) {
+    body.innerHTML = '<div class="kpi-grid">' +
+      '<div class="kpi-card"><div class="kpi-value" id="kpi-ads">0</div><div class="kpi-label">Active Ads</div></div>' +
+      '<div class="kpi-card"><div class="kpi-value" id="kpi-views">0</div><div class="kpi-label">Total Views</div></div>' +
+      '<div class="kpi-card"><div class="kpi-value" id="kpi-likes">0</div><div class="kpi-label">Likes</div></div>' +
+      '<div class="kpi-card"><div class="kpi-value" id="kpi-note-adds">0</div><div class="kpi-label">Note Adds</div></div>' +
+    '</div>' +
+    '<p style="font-size:12px;color:var(--grey-dark);margin-top:8px;text-align:center;">Platform-wide stats coming soon.</p>';
+    updateKPI();
+  } else {
+    body.innerHTML = '<div class="kpi-grid">' +
+      '<div class="kpi-card"><div class="kpi-value" id="kpi-ads">0</div><div class="kpi-label">Active Ads</div></div>' +
+      '<div class="kpi-card"><div class="kpi-value" id="kpi-views">0</div><div class="kpi-label">Total Views</div></div>' +
+      '<div class="kpi-card"><div class="kpi-value" id="kpi-likes">0</div><div class="kpi-label">Likes</div></div>' +
+      '<div class="kpi-card"><div class="kpi-value" id="kpi-note-adds">0</div><div class="kpi-label">Note Adds</div></div>' +
+    '</div>' +
+    (s.isStaff() ? '<p style="font-size:12px;color:var(--grey-dark);margin-top:8px;text-align:center;">Staff — view only</p>' : '');
+    updateKPI();
+  }
+}
+
+function scrollToKPI() {
+  var el = document.querySelector('#kpi-accordion-body');
+  if (el) {
+    var acc = el.closest('.accordion');
+    if (acc) acc.classList.add('open');
+    renderKpiAccordion();
+    setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+  }
+}
+
+function renderProAccountPage() {
+  var content = document.getElementById('pro-account-content');
+  if (!content) return;
+  var s = UserState;
+  var isPro = s.isTradesperson();
+  var claimedProId = getClaimedProId ? getClaimedProId(s.id) : null;
+  var proListing = claimedProId && getProListing ? getProListing(claimedProId) : null;
+  var profile = claimedProId && getProProfile ? getProProfile(claimedProId) : null;
+  var services = claimedProId && window.getProServices ? getProServices(claimedProId) : [];
+
+  var skills = profile ? profile.skills || [] : [];
+  var portfolio = profile ? profile.portfolio || [] : [];
+  var rateType = profile ? profile.rateType : 'quote';
+  var rateVal = profile ? profile.rate : '';
+  var availability = profile ? profile.availability : 'available';
+
+  var skillsHtml = skills.length > 0
+    ? skills.map(function(skill) {
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--grey-light);font-size:13px;">' +
+          '<span>' + skill + '</span>' +
+          '<span style="color:#e74c3c;cursor:pointer;font-size:12px;padding:2px 6px;" onclick="removeProSkillInline(\'' + skill.replace(/'/g,"\\'") + '\')">✕</span>' +
+        '</div>';
+      }).join('')
+    : '<p style="font-size:12px;color:var(--grey-dark);padding:6px 0;">No skills added yet.</p>';
+
+  var projectsHtml = portfolio.length > 0
+    ? portfolio.map(function(p, i) {
+        return '<div style="padding:8px;border:1px solid var(--grey-light);border-radius:8px;margin-bottom:6px;font-size:13px;">' +
+          '<div style="display:flex;justify-content:space-between;">' +
+            '<strong>' + (p.title || 'Project') + '</strong>' +
+            '<span style="color:#e74c3c;cursor:pointer;font-size:14px;" onclick="removeProProjectInline(' + i + ')">✕</span>' +
+          '</div>' +
+          (p.description ? '<p style="font-size:12px;color:var(--grey-dark);margin:4px 0 0;">' + p.description + '</p>' : '') +
+        '</div>';
+      }).join('')
+    : '<p style="font-size:12px;color:var(--grey-dark);padding:6px 0;">No projects added yet.</p>';
+
+  var servicesHtml = services.length > 0
+    ? services.map(function(svc) {
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--grey-light);">' +
+          '<div><div style="font-weight:600;font-size:13px;">' + svc.title + '</div>' +
+          (svc.price ? '<div style="font-size:12px;color:var(--orange);">' + svc.price + '</div>' : '') +
+          '</div>' +
+          '<span style="color:#e74c3c;cursor:pointer;font-size:14px;" onclick="removeProServiceInline(' + (services.indexOf(svc)) + ')">✕</span>' +
+        '</div>';
+      }).join('')
+    : '<p style="font-size:12px;color:var(--grey-dark);padding:6px 0;">No services added yet.</p>';
+
+  var rateLabel = rateType === 'hourly' ? 'Per Hour' : rateType === 'fixed' ? 'Fixed Price' : 'Quote';
+  var availLabel = availability === 'available' ? 'Available' : availability === 'busy' ? 'Busy' : 'Not Taking Jobs';
+  var availColor = availability === 'available' ? 'var(--green, #27ae60)' : availability === 'busy' ? 'var(--orange)' : '#e74c3c';
+
+  var html = '<div style="padding:12px;">' +
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">' +
+      '<button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" style="width:16px;height:16px;display:block;"></button>' +
+      '<span style="font-size:18px;font-weight:700;">Pro Account</span>' +
+    '</div>' +
+    '<div class="biz-header-card" style="padding:16px;border:1px solid var(--grey-light);border-radius:12px;margin-bottom:16px;">' +
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<div class="profile-avatar" style="width:60px;height:60px;font-size:28px;background:' + (proListing ? (proListing.color || '#ed6626') : '#ed6626') + ';">' +
+          (proListing ? (proListing.initials || s.name.split(' ').map(function(w){return w[0]}).join('').slice(0,2).toUpperCase()) : '?') +
+        '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:16px;font-weight:700;">' + (proListing ? proListing.name : s.name) + '</div>' +
+          '<div style="font-size:13px;color:var(--grey-dark);">' + (proListing ? (proListing.primaryTrade || 'Tradesperson') : 'Tradesperson') + '</div>' +
+        '</div>' +
+        (claimedProId ? '<span style="font-size:11px;color:var(--green, #27ae60);font-weight:600;background:#e8f5e9;padding:3px 8px;border-radius:4px;">Active</span>' : '') +
+      '</div>' +
+    '</div>';
+
+  if (claimedProId) {
+    html +=
+      '<div class="accordion" style="margin-bottom:8px;">' +
+        '<div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-tools" style="color:var(--orange);margin-right:8px;"></i> Skills (' + skills.length + ')</span></div>' +
+        '<div class="accordion-body" style="padding:8px 12px;">' +
+          '<div id="pro-skills-inline-list">' + skillsHtml + '</div>' +
+          '<div style="display:flex;gap:6px;margin-top:8px;">' +
+            '<input id="pro-skill-inline-input" placeholder="Add a skill" style="flex:1;padding:6px 8px;border:1px solid var(--grey-light);border-radius:4px;font-size:12px;">' +
+            '<button class="btn-sm" onclick="addProSkillInline()" style="background:var(--orange);color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Add</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="accordion" style="margin-bottom:8px;">' +
+        '<div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-images" style="color:var(--orange);margin-right:8px;"></i> Projects (' + portfolio.length + ')</span></div>' +
+        '<div class="accordion-body" style="padding:8px 12px;">' +
+          '<div id="pro-projects-inline-list">' + projectsHtml + '</div>' +
+          '<button class="btn-outline btn-sm" onclick="openAddProProjectInline()" style="width:100%;margin-top:6px;">+ Add Project</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="accordion" style="margin-bottom:8px;">' +
+        '<div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-tag" style="color:var(--orange);margin-right:8px;"></i> Rates</span></div>' +
+        '<div class="accordion-body" style="padding:8px 12px;">' +
+          '<div style="display:flex;gap:8px;margin-bottom:8px;">' +
+            '<div style="flex:1;">' +
+              '<label style="font-size:11px;color:var(--grey-dark);">Rate Type</label>' +
+              '<select id="pro-rate-type-inline" onchange="saveProRatesInline()" style="width:100%;padding:6px;border:1px solid var(--grey-light);border-radius:4px;font-size:12px;">' +
+                '<option value="quote"' + (rateType === 'quote' ? ' selected' : '') + '>Quote</option>' +
+                '<option value="hourly"' + (rateType === 'hourly' ? ' selected' : '') + '>Hourly</option>' +
+                '<option value="fixed"' + (rateType === 'fixed' ? ' selected' : '') + '>Fixed</option>' +
+              '</select>' +
+            '</div>' +
+            '<div style="flex:1;">' +
+              '<label style="font-size:11px;color:var(--grey-dark);">Rate (Pula)</label>' +
+              '<input id="pro-rate-value-inline" value="' + rateVal + '" onchange="saveProRatesInline()" placeholder="0" style="width:100%;padding:6px;border:1px solid var(--grey-light);border-radius:4px;font-size:12px;">' +
+            '</div>' +
+          '</div>' +
+          '<div>' +
+            '<label style="font-size:11px;color:var(--grey-dark);">Availability</label>' +
+            '<select id="pro-avail-inline" onchange="saveProRatesInline()" style="width:100%;padding:6px;border:1px solid var(--grey-light);border-radius:4px;font-size:12px;">' +
+              '<option value="available"' + (availability === 'available' ? ' selected' : '') + '>Available</option>' +
+              '<option value="busy"' + (availability === 'busy' ? ' selected' : '') + '>Busy</option>' +
+              '<option value="not_taking"' + (availability === 'not_taking' ? ' selected' : '') + '>Not Taking Jobs</option>' +
+            '</select>' +
+          '</div>' +
+          '<div style="margin-top:8px;padding:6px 10px;border-radius:6px;font-size:12px;background:var(--orange-light);">' +
+            'Current: <strong>' + rateLabel + '</strong>' + (rateVal ? ' · P' + rateVal : '') +
+            ' · <span style="color:' + availColor + ';">' + availLabel + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="accordion" style="margin-bottom:8px;">' +
+        '<div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-concierge-bell" style="color:var(--orange);margin-right:8px;"></i> Services (' + services.length + ')</span></div>' +
+        '<div class="accordion-body" style="padding:8px 12px;">' +
+          '<div id="pro-services-inline-list">' + servicesHtml + '</div>' +
+          '<div style="border-top:1px solid var(--grey-light);padding-top:8px;margin-top:4px;">' +
+            '<input id="pro-srv-title-inline" placeholder="Service title" style="width:100%;padding:6px;border:1px solid var(--grey-light);border-radius:4px;font-size:12px;margin-bottom:4px;box-sizing:border-box;">' +
+            '<div style="display:flex;gap:6px;">' +
+              '<input id="pro-srv-price-inline" placeholder="Price (e.g. P250/hr)" style="flex:1;padding:6px;border:1px solid var(--grey-light);border-radius:4px;font-size:12px;">' +
+              '<button class="btn-sm" onclick="addProServiceInline()" style="background:var(--orange);color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">+ Add</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">' +
+        '<button class="btn" style="background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;" onclick="openProEditor()"><i class="fas fa-edit"></i> Edit Profile</button>' +
+        '<button class="btn-outline" style="padding:12px;border-radius:8px;cursor:pointer;font-size:14px;" onclick="openProProfile(\'' + claimedProId + '\')"><i class="fas fa-eye"></i> View Public Profile</button>' +
+      '</div>';
+  } else {
+    html += '<div style="text-align:center;padding:24px 0;">' +
+      '<p style="font-size:14px;color:var(--grey-dark);margin-bottom:16px;">Activate your Pro account to get discovered by customers. You\'ll appear in the directory when people search for your trade.</p>' +
+      '<button class="btn" style="background:var(--orange);color:white;border:none;padding:14px 24px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;" onclick="activateProAccount()"><i class="fas fa-user-tie"></i> Activate Pro Account</button>' +
+    '</div>';
+  }
+
+  html += '</div>';
+  content.innerHTML = html;
+}
+
+function addProSkillInline() {
+  var input = document.getElementById('pro-skill-inline-input');
+  if (!input) return;
+  var skill = input.value.trim();
+  if (!skill) { showToast('Enter a skill'); return; }
+  var claimedProId = getClaimedProId ? getClaimedProId(UserState.id) : null;
+  if (!claimedProId) return;
+  var profile = getProProfile(claimedProId) || {};
+  if (!profile.skills) profile.skills = [];
+  if (profile.skills.indexOf(skill) === -1) profile.skills.push(skill);
+  saveProProfile(claimedProId, profile);
+  input.value = '';
+  renderProAccountPage();
+  showToast('Skill added');
+}
+
+function removeProSkillInline(skill) {
+  var claimedProId = getClaimedProId ? getClaimedProId(UserState.id) : null;
+  if (!claimedProId) return;
+  var profile = getProProfile(claimedProId) || {};
+  if (!profile.skills) return;
+  profile.skills = profile.skills.filter(function(s) { return s !== skill; });
+  saveProProfile(claimedProId, profile);
+  renderProAccountPage();
+  showToast('Skill removed');
+}
+
+function openAddProProjectInline() {
+  var modal = document.getElementById('generic-modal');
+  if (!modal) return;
+  document.getElementById('generic-modal-title').textContent = 'Add Project';
+  document.getElementById('generic-modal-body').innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:10px;">' +
+      '<label>Project Title</label><input id="pro-project-title-inline" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;">' +
+      '<label>Description</label><textarea id="pro-project-desc-inline" rows="3" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;"></textarea>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<button class="btn btn-sm" onclick="saveProProjectInline()" style="flex:1;">Add Project</button>' +
+        '<button class="btn-outline btn-sm" onclick="closeModal(\'generic-modal\')">Cancel</button>' +
+      '</div>' +
+    '</div>';
+  openModal('generic-modal');
+}
+
+function saveProProjectInline() {
+  var title = document.getElementById('pro-project-title-inline')?.value.trim();
+  if (!title) { showToast('Enter a project title'); return; }
+  var desc = document.getElementById('pro-project-desc-inline')?.value.trim() || '';
+  var claimedProId = getClaimedProId ? getClaimedProId(UserState.id) : null;
+  if (!claimedProId) return;
+  var profile = getProProfile(claimedProId) || {};
+  if (!profile.portfolio) profile.portfolio = [];
+  profile.portfolio.push({ title: title, description: desc });
+  saveProProfile(claimedProId, profile);
+  closeModal('generic-modal');
+  renderProAccountPage();
+  showToast('Project added');
+}
+
+function removeProProjectInline(index) {
+  var claimedProId = getClaimedProId ? getClaimedProId(UserState.id) : null;
+  if (!claimedProId) return;
+  var profile = getProProfile(claimedProId) || {};
+  if (!profile.portfolio) return;
+  profile.portfolio.splice(index, 1);
+  saveProProfile(claimedProId, profile);
+  renderProAccountPage();
+  showToast('Project removed');
+}
+
+function saveProRatesInline() {
+  var rateType = document.getElementById('pro-rate-type-inline')?.value;
+  var rate = document.getElementById('pro-rate-value-inline')?.value || '';
+  var availability = document.getElementById('pro-avail-inline')?.value;
+  var claimedProId = getClaimedProId ? getClaimedProId(UserState.id) : null;
+  if (!claimedProId) return;
+  var profile = getProProfile(claimedProId) || {};
+  profile.rateType = rateType;
+  profile.rate = rate;
+  profile.availability = availability;
+  saveProProfile(claimedProId, profile);
+  renderProAccountPage();
+  showToast('Rates updated');
+}
+
+function addProServiceInline() {
+  var title = document.getElementById('pro-srv-title-inline')?.value.trim();
+  if (!title) { showToast('Enter a service title'); return; }
+  var price = document.getElementById('pro-srv-price-inline')?.value.trim() || 'Quote';
+  var claimedProId = getClaimedProId ? getClaimedProId(UserState.id) : null;
+  if (!claimedProId) return;
+  var services = getProServices(claimedProId) || [];
+  services.push({ id: 'srv_' + Date.now(), title: title, price: price });
+  saveProServices(claimedProId, services);
+  document.getElementById('pro-srv-title-inline').value = '';
+  document.getElementById('pro-srv-price-inline').value = '';
+  renderProAccountPage();
+  showToast('Service added');
+}
+
+function removeProServiceInline(idx) {
+  var claimedProId = getClaimedProId ? getClaimedProId(UserState.id) : null;
+  if (!claimedProId) return;
+  var services = getProServices(claimedProId) || [];
+  services.splice(idx, 1);
+  saveProServices(claimedProId, services);
+  renderProAccountPage();
+  showToast('Service removed');
+}
+
+function activateProAccount() {
+  var s = UserState;
+  if (s.id === 'guest') {
+    showToast('Create a profile first');
+    openModal('register-modal');
+    return;
+  }
+  s.role = 'Tradesperson (Contractor)';
+  localStorage.setItem('wirog_role', 'Tradesperson (Contractor)');
+  var demoPros = window.DEMO_PROFILES || [];
+  var existing = demoPros.find(function(p) { return p.id === s.id; });
+  if (existing && !getClaimedProId(s.id)) {
+    var assoc = getProAssociations();
+    assoc[s.id] = { proId: existing.id, role: 'owner' };
+    saveProAssociations(assoc);
+    var profile = defaultProProfile ? defaultProProfile(existing) : {};
+    saveProProfile(existing.id, profile);
+  }
+  renderProAccountPage();
+  updateAccountHero();
+  renderDirectory();
+  showToast('Pro account activated!');
+}
+window.renderProAccountPage = renderProAccountPage;
+window.activateProAccount = activateProAccount;
+
+function renderAccount() {
+  renderNotesAccordion();
+  renderFavSuppliersAccordion();
+  renderBusinessAccordion();
+  renderKpiAccordion();
+}
+
 function updateAccountUI() {
   updateAccountHero();
   const isGuest = UserState.id === 'guest';
@@ -1226,27 +1731,18 @@ function updateAccountUI() {
 
   if (isGuest) {
     if (guestCta) guestCta.style.display = 'block';
-    resetBusinessCard();
-  } else if (isAdmin) {
-    if (guestCta) guestCta.style.display = 'none';
-    const adminDash = document.getElementById('admin-dashboard-entry');
-    if (adminDash) adminDash.style.display = 'block';
-    document.getElementById('biz-card-content').innerHTML = '<p style="font-size:13px;color:var(--grey-dark);padding-top:8px;">Manage the platform from the Admin Dashboard.</p>';
   } else {
     if (guestCta) guestCta.style.display = 'none';
-    if (UserState.hasBusiness()) { renderBusinessCard(); updateSubStatus(); }
-    else { resetBusinessCard(); }
   }
+
+  renderAccount();
   if (window.renderBudgetSummary) window.renderBudgetSummary();
 }
 
 function toggleBizActions() {
   const body = document.getElementById('biz-actions-body');
-  const chevron = document.getElementById('biz-actions-chevron');
   if (!body) return;
-  const isOpen = body.style.display !== 'none';
-  body.style.display = isOpen ? 'none' : 'block';
-  if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+  body.style.display = body.style.display !== 'none' ? 'none' : 'block';
 }
 
 function renderBusinessCard() {
@@ -1257,36 +1753,40 @@ function renderBusinessCard() {
   const isPublic = biz.subscription === 'catalogue';
   const nameEsc = biz.name.replace(/'/g, "\\'");
   const isStaff = UserState.businessRole === 'staff';
+  const logoHtml = biz.logo
+    ? '<img src="' + biz.logo + '" class="biz-logo-img" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">'
+    : '<div class="biz-logo" style="background:' + col + ';">' + init + '</div>';
   const actionsHtml = isStaff
-    ? '<div style="padding:8px 16px;border-top:1px solid var(--grey-light);font-size:12px;color:var(--grey-dark);"><span style="background:var(--grey-light);padding:4px 8px;border-radius:4px;">Staff · View only</span></div>'
+    ? '<div style="padding:8px 16px;border-top:1px solid var(--grey-light);font-size:12px;color:var(--grey-dark);"><span style="background:var(--grey-light);padding:4px 8px;border-radius:4px;">Staff \u00B7 View only</span> <button class="btn-sm" style="margin-left:8px;background:var(--orange);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;" onclick="openBusinessStaff(\'' + (biz.id || 'biz_user') + '\',\'' + nameEsc + '\')">Staff Panel</button></div>'
     : '<div id="biz-actions-body" style="display:none;padding:10px 16px;border-top:1px solid var(--grey-light);">' +
-        '<button class="btn-outline btn-sm" style="margin-top:4px;" onclick="openBizProfile(\'biz_user\',\'' + nameEsc + '\',\'' + init + '\',\'' + col + '\',\'' + biz.town + '\',\'' + (biz.phone || '') + '\',' + isPublic + ',\'\')">' +
-          '<i class="fas fa-eye"></i> View Profile' +
-        '</button>' +
-        '<button class="btn-outline btn-sm" style="margin-top:6px;" onclick="openBizCatalogue(\'biz_user\',\'' + nameEsc + '\',\'' + biz.town + '\',\'' + (biz.phone || '') + '\',\'' + col + '\',\'' + init + '\')">' +
-          '<i class="fas fa-list"></i> Edit Catalogue' +
-        '</button>' +
-        '<button class="btn-outline btn-sm" style="margin-top:6px;" onclick="openPromoModal()">' +
-          '<i class="fas fa-bullhorn"></i> Create Promo' +
-        '</button>' +
+        '<div class="biz-actions-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<button class="biz-action-btn" onclick="openBizProfile(\'biz_user\',\'' + nameEsc + '\',\'' + init + '\',\'' + col + '\',\'' + biz.town + '\',\'' + (biz.phone || '') + '\',' + isPublic + ',\'\')"><i class="fas fa-eye"></i> View Profile</button>' +
+          '<button class="biz-action-btn" onclick="openBizCatalogue(\'biz_user\',\'' + nameEsc + '\',\'' + biz.town + '\',\'' + (biz.phone || '') + '\',\'' + col + '\',\'' + init + '\')"><i class="fas fa-list"></i> Catalogue</button>' +
+          '<button class="biz-action-btn" onclick="openPromoModal()"><i class="fas fa-bullhorn"></i> Promos</button>' +
+          '<button class="biz-action-btn" onclick="openBusinessStaff(\'' + (biz.id || 'biz_user') + '\',\'' + nameEsc + '\')"><i class="fas fa-user-cog"></i> Staff</button>' +
+        '</div>' +
       '</div>';
   document.getElementById('biz-card-content').innerHTML =
+    '<div class="listed-header">Listed</div>' +
     '<div class="biz-card-header" style="cursor:pointer;" onclick="toggleBizActions()">' +
-      (biz.name === 'Board Kings' ? '<img src="assets/images/company_logos_dummy/Board_Kings_Logo_.webp" class="biz-logo-img">' : '<div class="biz-logo" style="background:' + col + ';">' + init + '</div>') +
-      '<div class="biz-name-wrap"><h3>' + biz.name + '</h3><p>' + biz.category + ' · ' + biz.town + '</p></div>' +
-      (isStaff ? '' : '<span id="biz-actions-chevron" style="margin-left:auto;color:var(--grey-mid);font-size:12px;transition:transform 0.2s;">▶</span>') +
+      logoHtml +
+      '<div class="biz-name-wrap"><h3>' + biz.name + '</h3><p>' + biz.category + ' \u00B7 ' + biz.town + '</p></div>' +
     '</div>' + actionsHtml;
 }
 
 function resetBusinessCard() {
-  document.getElementById('biz-card-content').innerHTML = '<p style="font-size:13px;color:var(--grey-dark);padding-top:8px;margin-bottom:12px;">No business registered yet.</p><button class="btn btn-sm" onclick="openCreateBiz()">+ Add Business</button>';
+  document.getElementById('biz-card-content').innerHTML = '<p style="font-size:13px;color:var(--grey-dark);padding-top:8px;margin-bottom:12px;">No business registered yet.</p>' +
+    '<button class="btn btn-sm" onclick="openCreateBiz()" style="margin-bottom:6px;width:100%;">+ List Business</button>' +
+    '<button class="btn-outline btn-sm" onclick="openCreateProProfile()" style="width:100%;margin-bottom:4px;"><i class="fas fa-user-tie"></i> List as Pro</button>' +
+    '<button class="btn-outline btn-sm" onclick="openJoinBusiness()" style="width:100%;"><i class="fas fa-user-plus"></i> Join Business</button>';
 }
 
 async function updateKPI() {
-  document.getElementById('kpi-ads').textContent = UserState.kpi.ads;
-  document.getElementById('kpi-views').textContent = UserState.kpi.views;
-  document.getElementById('kpi-likes').textContent = UserState.kpi.likes;
-  document.getElementById('kpi-note-adds').textContent = UserState.kpi.noteAdds;
+  var el;
+  el = document.getElementById('kpi-ads'); if (el) el.textContent = UserState.kpi.ads;
+  el = document.getElementById('kpi-views'); if (el) el.textContent = UserState.kpi.views;
+  el = document.getElementById('kpi-likes'); if (el) el.textContent = UserState.kpi.likes;
+  el = document.getElementById('kpi-note-adds'); if (el) el.textContent = UserState.kpi.noteAdds;
   await saveKpiToDB();
 }
 
@@ -1341,8 +1841,13 @@ async function saveBusiness() {
     }
     
     // Save locally to UserState for immediate UI feedback
-    UserState.business = { name, category, town, phone, subscription: 'free' };
-    
+    UserState.business = { id: 'biz_user', name, category, town, phone, subscription: 'free' };
+    UserState.businessRole = 'owner';
+
+    // Associate user as owner
+    if (!window.BUSINESS_ASSOCIATIONS) window.BUSINESS_ASSOCIATIONS = {};
+    window.BUSINESS_ASSOCIATIONS[UserState.id] = { businessId: 'biz_user', role: 'owner' };
+
     // Legacy local DB save
     const bizLocal = { id: 'biz_user', ...UserState.business };
     await WirogDB.put('businesses', bizLocal);
@@ -1464,6 +1969,190 @@ async function confirmDeleteAccount() {
   if (window.manageUI) manageUI('view-welcome');
 }
 
+// ─── PROFESSIONAL PROFILE ───
+
+function getDefaultProProfile() {
+  return {
+    name: UserState.firstName + ' ' + UserState.surname,
+    tradeCategory: '',
+    phone: UserState.mobile || '',
+    location: UserState.location.town || 'Gaborone',
+    description: '',
+    skills: [],
+    projects: [],
+    subscription: { type: '', expiresAt: null, status: 'pending' }
+  };
+}
+
+function openCreateProProfile() {
+  var existing = UserState.professional;
+  var data = existing || getDefaultProProfile();
+  var modal = document.getElementById('generic-modal');
+  if (!modal) return;
+  document.getElementById('generic-modal-title').textContent = existing ? 'Edit Professional Profile' : 'Create Professional Profile';
+  document.getElementById('generic-modal-body').innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:10px;">' +
+      '<label>Full Name</label><input id="pro-name" value="' + (data.name||'').replace(/"/g,'&quot;') + '" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;">' +
+      '<label>Trade Category</label><select id="pro-trade" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;">' +
+        ['Plumber','Electrician','Carpenter','Painter','Builder','Tiler','Roofer','Gardener','Welder','Other'].map(function(t) {
+          return '<option value="' + t + '"' + (data.tradeCategory === t ? ' selected' : '') + '>' + t + '</option>';
+        }).join('') +
+      '</select>' +
+      '<label>Phone</label><input id="pro-phone" value="' + (data.phone||'').replace(/"/g,'&quot;') + '" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;">' +
+      '<label>Location</label><input id="pro-location" value="' + (data.location||'').replace(/"/g,'&quot;') + '" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;">' +
+      '<label>Description</label><textarea id="pro-desc" rows="3" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;">' + (data.description||'') + '</textarea>' +
+      '<div style="background:var(--orange-light);border-radius:8px;padding:10px;font-size:12px;color:var(--orange);">' +
+        '<strong>Pricing:</strong> P50.00 for 30 days or P400.00 for 1 year. Admin approval required.' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<button class="btn btn-sm" onclick="saveProProfile()" style="flex:1;">' + (existing ? 'Save Changes' : 'Submit for Approval') + '</button>' +
+        '<button class="btn-outline btn-sm" onclick="closeModal(\'generic-modal\')">Cancel</button>' +
+      '</div>' +
+    '</div>';
+  openModal('generic-modal');
+}
+
+function saveProProfile() {
+  var name = document.getElementById('pro-name')?.value.trim();
+  if (!name) { showToast('Please enter your name'); return; }
+  var data = UserState.professional || getDefaultProProfile();
+  data.name = name;
+  data.tradeCategory = document.getElementById('pro-trade')?.value || '';
+  data.phone = document.getElementById('pro-phone')?.value.trim() || '';
+  data.location = document.getElementById('pro-location')?.value.trim() || '';
+  data.description = document.getElementById('pro-desc')?.value.trim() || '';
+  if (!data.subscription || !data.subscription.type) {
+    data.subscription = { type: '30d', expiresAt: null, status: 'pending' };
+  }
+  UserState.professional = data;
+  closeModal('generic-modal');
+  renderBusinessAccordion();
+  showToast('Professional profile saved! Pending admin approval.');
+}
+
+function renderProProfileAccordion() {
+  var data = UserState.professional || getDefaultProProfile();
+  var hasProfile = !!(data.name && data.tradeCategory);
+  var skillsHtml = data.skills && data.skills.length
+    ? data.skills.map(function(s) {
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--grey-light);font-size:13px;">' +
+          '<span>' + s + '</span>' +
+          '<span style="color:#e74c3c;cursor:pointer;font-size:12px;" onclick="removeProSkill(\'' + s.replace(/'/g,"\\'") + '\')">✕</span>' +
+        '</div>';
+      }).join('')
+    : '<p style="font-size:12px;color:var(--grey-dark);">No skills added yet.</p>';
+  var projectsHtml = data.projects && data.projects.length
+    ? data.projects.map(function(p, i) {
+        return '<div style="padding:8px;border:1px solid var(--grey-light);border-radius:8px;margin-bottom:8px;font-size:13px;">' +
+          '<div style="display:flex;justify-content:space-between;"><strong>' + p.title + '</strong>' +
+          '<span style="color:#e74c3c;cursor:pointer;" onclick="removeProProject(' + i + ')">✕</span></div>' +
+          (p.description ? '<p style="font-size:12px;color:var(--grey-dark);margin:4px 0 0;">' + p.description + '</p>' : '') +
+        '</div>';
+      }).join('')
+    : '<p style="font-size:12px;color:var(--grey-dark);">No projects added yet.</p>';
+  return '<div class="sub-accordion">' +
+    '<div class="sub-accordion-header" onclick="toggleSubAcc(this)">Professional Profile</div>' +
+    '<div class="sub-accordion-body">' +
+      (hasProfile
+        ? '<div style="padding:8px 0;"><p><strong>' + data.name + '</strong> · ' + data.tradeCategory + '</p>' +
+          '<p style="font-size:12px;color:var(--grey-dark);">' + data.location + (data.phone ? ' · ' + data.phone : '') + '</p>' +
+          (data.description ? '<p style="font-size:12px;color:var(--grey-dark);margin-top:4px;">' + data.description + '</p>' : '') +
+          '<button class="btn-outline btn-sm" onclick="openCreateProProfile()" style="margin-top:8px;width:100%;">Edit Profile</button>' +
+          '<div style="margin-top:8px;font-size:11px;color:var(--orange);background:var(--orange-light);padding:6px 10px;border-radius:6px;">' +
+            'Status: <strong>' + (data.subscription.status === 'approved' ? 'Approved' : 'Pending Approval') + '</strong>' +
+          '</div></div>'
+        : '<div style="padding:8px 0;text-align:center;">' +
+          '<p style="font-size:13px;color:var(--grey-dark);margin-bottom:8px;">No professional profile yet.</p>' +
+          '<button class="btn btn-sm" onclick="openCreateProProfile()">Create Professional Profile</button>' +
+          '<p style="font-size:11px;color:var(--grey-dark);margin-top:8px;">P50/30d or P400/yr · Admin approval required</p></div>'
+      ) +
+      '<div class="sub-accordion" style="margin-top:8px;">' +
+        '<div class="sub-accordion-header" onclick="toggleSubAcc(this)">Skills (' + (data.skills||[]).length + ')</div>' +
+        '<div class="sub-accordion-body">' +
+          skillsHtml +
+          '<div style="display:flex;gap:6px;margin-top:8px;"><input id="new-skill-input" placeholder="Add a skill" style="flex:1;padding:6px 8px;border:1px solid var(--grey-light);border-radius:4px;font-size:12px;"><button class="btn-sm" onclick="addProSkill()" style="background:var(--orange);color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Add</button></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="sub-accordion" style="margin-top:4px;">' +
+        '<div class="sub-accordion-header" onclick="toggleSubAcc(this)">Projects (' + (data.projects||[]).length + ')</div>' +
+        '<div class="sub-accordion-body">' +
+          projectsHtml +
+          '<button class="btn-outline btn-sm" onclick="openAddProProject()" style="width:100%;margin-top:4px;">+ Add Project</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function addProSkill() {
+  var input = document.getElementById('new-skill-input');
+  if (!input) return;
+  var skill = input.value.trim();
+  if (!skill) { showToast('Enter a skill'); return; }
+  var data = UserState.professional || getDefaultProProfile();
+  if (!data.skills) data.skills = [];
+  if (data.skills.indexOf(skill) === -1) data.skills.push(skill);
+  UserState.professional = data;
+  renderBusinessAccordion();
+  showToast('Skill added');
+}
+
+function removeProSkill(skill) {
+  var data = UserState.professional;
+  if (!data || !data.skills) return;
+  data.skills = data.skills.filter(function(s) { return s !== skill; });
+  UserState.professional = data;
+  renderBusinessAccordion();
+  showToast('Skill removed');
+}
+
+function openAddProProject() {
+  var modal = document.getElementById('generic-modal');
+  if (!modal) return;
+  document.getElementById('generic-modal-title').textContent = 'Add Project';
+  document.getElementById('generic-modal-body').innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:10px;">' +
+      '<label>Project Title</label><input id="pro-project-title" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;">' +
+      '<label>Description</label><textarea id="pro-project-desc" rows="3" style="padding:8px;border:1px solid var(--grey-light);border-radius:6px;font-size:14px;"></textarea>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<button class="btn btn-sm" onclick="saveProProject()" style="flex:1;">Add Project</button>' +
+        '<button class="btn-outline btn-sm" onclick="closeModal(\'generic-modal\')">Cancel</button>' +
+      '</div>' +
+    '</div>';
+  openModal('generic-modal');
+}
+
+function saveProProject() {
+  var title = document.getElementById('pro-project-title')?.value.trim();
+  if (!title) { showToast('Enter a project title'); return; }
+  var desc = document.getElementById('pro-project-desc')?.value.trim() || '';
+  var data = UserState.professional || getDefaultProProfile();
+  if (!data.projects) data.projects = [];
+  data.projects.push({ title: title, description: desc });
+  UserState.professional = data;
+  closeModal('generic-modal');
+  renderBusinessAccordion();
+  showToast('Project added');
+}
+
+function removeProProject(index) {
+  var data = UserState.professional;
+  if (!data || !data.projects) return;
+  data.projects.splice(index, 1);
+  UserState.professional = data;
+  renderBusinessAccordion();
+  showToast('Project removed');
+}
+
+window.addProSkillInline = addProSkillInline;
+window.removeProSkillInline = removeProSkillInline;
+window.openAddProProjectInline = openAddProProjectInline;
+window.saveProProjectInline = saveProProjectInline;
+window.removeProProjectInline = removeProProjectInline;
+window.saveProRatesInline = saveProRatesInline;
+window.addProServiceInline = addProServiceInline;
+window.removeProServiceInline = removeProServiceInline;
+
 // ─── WINDOW EXPORTS ───
 window.openSwitcher = openSwitcher;
 window.closeSwitcher = closeSwitcher;
@@ -1578,74 +2267,20 @@ window.installApp = installApp;
 window.clearAppCache = clearAppCache;
 window.deleteAccount = deleteAccount;
 window.confirmDeleteAccount = confirmDeleteAccount;
-
-/* ════════════════════════════════════════════════════════
-   Wirog Agent & Sync Utilities (Appended)
-   ════════════════════════════════════════════════════════ */
-
-function renderAgentPortal() {
-  const s = UserState;
-  const isAdmin = s.role === 'Administrator' || s.role === 'Admin' || s.id === 'admin';
-  if (!isAdmin) return ''; 
-
-  return `<div class="sub-accordion">
-    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
-      <div style="display:flex; align-items:center; gap:8px;">
-         <span>🛠️</span> Wirog Agent Portal
-      </div>
-    </div>
-    <div class="sub-accordion-body">
-      <div style="padding:10px 0;">
-        <label>Verify User Account</label>
-        <div style="display:flex; gap:6px; margin-top:4px;">
-          <input type="text" id="agent-user-search" placeholder="User ID or Phone" style="flex:1; font-size:12px;">
-          <button class="btn-sm" style="background:var(--orange); color:white;" onclick="agentVerifyUser()">Verify</button>
-        </div>
-        <p style="font-size:10px; color:var(--grey-dark); margin-top:4px;">Scan user ID to unlock VIP features.</p>
-      </div>
-    </div>
-  </div>`;
-}
-
-async function agentVerifyUser() {
-  const input = document.getElementById('agent-user-search');
-  const userId = input.value.trim();
-  if (!userId) return showToast("Enter a User ID");
-  showToast("Verifying user...");
-  setTimeout(() => {
-    showToast("✅ User Verified Successfully!");
-    input.value = "";
-  }, 1000);
-}
-
-function renderSyncSection() {
-  return `<div class="sub-accordion">
-    <div class="sub-accordion-header" onclick="toggleSubAcc(this)">
-      <div style="display:flex; align-items:center; gap:8px;">
-         <span>🔄</span> Platform Sync
-      </div>
-    </div>
-    <div class="sub-accordion-body">
-      <div style="padding:10px 0;">
-        <p style="font-size:12px; color:var(--grey-dark); margin-bottom:8px;">Download latest industry icons for offline use.</p>
-        <button class="btn-sm" style="width:100%; background:var(--orange); color:white;" onclick="triggerPlatformSync()">Sync Assets Now</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-async function triggerPlatformSync() {
-  if (!window.WirogMediaCache) return showToast("Sync Engine not ready");
-  showToast("🔄 Starting Platform Sync...");
-  try {
-    await window.WirogMediaCache.syncFromManifest('manifest.json');
-    showToast("✅ Assets Synced Offline!");
-  } catch (e) {
-    showToast("❌ Sync Failed: " + e.message);
-  }
-}
-
+window.renderNotesAccordion = renderNotesAccordion;
+window.renderFavSuppliersAccordion = renderFavSuppliersAccordion;
+window.renderBusinessAccordion = renderBusinessAccordion;
+window.renderKpiAccordion = renderKpiAccordion;
+window.renderAccount = renderAccount;
+window.scrollToKPI = scrollToKPI;
+window.openCreateProProfile = openCreateProProfile;
+window.saveProProfile = saveProProfile;
+window.addProSkill = addProSkill;
+window.removeProSkill = removeProSkill;
+window.openAddProProject = openAddProProject;
+window.saveProProject = saveProProject;
+window.removeProProject = removeProProject;
 window.renderAgentPortal = renderAgentPortal;
 window.agentVerifyUser = agentVerifyUser;
-window.renderSyncSection = renderSyncSection;
 window.triggerPlatformSync = triggerPlatformSync;
+

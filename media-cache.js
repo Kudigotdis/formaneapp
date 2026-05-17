@@ -100,21 +100,27 @@ window.WirogMediaCache = WirogMediaCache;
 /* ─── IMAGE MODE CONTROLLER ─── */
 
 const WIROG_IMG_MODE = {
-  current: localStorage.getItem('wirog_img_mode') || 'saved',
+  current: localStorage.getItem('wirog_img_mode') || 'live',
 
   set(mode) {
     this.current = mode;
     localStorage.setItem('wirog_img_mode', mode);
     this.updateUI();
+    var label = document.getElementById('data-mode-label');
+    if (label) {
+      var names = { 'live': 'Live', 'text-mode': 'Text Mode', 'saved': 'Saved', 'lite': 'Lite' };
+      label.textContent = names[mode] || mode;
+    }
     if (typeof renderPromos === 'function') renderPromos();
   },
 
   getImgSrc(originalUrl) {
     if (!originalUrl) return '';
     if (originalUrl.startsWith('data:')) return originalUrl;
-    if (this.current === 'online') return originalUrl;
-    if (this.current === 'offline') return 'assets/media/offline-mode-image.png';
-    return 'assets/media/wirog_place_holder_image_blank.webp';
+    if (this.current === 'live') return originalUrl;
+    if (this.current === 'text-mode' || this.current === 'lite') return '';
+    if (this.current === 'saved') return 'assets/media/wirog_place_holder_image_blank.webp';
+    return 'assets/media/offline-mode-image.png';
   },
 
   needsAsyncResolve(originalUrl) {
@@ -131,24 +137,27 @@ const WIROG_IMG_MODE = {
     // Skip cache for Data URLs entirely
     if (originalUrl.startsWith('data:')) return originalUrl;
     
-    if (this.current === 'online') return originalUrl;
-    if (this.current === 'offline') return 'assets/media/offline-mode-image.png';
+    if (this.current === 'live') return originalUrl;
+    if (this.current === 'text-mode' || this.current === 'lite') return '';
 
-    // SMART FALLBACK: Check if it's already a local category asset
-    if (originalUrl.startsWith('assets/categories/')) {
-        return originalUrl;
-    }
-
-    const result = await WirogMediaCache.get(originalUrl);
-    if (result) return URL.createObjectURL(result.blob);
-
-    if (navigator.onLine) {
-      try {
-        const blob = await WirogMediaCache.cacheImage(originalUrl);
-        return URL.createObjectURL(blob);
-      } catch(e) {
-        return 'assets/media/no_link.png';
+    if (this.current === 'saved') {
+      // SMART FALLBACK: Check if it's already a local category asset
+      if (originalUrl.startsWith('assets/categories/')) {
+          return originalUrl;
       }
+
+      const result = await WirogMediaCache.get(originalUrl);
+      if (result) return URL.createObjectURL(result.blob);
+
+      if (navigator.onLine) {
+        try {
+          const blob = await WirogMediaCache.cacheImage(originalUrl);
+          return URL.createObjectURL(blob);
+        } catch(e) {
+          return 'assets/media/no_link.png';
+        }
+      }
+      return 'assets/media/no_link.png';
     }
     return 'assets/media/no_link.png';
   },
@@ -162,12 +171,14 @@ const WIROG_IMG_MODE = {
   },
 
   updateUI() {
-    document.querySelectorAll('.img-mode-option').forEach(function(el) {
-      el.classList.toggle('active', el.dataset.mode === WIROG_IMG_MODE.current);
+    var label = document.getElementById('data-mode-label');
+    if (label) {
+      var names = { 'live': 'Live', 'text-mode': 'Text Mode', 'saved': 'Saved', 'lite': 'Lite' };
+      label.textContent = names[this.current] || this.current;
+    }
   }
 };
 
-window.WirogMediaCache = WirogMediaCache;
 window.WIROG_IMG_MODE = WIROG_IMG_MODE;
 
 async function downloadMediaPackage() {
@@ -195,3 +206,167 @@ async function downloadMediaPackage() {
   if (statusEl) statusEl.textContent = info.count + ' (' + info.totalSizeMB + 'MB)';
   showToast('Media cached: ' + info.count + ' files (' + info.totalSizeMB + 'MB)');
 }
+
+window.downloadMediaPackage = downloadMediaPackage;
+
+/* ─── DATA MODE MODAL ─── */
+
+const DATA_MODE_EXPLAINERS = {
+  'live': 'Full images loaded from the internet.\nRequires an active data connection.\nBest for real-time browsing.',
+  'text-mode': 'Promo cards in text-only format.\nFast browsing with minimal data usage.\nIdeal for slow or limited connections.',
+  'saved': 'Full promos with images stored on your device.\nIncludes product photos and complete details.\nBrowse offline with the richest experience.',
+  'lite': 'Text-only promo data stored on your device.\nMinimal storage with essential details.\nPerfect for quick offline access.'
+};
+
+function getCurrentWeekOfMonth() {
+  var d = new Date();
+  return Math.ceil(d.getDate() / 7);
+}
+
+function getMonthName() {
+  return ['January','February','March','April','May','June','July','August','September','October','November','December'][new Date().getMonth()];
+}
+
+async function getPackageInfo(type) {
+  if (!window.WirogDB || !window.WirogDB.db) return null;
+  try {
+    var pkg = await WirogDB.get('packages', 'wirog_' + type + '_package');
+    return pkg || null;
+  } catch(e) { return null; }
+}
+
+async function downloadPackage(type) {
+  if (!window.WirogDB || !window.WirogDB.db) { showToast('Database not ready'); return; }
+  var promos = window._promos || [];
+  var pkg = {
+    id: 'wirog_' + type + '_package',
+    type: type,
+    week: getCurrentWeekOfMonth(),
+    month: getMonthName(),
+    downloadedAt: Date.now(),
+    promos: promos.map(function(p) {
+      return {
+        id: p.id, title: p.title, desc: p.desc || '', category: p.category || 'General',
+        basePrice: p.basePrice || p.price || 0, price: p.price || p.basePrice || 0,
+        unit: p.unit || 'each', qty: p.qty || 1,
+        businessName: p.businessName, businessId: p.businessId,
+        location: p.location || '', emoji: p.emoji || '',
+        tags: p.tags || [], images: type === 'saved' ? (p.images || []) : []
+      };
+    })
+  };
+  try {
+    await WirogDB.put('packages', pkg);
+    showToast(type === 'saved' ? 'Saved package downloaded!' : 'Lite package downloaded!');
+    openDataModeModal();
+  } catch(e) { console.error('Failed to save package:', e); showToast('Download failed'); }
+}
+
+async function deletePackage(type) {
+  if (!window.WirogDB || !window.WirogDB.db) return;
+  try {
+    await WirogDB.del('packages', 'wirog_' + type + '_package');
+    showToast('Package deleted');
+    openDataModeModal();
+  } catch(e) { console.error('Failed to delete package:', e); }
+}
+
+async function viewPackage(type) {
+  var pkg = await getPackageInfo(type);
+  if (!pkg) { showToast('No package found'); return; }
+  window._promos = pkg.promos;
+  WIROG_IMG_MODE.current = type === 'saved' ? 'saved' : 'lite';
+  localStorage.setItem('wirog_img_mode', WIROG_IMG_MODE.current);
+  var label = document.getElementById('data-mode-label');
+  if (label) label.textContent = type === 'saved' ? 'Saved' : 'Lite';
+  closeModal('data-mode-modal');
+  if (typeof renderPromos === 'function') renderPromos();
+}
+
+function estimatePackageSize(promos, type) {
+  var total = 0;
+  (promos || []).forEach(function(p) {
+    total += (p.title || '').length;
+    total += (p.desc || '').length;
+    total += (p.businessName || '').length;
+    total += (p.location || '').length;
+    total += (p.category || '').length;
+    total += 20;
+  });
+  return Math.max(0.1, Math.round(total / 1024 * 10) / 10);
+}
+
+async function openDataModeModal() {
+  var body = document.getElementById('data-mode-body');
+  if (!body) return;
+  var current = WIROG_IMG_MODE.current;
+  var sections = [
+    { title: 'Online', modes: ['live', 'text-mode'] },
+    { title: 'Offline', modes: ['saved', 'lite'] }
+  ];
+  var html = '';
+  sections.forEach(function(section) {
+    html += '<div class="section-title">' + section.title + '</div>';
+    html += '<div class="mode-group">';
+    section.modes.forEach(function(mode) {
+      var active = mode === current;
+      var label = mode === 'text-mode' ? 'Text Mode' : mode.charAt(0).toUpperCase() + mode.slice(1);
+      var explainer = (DATA_MODE_EXPLAINERS[mode] || '').replace(/\n/g, '<br>');
+      html += '<div class="data-mode-row' + (active ? ' active' : '') + '" onclick="selectDataMode(\'' + mode + '\')">';
+      html += '<div class="mode-indicator"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>';
+      html += '<div class="mode-content">';
+      html += '<div class="mode-title">' + label + '</div>';
+      html += '<div class="mode-desc">' + explainer + '</div>';
+      if (mode === 'saved' || mode === 'lite') {
+        html += '<div id="pkg-actions-' + mode + '" class="pkg-actions">';
+        html += '<span style="font-size:11px;color:var(--grey-mid);">Checking...</span>';
+        html += '</div>';
+      }
+      html += '</div></div>';
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+
+  ['saved', 'lite'].forEach(async function(type) {
+    var container = document.getElementById('pkg-actions-' + type);
+    if (!container) return;
+    var pkg = await getPackageInfo(type);
+    if (pkg) {
+      container.innerHTML =
+        '<span style="font-size:11px;color:var(--grey-mid);">Week ' + pkg.week + ' - ' + pkg.month + '</span>' +
+        '<div style="display:flex;gap:8px;margin-top:6px;">' +
+        '<button class="btn-download" onclick="viewPackage(\'' + type + '\')" style="flex:1;justify-content:center;">View</button>' +
+        '<button class="btn-download" onclick="deletePackage(\'' + type + '\')" style="flex:1;justify-content:center;background:transparent;color:var(--grey-dark);">Delete</button>' +
+        '</div>';
+    } else {
+      var size = estimatePackageSize(window._promos, type);
+      var week = getCurrentWeekOfMonth();
+      var month = getMonthName();
+      container.innerHTML =
+        '<button class="btn-download" onclick="event.stopPropagation();downloadPackage(\'' + type + '\')">' +
+          '<svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>' +
+          'Download Week ' + week + ' - ' + month + ' (' + size + 'mb)' +
+        '</button>';
+    }
+  });
+  openModal('data-mode-modal');
+}
+
+function selectDataMode(mode) {
+  closeModal('data-mode-modal');
+  WIROG_IMG_MODE.set(mode);
+}
+
+window.DATA_MODE_EXPLAINERS = DATA_MODE_EXPLAINERS;
+window.getCurrentWeekOfMonth = getCurrentWeekOfMonth;
+window.getMonthName = getMonthName;
+window.getPackageInfo = getPackageInfo;
+window.downloadPackage = downloadPackage;
+window.deletePackage = deletePackage;
+window.viewPackage = viewPackage;
+window.estimatePackageSize = estimatePackageSize;
+window.openDataModeModal = openDataModeModal;
+window.selectDataMode = selectDataMode;
+
+

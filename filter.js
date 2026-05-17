@@ -329,15 +329,16 @@ function renderLocationOptions() {
 function selectLocation(name, mode) {
   if (mode === 'placeA') {
     selectedPlaceA = name;
-    document.getElementById('place-a-btn').textContent = name;
+    document.querySelectorAll('#place-a-btn').forEach(function(b) { b.textContent = name; });
     selectedPlaceB = 'All Area';
-    document.getElementById('place-b-btn').textContent = 'All Area';
+    document.querySelectorAll('#place-b-btn').forEach(function(b) { b.textContent = 'All Area'; });
   } else {
     selectedPlaceB = name;
-    document.getElementById('place-b-btn').textContent = name;
+    document.querySelectorAll('#place-b-btn').forEach(function(b) { b.textContent = name; });
   }
   closeModal('location-modal');
-  renderPromos();
+  var cv = typeof currentView !== 'undefined' ? currentView : '';
+  if (cv === 'view-directory') { renderDirectory(); } else { renderPromos(); }
 }
 
 function openCategorySheet() {
@@ -365,9 +366,26 @@ window.toggleCategoryChildren = toggleCategoryChildren;
 window.updateCategoryFilterText = updateCategoryFilterText;
 window.loadCategoriesFromDB = loadCategoriesFromDB;
 
+let currentSearchMode = 'all';
+function setSearchMode(mode) {
+  currentSearchMode = mode;
+  const pills = document.querySelectorAll('#search-modal .pill');
+  pills.forEach(p => {
+    p.classList.toggle('active', p.textContent.toLowerCase() === mode);
+  });
+  doSearch(document.getElementById('search-input').value);
+}
+
 function openSearchModal() {
+  currentSearchMode = 'all';
   document.getElementById('search-input').value = '';
   document.getElementById('search-results').innerHTML = '';
+  
+  const pills = document.querySelectorAll('#search-modal .pill');
+  pills.forEach(p => p.classList.remove('active'));
+  const allPill = pills[0];
+  if (allPill) allPill.classList.add('active');
+
   openModal('search-modal');
   document.getElementById('search-input').focus();
 }
@@ -379,20 +397,37 @@ function doSearch(query) {
     return;
   }
   const q = query.toLowerCase();
-  const matches = window._promos.filter(p =>
-    (p.title && p.title.toLowerCase().includes(q)) ||
-    (p.category && p.category.toLowerCase().includes(q)) ||
-    (p.businessName && p.businessName.toLowerCase().includes(q)) ||
-    (p.desc && p.desc.toLowerCase().includes(q))
-  );
+  const matches = window._promos.filter(p => {
+    const brand = p.brand || '';
+    const title = p.title || '';
+    const bizName = p.businessName || '';
+    const cat = p.category || '';
+    const desc = p.desc || '';
+
+    if (currentSearchMode === 'brand') return brand.toLowerCase().includes(q);
+    if (currentSearchMode === 'business') return bizName.toLowerCase().includes(q);
+    
+    return title.toLowerCase().includes(q) ||
+           brand.toLowerCase().includes(q) ||
+           bizName.toLowerCase().includes(q) ||
+           cat.toLowerCase().includes(q) ||
+           desc.toLowerCase().includes(q);
+  });
+
   if (matches.length === 0) {
     results.innerHTML = '<p style="color:var(--grey-dark); font-size:13px; text-align:center; padding:20px;">No results found</p>';
     return;
   }
-  results.innerHTML = matches.map(p => `
-    <div style="padding:10px; border-bottom:1px solid var(--grey-light); cursor:pointer;" onclick="closeModal('search-modal'); document.getElementById('promo-${p.id}').scrollIntoView({behavior:'smooth'}); document.getElementById('promo-${p.id}').classList.add('open');">
-      <div style="font-size:14px; font-weight:600;">${p.title}</div>
-      <div style="font-size:12px; color:var(--grey-dark);">${p.category} · ${p.businessName} · P${(p.price || 0).toFixed(2)}</div>
-    </div>
-  `).join('');
+
+  results.innerHTML = matches.map(p => {
+    const brandHtml = p.brand ? '<span style="color:var(--orange); font-weight:700; cursor:pointer;" onclick="event.stopPropagation(); doSearch(\'' + p.brand.replace(/'/g, "\\'") + '\'); document.getElementById(\'search-input\').value=\'' + p.brand.replace(/'/g, "\\'") + '\'; setSearchMode(\'brand\');">\ud83c\udff7\ufe0f ' + p.brand + '</span>' : '';
+    
+    return '<div style="padding:10px; border-bottom:1px solid var(--grey-light); cursor:pointer;" onclick="closeModal(\'search-modal\'); document.getElementById(\'promo-' + p.id + '\').scrollIntoView({behavior:\'smooth\'}); document.getElementById(\'promo-' + p.id + '\').classList.add(\'open\');">' +
+      '<div style="font-size:14px; font-weight:600;">' + p.title + '</div>' +
+      '<div style="font-size:12px; color:var(--grey-dark);">' +
+        p.category + ' \u00b7 ' + p.businessName + ' \u00b7 P' + (p.price || 0).toFixed(2) +
+        (brandHtml ? '<br>' + brandHtml : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
