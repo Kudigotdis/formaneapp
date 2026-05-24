@@ -218,6 +218,14 @@ nav#bottom-nav {
   transition: all 0.15s;
   text-decoration: none;
 }
+.nav-item.active {
+  background: rgba(0,0,0,0.22);
+  border-bottom: 3px solid #fff;
+  box-sizing: border-box;
+}
+.nav-item.active .nav-icon {
+  transform: scale(1.18);
+}
 .nav-icon {
   width: 24px;
   height: 24px;
