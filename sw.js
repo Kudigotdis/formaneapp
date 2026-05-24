@@ -1,4 +1,4 @@
-const CACHE = 'wirog-v1';
+const CACHE = 'wirog-v3';
 const ASSETS = [
   '/',
   '/index.html',
@@ -10,24 +10,44 @@ const ASSETS = [
   '/demo-data.js',
   '/demo-profiles.js',
   '/db.js',
+  '/media-cache.js',
   '/user-state.js',
   '/auth.js',
   '/utils.js',
   '/pricing-engine.js',
   '/wirog_product_categories.js',
+  '/data/tradeSpecific.js',
+  '/data/tradesman-skills.js',
+  '/data/trade-skill-map.js',
+  '/skill-ratings.js',
+  '/reviews.js',
   '/filter.js',
   '/navigation.js',
   '/router.js',
   '/promos.js',
+  '/pro.js',
+  '/data/seed-pro-skills.js',
   '/directory.js',
   '/notes.js',
   '/account.js',
+  '/analytics.js',
+  '/admin/AdminData.js',
+  '/admin/AdminState.js',
+  '/admin/views/ClientListTab.js',
+  '/admin/views/OverviewTab.js',
+  '/admin/views/ApprovalsTab.js',
+  '/admin/views/FacebookCalendarTab.js',
+  '/admin/views/DirectoryTab.js',
+  '/admin/views/AnalyticsTab.js',
+  '/admin/views/AdminManagementTab.js',
+  '/admin/Admin.js',
   '/admin.js',
   '/items.js',
-  '/app.js',
   '/blogs.js',
+  '/app.js',
+  '/staff.js',
+  '/account-views.js',
   '/sync.js',
-  '/media-cache.js',
   '/path-utils.js',
   '/mode-controller.js',
   '/ui-helpers.js',
@@ -68,4 +88,32 @@ self.addEventListener('fetch', e => {
       return res;
     }).catch(() => caches.match('/index.html')))
   );
+});
+
+/* ─── PUSH NOTIFICATIONS ─── */
+self.addEventListener('push', e => {
+  var data = { title: 'Wirog', body: 'New update available', icon: '/assets/icons/pwa/icon-192.png' };
+  try {
+    if (e.data) data = Object.assign(data, e.data.json());
+  } catch(err) {}
+  var opts = {
+    body: data.body,
+    icon: data.icon,
+    badge: '/assets/icons/pwa/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: { url: data.url || '/' }
+  };
+  e.waitUntil(self.registration.showNotification(data.title, opts));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  var url = e.notification.data && e.notification.data.url ? e.notification.data.url : '/';
+  e.waitUntil(clients.matchAll({ type: 'window' }).then(function(clientList) {
+    for (var i = 0; i < clientList.length; i++) {
+      var client = clientList[i];
+      if (client.url === url && 'focus' in client) return client.focus();
+    }
+    if (clients.openWindow) return clients.openWindow(url);
+  }));
 });

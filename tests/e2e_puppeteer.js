@@ -29,11 +29,44 @@ async function startProcess(cmd, args, opts = {}) {
   console.log('Launching Puppeteer...');
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
   const page = await browser.newPage();
+  const pageErrors = [];
 
   page.on('console', msg => console.log('[page]', msg.text()));
+  page.on('pageerror', err => {
+    pageErrors.push(err && (err.stack || err.message) || String(err));
+    console.error('[page:error]', err);
+  });
+
+  await page.evaluateOnNewDocument(() => {
+    localStorage.setItem('wirog_userId', 'general');
+    localStorage.setItem('wirog_img_mode', 'saved');
+  });
 
   const url = 'http://localhost:8080';
   await page.goto(url, { waitUntil: 'networkidle2' });
+
+  await page.waitForFunction(() => {
+    return document.querySelectorAll('#promo-feed .promo-card').length > 0;
+  }, { timeout: 10000 });
+
+  const promoState = await page.evaluate(() => ({
+    cardCount: document.querySelectorAll('#promo-feed .promo-card').length,
+    imageCount: document.querySelectorAll('#promo-feed .promo-img, #promo-feed .promo-img-ph').length,
+    imgModeReady: !!window.WIROG_IMG_MODE,
+    mediaCacheReady: !!window.WirogMediaCache,
+    feedText: document.getElementById('promo-feed')?.innerText.slice(0, 120) || ''
+  }));
+
+  if (pageErrors.length) {
+    throw new Error('Page errors during startup:\n' + pageErrors.join('\n'));
+  }
+  if (!promoState.imgModeReady || !promoState.mediaCacheReady) {
+    throw new Error('Media cache globals did not initialize: ' + JSON.stringify(promoState));
+  }
+  if (promoState.cardCount === 0 || promoState.imageCount === 0) {
+    throw new Error('Promo feed did not render cards/images: ' + JSON.stringify(promoState));
+  }
+  console.log('Promo feed rendered:', JSON.stringify(promoState));
 
   // Load sw-register helper and register SW
   await page.evaluate(async () => {

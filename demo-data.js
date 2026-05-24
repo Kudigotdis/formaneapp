@@ -612,7 +612,8 @@ window.SAMPLE_BUSINESSES = [
     "public": true,
     "cataloguePublic": false,
     "description": "",
-    "subscription": "free"
+    "subscription": "free",
+    "logo": "assets/images/company_logos_dummy/demo_business_logos_icons/Builders Depot logo.png"
   },
   {
     "id": "biz-30",
@@ -629,7 +630,8 @@ window.SAMPLE_BUSINESSES = [
     "public": true,
     "cataloguePublic": false,
     "description": "",
-    "subscription": "free"
+    "subscription": "free",
+    "logo": "assets/images/company_logos_dummy/demo_business_logos_icons/Hardware City logo.png"
   }
 ];
 

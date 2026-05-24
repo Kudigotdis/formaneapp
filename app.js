@@ -48,7 +48,12 @@ async function init() {
           UserState.business = {
             id: biz.id, name: biz.name, category: biz.category,
             town: biz.location.split(',').pop().trim(),
-            phone: biz.phone || '', subscription: biz.subscription || 'free'
+            phone: biz.phone || '', subscription: biz.subscription || 'free',
+            logo: biz.logo || '',
+            description: biz.description || '',
+            logoLandscape: biz.logoLandscape || '',
+            categories: biz.categories || [biz.category].filter(Boolean),
+            contacts: { calls: [], facebook: [], gps: [], whatsapp: [] }
           };
           UserState.businessRole = assoc.role;
         }
@@ -94,31 +99,7 @@ async function init() {
     console.warn('WirogMediaCache init failed (non-fatal):', err);
   }
 
-  if (savedId && savedId !== 'guest') {
-    enterApp();
-    updateAccountUI();
-    updateKPI();
-    renderPromos();
-    if (window.WIROG_IMG_MODE) WIROG_IMG_MODE.updateUI();
-    renderNotes();
-    
-    // Check for business approval if online
-    if (navigator.onLine && window.fetchUserBusiness) {
-       window.fetchUserBusiness(savedId).then(biz => {
-         if (biz && biz.status === 'active') {
-           // If it was pending locally but now active in cloud
-           if (UserState.business && UserState.business.status === 'pending') {
-             showToast("🎉 Your business has been APPROVED!");
-             UserState.business.status = 'active';
-             WirogDB.put('businesses', { ...UserState.business, id: 'biz_user' });
-             updateAccountUI();
-           }
-         }
-       });
-    }
-  } else {
-    document.getElementById('view-welcome')?.classList.add('active');
-  }
+  document.getElementById('view-welcome')?.classList.add('active');
 }
 
 async function loadSavedData() {
@@ -132,6 +113,8 @@ async function loadSavedData() {
       window._promos = [...window._promos, ...promoItems];
     }
   } catch(e) { console.error('Failed to load items:', e); }
+
+  window._catalogueItems = window.DEMO_CATALOGUE_ITEMS || [];
 
   try {
     const savedNotes = await WirogDB.getAll('notes');
@@ -178,7 +161,7 @@ async function loadBusinessFromDB() {
   try {
     const saved = await WirogDB.get('businesses', 'biz_user');
     if (saved) {
-      UserState.business = { id: saved.id, name: saved.name, category: saved.category, town: saved.town, phone: saved.phone, subscription: saved.subscription || 'free' };
+      UserState.business = { id: saved.id, name: saved.name, category: saved.category, town: saved.town, phone: saved.phone, subscription: saved.subscription || 'free', logo: saved.logo || '', description: saved.description || '', logoLandscape: saved.logoLandscape || '', categories: saved.categories || [], contacts: saved.contacts || { calls: [], facebook: [], gps: [], whatsapp: [] } };
     }
   } catch(e) { console.error('Failed to load business:', e); }
 }
@@ -223,9 +206,37 @@ window.addEventListener('beforeinstallprompt', e => {
   window._installPrompt = e;
 });
 
-document.addEventListener('click', e => {
+document.addEventListener('click', function(e) {
+  // Vibrate on button press
   if (e.target.closest('.btn') && navigator.vibrate) {
     navigator.vibrate(20);
+  }
+  // Refresh online activity timer
+  refreshActivityTimer();
+});
+
+document.addEventListener('touchstart', function() {
+  refreshActivityTimer();
+});
+
+var _activityTimerRefresh = null;
+function refreshActivityTimer() {
+  if (_activityTimerRefresh) clearTimeout(_activityTimerRefresh);
+  _activityTimerRefresh = setTimeout(function() {
+    var pid = typeof getClaimedProId === 'function' ? getClaimedProId(UserState && UserState.id) : null;
+    if (pid && typeof refreshOnlineExpiry === 'function') refreshOnlineExpiry(pid);
+  }, 300);
+}
+
+window.addEventListener('focus', function() {
+  var pid = typeof getClaimedProId === 'function' ? getClaimedProId(UserState && UserState.id) : null;
+  if (pid && typeof refreshOnlineExpiry === 'function') refreshOnlineExpiry(pid);
+});
+
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    var pid = typeof getClaimedProId === 'function' ? getClaimedProId(UserState && UserState.id) : null;
+    if (pid && typeof refreshOnlineExpiry === 'function') refreshOnlineExpiry(pid);
   }
 });
 

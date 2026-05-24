@@ -24,7 +24,7 @@ Get-ChildItem "data\demo_data\demo_profiles_*.json" | ForEach-Object {
         
         $role = "General User"
         if ($p.role -eq "business_owner") { $role = "Business & Materials Supplier" }
-        elseif ($p.role -eq "tradesperson") { $role = "Tradesperson (Contractor)" }
+        elseif ($p.role -eq "tradesperson" -or $p.role -eq "service_provider") { $role = "Tradesperson (Contractor)" }
         elseif ($p.role -eq "staff") { $role = "Board Kings Staff" }
         
         $email = ""
@@ -46,11 +46,14 @@ Get-ChildItem "data\demo_data\demo_profiles_*.json" | ForEach-Object {
             surname = $sn
             email = $email
             phone = $phone
+            image = $p.image
+            gender = $p.gender
+            businessInfo = $p.businessInfo
         }
     }
 }
 
-$json = $allProfiles | ConvertTo-Json -Compress
+$json = $allProfiles | ConvertTo-Json -Depth 100
 $output = @"
 /* ==========================================================
    WIROG DEMO PROFILES - All demo user accounts (auto-generated)

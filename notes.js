@@ -65,27 +65,23 @@ function renderNotes() {
   if (userNotes.length === 0) {
     el.innerHTML = `
       <div style="text-align:center;padding:40px 16px;color:var(--grey-dark);">
-        <i class="fas fa-clipboard-list" style="font-size:36px;margin-bottom:10px;display:block;color:var(--grey-mid);"></i>
-        <p style="font-size:14px;font-weight:600;margin-bottom:4px;">No notes yet</p>
-        <p style="font-size:12px;">Create a note to start saving items from the Promos feed.</p>
+        <p style="font-size:14px;font-weight:600;margin-bottom:4px;">No notes yet.</p>
       </div>
     `;
     return;
   }
 
-  el.innerHTML = userNotes.map(note => {
+  el.innerHTML = userNotes.map((note, index) => {
     const total = note.items.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
     const count = note.items.reduce((sum, item) => sum + (item.qty || 1), 0);
-    const emoji = note.items.length > 0 ? (note.items[0].emoji || '\ud83d\udccb') : '\ud83d\udccb';
     return `
       <div class="note-card" onclick="openNote('${note.id}')">
         <div style="display:flex;gap:14px;align-items:center;flex:1;">
-          <div style="font-size:26px;">${emoji}</div>
+          <div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(237,102,38,0.1);border-radius:1px;font-size:16px;font-weight:700;color:var(--orange);flex-shrink:0;">${index + 1}</div>
           <div><h3 style="font-size:15px;">${note.title}</h3><p class="note-meta">${count} items for P ${total.toFixed(2)}</p></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;cursor:pointer;" onclick="event.stopPropagation();shareNoteWhatsApp('${note.id}')">
-          <span style="font-size:18px;color:var(--grey-mid);">\u203A</span>
         </div>
       </div>
     `;
@@ -97,7 +93,9 @@ function openNote(noteId) {
   if (!note) return;
 
   const total = note.items.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
-  document.getElementById('note-total-val').textContent = 'P ' + total.toFixed(2);
+  const formatted = total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const count = note.items.length;
+  document.getElementById('note-total-val').textContent = 'P' + formatted + ' for ' + count + ' item' + (count !== 1 ? 's' : '');
 
   document.getElementById('note-title-display').textContent = note.title;
 
@@ -119,20 +117,20 @@ function openNote(noteId) {
       '<img src="assets/icons/solid/bullhorn-2_orange.webp" class="note-empty-icon" style="cursor:pointer;" onclick="navTab(\'view-promos\',\'nav-promos\')">' +
       '</div>';
   } else {
-    list.innerHTML = note.items.map((item, idx) => `
-      <div class="note-item-row">
-        <div class="ni-info">
-          <h4 onclick="openNoteItemView('${noteId}',${idx})" style="cursor:pointer;">${item.title}</h4>
-          <p class="ni-cost">P ${item.price.toFixed(2)} ${item.unit} \u00d7 ${item.qty || 1}</p>
-          <p class="ni-business">${item.business}</p>
-        </div>
+    list.innerHTML = note.items.map((item, idx) => {
+      const total = (item.price * (item.qty || 1)).toFixed(2);
+      return `
+      <div class="note-item-card" data-note-id="${noteId}" data-item-index="${idx}">
+        <h4 onclick="openNoteItemView('${noteId}',${idx})" style="cursor:pointer;">${item.title}</h4>
+        <p class="ni-cost">P ${total} per Unit</p>
         <div class="qty-controls">
-          <button class="qty-btn" onclick="updateNoteItemQty('${noteId}',${idx},1)">+</button>
-          <span class="ni-qty" style="min-width:20px;text-align:center;">${item.qty || 1}</span>
           <button class="qty-btn" onclick="updateNoteItemQty('${noteId}',${idx},-1)">\u2212</button>
+          <span class="ni-qty">${item.qty || 1}</span>
+          <button class="qty-btn" onclick="updateNoteItemQty('${noteId}',${idx},1)">+</button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
 
   window._currentNoteId = noteId;
@@ -172,17 +170,19 @@ async function updateNoteItemQty(noteId, itemIdx, delta) {
     }
   } catch(e) {}
 
-  const row = document.querySelector(`#note-items-list .note-item-row:nth-child(${itemIdx + 1})`);
-  if (row) {
-    const qtySpan = row.querySelector('.ni-qty');
+  const card = document.querySelector(`#note-items-list [data-item-index="${itemIdx}"]`);
+  if (card) {
+    const qtySpan = card.querySelector('.ni-qty');
     if (qtySpan) qtySpan.textContent = newQty;
-    const costEl = row.querySelector('.ni-cost');
-    if (costEl) costEl.textContent = `P ${item.price.toFixed(2)} ${item.unit} \u00d7 ${newQty}`;
+    const costEl = card.querySelector('.ni-cost');
+    if (costEl) costEl.textContent = `P ${(item.price * newQty).toFixed(2)} per Unit`;
   }
 
   const newTotal = note.items.reduce((sum, i) => sum + (i.price * (i.qty || 1)), 0);
+  const formatted = newTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const count = note.items.length;
   const totalEl = document.getElementById('note-total-val');
-  if (totalEl) totalEl.textContent = 'P ' + newTotal.toFixed(2);
+  if (totalEl) totalEl.textContent = 'P' + formatted + ' for ' + count + ' item' + (count !== 1 ? 's' : '');
 }
 
 async function createNote() {
@@ -294,11 +294,13 @@ function shareNoteWhatsApp(noteId) {
   if (!note) { showToast('No notes to share'); return; }
 
   const total = note.items.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
-  let text = `*${note.title}* - Wirog Supply Solutions\n\n`;
+  let text = `*${note.title}*\n`;
+  if (note.body) text += `\n${note.body}\n`;
+  text += '\n';
   note.items.forEach((item, idx) => {
-    text += `${idx + 1}. ${item.emoji || '\ud83d\udce6'} ${item.title}\n   P ${item.price.toFixed(2)} ${item.unit} x ${item.qty || 1} = P ${(item.price * (item.qty || 1)).toFixed(2)}\n   From: ${item.business}\n\n`;
+    text += `${idx + 1}. ${item.title}\n   P ${item.price.toFixed(2)} ${item.unit} \u00d7 ${item.qty || 1} = P ${(item.price * (item.qty || 1)).toFixed(2)}\n   ${item.business}\n\n`;
   });
-  text += `\n*Total: P ${total.toFixed(2)}*`;
+  text += `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n*Total for ${note.items.length} items: P ${total.toFixed(2)}*`;
 
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }

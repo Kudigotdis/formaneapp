@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pro Dashboard - Wirog Supply Solutions</title>
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <style>
+    body { margin: 0; background: var(--bg); font-family: var(--font-main); color: var(--text-main); }
+    .dash-header { display:flex; align-items:center; gap:10px; padding:12px; border-bottom:1px solid var(--grey-light); background:var(--bg); position:sticky; top:0; z-index:10; }
+    .dash-header h1 { font-size:18px; font-weight:700; margin:0; flex:1; }
+    .status-toggle { display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer; padding:4px 10px; border-radius:20px; border:1px solid var(--grey-light); }
+    .status-toggle.online { background:#e8f5e9; border-color:#4caf50; color:#2e7d32; }
+    .status-toggle.offline { background:#f5f5f5; border-color:#ccc; color:#999; }
+    .profile-card { display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid var(--grey-light); }
+    .profile-avatar { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; color:#fff; flex-shrink:0; }
+    .dash-section { padding:12px; border-bottom:1px solid var(--grey-light); }
+    .dash-section h3 { font-size:14px; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:6px; }
+    .skill-checkbox { display:flex; align-items:center; gap:6px; padding:4px 0; font-size:13px; cursor:pointer; }
+    .skill-checkbox input { accent-color:var(--orange); }
+    .project-card { padding:10px; border:1px solid var(--grey-light); border-radius:8px; margin-bottom:6px; font-size:13px; }
+    .project-card img { max-width:100%; height:auto; border-radius:4px; margin-top:6px; cursor:pointer; }
+    .project-card .project-actions { display:flex; gap:6px; margin-top:6px; }
+    .project-card .project-actions button { font-size:11px; padding:4px 8px; }
+    .action-btns { padding:12px; display:flex; flex-direction:column; gap:8px; }
+    .action-btns button { width:100%; padding:12px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; border:none; }
+    .dash-empty { font-size:12px; color:var(--grey-dark); padding:12px 0; text-align:center; }
+    input, select, textarea { font-family:var(--font-main); }
+  </style>
+</head>
+<body>
+
+  <!-- Dashboard is rendered entirely by JS into this container -->
+  <div id="pro-dashboard-root"></div>
+
+  <script src="data.js"></script>
+  <script src="demo-data.js"></script>
+  <script src="demo-profiles.js"></script>
+  <script src="db.js"></script>
+  <script src="media-cache.js"></script>
+  <script src="user-state.js"></script>
+  <script src="auth.js"></script>
+  <script src="utils.js"></script>
+  <script src="pricing-engine.js"></script>
+  <script src="wirog_product_categories.js"></script>
+  <script src="data/tradeSpecific.js"></script>
+  <script src="data/tradesman-skills.js"></script>
+  <script src="data/trade-skill-map.js"></script>
+  <script src="data/demo-pro-skills.js"></script>
+  <script src="skill-ratings.js"></script>
+  <script src="pro.js"></script>
+  <script src="pro-dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.renderProDashboard) renderProDashboard();
+    });
+  </script>
+</body>
+</html>

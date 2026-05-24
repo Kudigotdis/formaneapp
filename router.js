@@ -4,54 +4,80 @@
    ════════════════════════════════════════════════════════ */
 
 let currentView = 'view-promos';
-let prevView = null;
+let viewHistory = [];
+window.currentView = currentView;
 
-function goTo(viewId) {
-  prevView = currentView;
+function switchView(viewId) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  // Close all accordions when navigating
   document.querySelectorAll('.accordion').forEach(a => a.classList.remove('open'));
   const target = document.getElementById(viewId);
-  if (target) {
-    target.classList.add('active');
-    document.getElementById('router').scrollTop = 0;
-    currentView = viewId;
-    manageUI(viewId);
-    updateNavIcons();
-
-    if (viewId === 'view-account' && window.updateAccountUI) {
-      window.updateAccountUI();
-    }
+  if (!target) return;
+  target.classList.add('active');
+  document.getElementById('router').scrollTop = 0;
+  currentView = viewId;
+  window.currentView = viewId;
+  manageUI(viewId);
+  updateNavIcons();
+  if (viewId === 'view-account' && window.updateAccountUI) {
+    window.updateAccountUI();
   }
 }
 
+function goTo(viewId) {
+  /* navigation guard for artwork submission */
+  if (currentView === 'view-artwork-submission' && currentView !== viewId) {
+    if (window.hasUnsavedArtwork && window.hasUnsavedArtwork()) {
+      if (!confirm('Your artwork submission will be lost. Leave anyway?')) return;
+      if (window.clearUnsavedArtwork) window.clearUnsavedArtwork();
+    }
+  }
+  if (currentView && currentView !== viewId) {
+    viewHistory.push(currentView);
+  }
+  switchView(viewId);
+  syncNav(viewId);
+}
+
 function goBack() {
-  if (prevView && !['view-promos','view-directory','view-notes','view-account','view-pro-account'].includes(prevView)) {
-    goTo(prevView);
+  if (viewHistory.length > 0) {
+    const prev = viewHistory.pop();
+    switchView(prev);
+    syncNav(prev);
   } else {
-    goTo('view-promos');
+    switchView('view-promos');
   }
 }
 
 function navTab(viewId, navId) {
-  prevView = currentView;
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const target = document.getElementById(viewId);
-  if (target) {
-    target.classList.add('active');
-    document.getElementById('router').scrollTop = 0;
-    currentView = viewId;
+  if (currentView && currentView !== viewId) {
+    viewHistory.push(currentView);
   }
-
+  switchView(viewId);
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById(navId).classList.add('active');
-
-  manageUI(viewId);
+  const navEl = document.getElementById(navId);
+  if (navEl) navEl.classList.add('active');
   updateNavIcons();
+}
 
-  if (viewId === 'view-account' && window.updateAccountUI) {
-    window.updateAccountUI();
-  }
+function resetFilterState() {
+  selectedCategories = [];
+  selectedPlaceA = 'Nation Wide';
+  selectedPlaceB = 'All Area';
+  promoTypeIdx = 0;
+
+  var catBtn = document.getElementById('category-filter-btn');
+  if (catBtn) catBtn.textContent = 'All Services';
+  var placeABtn = document.getElementById('place-a-btn');
+  if (placeABtn) placeABtn.textContent = 'Nation Wide';
+  var placeABtnPro = document.getElementById('place-a-btn-pro');
+  if (placeABtnPro) placeABtnPro.textContent = 'Nation Wide';
+  var placeBBtn = document.getElementById('place-b-btn');
+  if (placeBBtn) placeBBtn.textContent = 'All Area';
+  var promoTypeBtn = document.getElementById('promo-type-btn');
+  if (promoTypeBtn) promoTypeBtn.textContent = promoTypes[0];
+  var tradesmenBtn = document.getElementById('tradesmen-filter-btn');
+  if (tradesmenBtn) tradesmenBtn.textContent = 'All Tradesmen';
+  selectedTrades = [];
 }
 
 function manageUI(viewId) {
@@ -59,11 +85,21 @@ function manageUI(viewId) {
   const bottomNav = document.getElementById('bottom-nav');
   const filterBar = document.getElementById('filter-bar');
 
-  if (viewId === 'view-welcome' || viewId === 'view-admin' || viewId === 'view-analytics' || viewId === 'view-analytics-month' || viewId === 'view-business-staff' || viewId === 'view-pro-account') {
+  if (viewId === 'view-welcome' || viewId === 'view-admin' || viewId === 'view-analytics' || viewId === 'view-analytics-month' || viewId === 'view-business-staff') {
     if (header) header.classList.add('shell-hidden');
     if (bottomNav) bottomNav.style.display = 'none';
     if (filterBar) filterBar.style.display = 'none';
-    if (viewId === 'view-pro-account' && window.renderProAccountPage) window.renderProAccountPage();
+    return;
+  }
+
+  if (viewId === 'view-pro-account' && window.renderProAccountPage) window.renderProAccountPage();
+  if (viewId === 'view-pro-dashboard' && window.renderProDashboard) window.renderProDashboard();
+
+  if (viewId === 'view-artwork-submission') {
+    if (header) header.classList.remove('shell-hidden');
+    if (bottomNav) bottomNav.style.display = 'flex';
+    if (filterBar) filterBar.style.display = 'none';
+    if (window.renderBoostSubmissionStatus) window.renderBoostSubmissionStatus();
     return;
   }
 
@@ -72,6 +108,10 @@ function manageUI(viewId) {
   if (header) header.classList.remove('shell-hidden');
   if (bottomNav) bottomNav.style.display = 'flex';
   if (filterBar) filterBar.style.display = showFilter ? 'flex' : 'none';
+
+  if (showFilter && viewHistory.length > 0 && viewHistory[viewHistory.length - 1] !== viewId) {
+    resetFilterState();
+  }
 
   const promoTypeRow = document.getElementById('promo-type-row');
   if (promoTypeRow) promoTypeRow.style.display = viewId === 'view-promos' ? '' : 'none';

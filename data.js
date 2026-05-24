@@ -61,6 +61,42 @@ window.getBusinessLogo = function(bizId) {
   return biz && biz.logo ? biz.logo : null;
 };
 
+window.getBusinessLogo2 = function(bizId) {
+  var map = {
+    'biz-1': null,
+    'biz-2': 'assets/images/company_logos_dummy/demo_business_logo_2/BuildIt Gabs logo.png',
+    'biz-3': 'assets/images/company_logos_dummy/demo_business_logo_2/Francistown Steel logo.png',
+    'biz-4': 'assets/images/company_logos_dummy/demo_business_logo_2/Gabs Plumbing Depot.png',
+    'biz-5': 'assets/images/company_logos_dummy/demo_business_logo_2/Tile Express BW logo.png',
+    'biz-6': 'assets/images/company_logos_dummy/demo_business_logo_2/Paint World Gaborone logo.png',
+    'biz-7': 'assets/images/company_logos_dummy/demo_business_logo_2/Hardware Kings logo.png',
+    'biz-8': 'assets/images/company_logos_dummy/demo_business_logo_2/roofing master logo.png',
+    'biz-9': 'assets/images/company_logos_dummy/demo_business_logo_2/Gaborone Attire & Uniforms logo.png',
+    'biz-10': 'assets/images/company_logos_dummy/demo_business_logo_2/Bathroom & Kitchen World.png',
+    'biz-11': 'assets/images/company_logos_dummy/demo_business_logo_2/Builders Sand & Stone logo.png',
+    'biz-12': null,
+    'biz-13': 'assets/images/company_logos_dummy/demo_business_logo_2/ChemCare Botswana logo.png',
+    'biz-14': 'assets/images/company_logos_dummy/demo_business_logo_2/DesignPro House Plans logo.png',
+    'biz-15': 'assets/images/company_logos_dummy/demo_business_logo_2/Door & Window Hub logo.png',
+    'biz-16': 'assets/images/company_logos_dummy/demo_business_logo_2/Gaborone Electrical Supplies logo.png',
+    'biz-17': 'assets/images/company_logos_dummy/demo_business_logo_2/Green Gardens BW.png',
+    'biz-18': 'assets/images/company_logos_dummy/demo_business_logo_2/PowerGen BW.png',
+    'biz-19': 'assets/images/company_logos_dummy/demo_business_logo_2/Hot Water Systems BW logo.png',
+    'biz-20': 'assets/images/company_logos_dummy/demo_business_logo_2/Home Decor Palace logo.png',
+    'biz-21': 'assets/images/company_logos_dummy/demo_business_logo_2/Lighting Centre BW logo.png',
+    'biz-22': 'assets/images/company_logos_dummy/demo_business_logo_2/Partitioning Solutions logo.png',
+    'biz-23': 'assets/images/company_logos_dummy/demo_business_logo_2/quickbuild prefabs logo.png',
+    'biz-24': 'assets/images/company_logos_dummy/demo_business_logo_2/SafetyMax BW.jpg',
+    'biz-25': 'assets/images/company_logos_dummy/demo_business_logo_2/Sanitaryware Direct.jpg',
+    'biz-26': 'assets/images/company_logos_dummy/demo_business_logo_2/SolarTech Botswana logo.png',
+    'biz-27': 'assets/images/company_logos_dummy/demo_business_logo_2/StoreSmart Shelving logo.png',
+    'biz-28': null,
+    'biz-29': null,
+    'biz-30': null
+  };
+  return map[bizId] || null;
+};
+
 window.getBusinessById = function(bizId) {
   if (!bizId || !window.SAMPLE_BUSINESSES) return null;
   return window.SAMPLE_BUSINESSES.find(function(b) { return b.id === bizId; }) || null;
@@ -72,7 +108,7 @@ window.DEMO_ACCOUNTS = [
   { id: 'supplier', name: 'Pako (Board Kings)', role: 'Business & Materials Supplier', initials: 'PK', color: '#ed6626', town: 'Gaborone' },
   { id: 'general', name: 'Kago Setlhare', role: 'General User', initials: 'KS', color: '#1a6b5a', town: 'Gaborone' },
   { id: 'trade', name: 'Thabo Moeng', role: 'Tradesperson (Contractor)', initials: 'TM', color: '#003DA5', town: 'Francistown' },
-  { id: 'user-gerald', name: 'Gerald Moabi', role: 'General Contractor', initials: 'GM', color: '#8c2d1a', town: 'Gaborone' },
+  { id: 'user-gerald', name: 'Gerald Moabi', role: 'Tradesperson (Contractor)', initials: 'GM', color: '#8c2d1a', town: 'Gaborone' },
   { id: 'owner-biz2', name: 'Dineo (BuildIt Gabs)', role: 'Business Owner', initials: 'DB', color: '#1a4b8c', town: 'Gaborone' },
   { id: 'owner-biz3', name: 'Karabo (F/Town Steel)', role: 'Business Owner', initials: 'KF', color: '#ed6626', town: 'Francistown' },
   { id: 'owner-biz4', name: 'Bame (Gabs Plumbing)', role: 'Business Owner', initials: 'BP', color: '#009144', town: 'Gaborone' },

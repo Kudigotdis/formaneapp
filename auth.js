@@ -25,13 +25,13 @@ const Auth = {
     UserState.business = null;
     UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0 };
     UserState.interests = [];
+    enterApp();
+    renderPromos();
     updateAccountHero();
     resetBusinessCard();
     updateKPI();
     updateAccountUI();
     reloadNotesForUser();
-    enterApp();
-    renderPromos();
     showToast('Browsing as Guest');
   },
 
@@ -84,12 +84,12 @@ const Auth = {
   },
 
   async register() {
-    const firstName = document.getElementById('reg-firstname').value.trim();
-    const surname = document.getElementById('reg-surname').value.trim();
+    const firstName = document.getElementById('id-firstname').value.trim();
+    const surname = document.getElementById('id-surname').value.trim();
     const phone = document.getElementById('reg-phone').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const role = document.getElementById('reg-role').value;
-    const town = document.getElementById('reg-town').value;
+    const town = document.getElementById('loc-town').value;
     const password = document.getElementById('reg-password').value;
     const confirm = document.getElementById('reg-confirm').value;
     const errorEl = document.getElementById('register-error');
@@ -185,13 +185,13 @@ const Auth = {
       }
     } catch(e) { console.warn('Drive folder error:', e); }
 
+    enterApp();
+    renderPromos();
     updateAccountHero();
     resetBusinessCard();
     updateKPI();
     updateAccountUI();
     reloadNotesForUser();
-    enterApp();
-    renderPromos();
   },
 
   adminLogin() {
@@ -212,12 +212,12 @@ const Auth = {
     UserState.business = null;
     UserState.kpi = { ads: 0, views: 0, likes: 0, noteAdds: 0 };
     UserState.interests = [];
+    enterApp();
+    renderPromos();
     updateAccountHero();
     resetBusinessCard();
     updateKPI();
     updateAccountUI();
-    enterApp();
-    renderPromos();
     showToast('Welcome Admin');
   },
 

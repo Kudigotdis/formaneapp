@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>About Wirog & FAQs</title>
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-main);
+    }
+    #about-root {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      background: var(--white);
+    }
+    .scroll-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+      scrollbar-width: none;
+    }
+    .scroll-content::-webkit-scrollbar { display: none; }
+
+    /* ── ACCORDION (app's pattern) ── */
+    .accordion { background: var(--white); border: 2px solid rgba(200,200,200,0.2); border-radius: var(--radius); margin-bottom: 6px; overflow: hidden; }
+    .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; font-weight: 600; font-size: 14px; gap: 8px; }
+    .accordion-body { display: none; padding: 4px 16px 16px; border-top: 1px solid var(--grey-light); font-size: 13.5px; line-height: 1.65; color: var(--text-sub); }
+    .faq-q { font-weight: 700; color: var(--text-main); }
+    .faq-a { font-size: 14px; line-height: 1.5; color: var(--text-sub); }
+    .accordion.open > .accordion-body { display: block; }
+    
+    .about-hero {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 30px 20px;
+      background: #2a2a2a;
+      color: white;
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+    }
+    .about-hero h1 { margin: 0; font-family: var(--font-head); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+    .about-hero p { margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.8); }
+    .about-hero .version { font-size: 11px; color: var(--orange); font-weight: 700; margin-top: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .about-desc { font-size: 15px; line-height: 1.6; color: var(--text-sub); margin-bottom: 24px; }
+    
+    .section-title { font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--orange); margin: 24px 0 12px; }
+
+    .feature-pill {
+      background: var(--grey-light);
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="about-root">
+  <header id="app-header" class="">
+    <div class="logo">
+      <img src="assets/images/company_logos_dummy/new_wirog_logo_icon.webp" alt="Wirog" style="height:27px;">
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="shareApp()"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:18px;height:18px;display:block;"></button>
+      <img src="assets/icons/circle-flag-of-botswana.webp" style="width:24px;height:24px;border-radius:50%;border:3px solid rgba(200,200,200,0.2);object-fit:cover;">
+    </div>
+  </header>
+
+  <div class="scroll-content">
+    
+    <div class="about-hero">
+      <h1>Wirog App</h1>
+      <p>The Ultimate Brand Discovery & Supply Solution</p>
+      <div class="version">v2.0.0</div>
+    </div>
+
+    <!-- Accordion 1: What Is Wirog -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAcc(this)">
+        <span style="font-weight:600;font-size:13.5px;flex:1;">What Is Wirog</span>
+      </div>
+      <div class="accordion-body">
+        <div class="about-body">
+          <p>Wirog App is a brand-centric discovery platform and business directory designed specifically for the Botswana market. It serves as a "Digital Engine" connecting general users, tradespeople, and professionals with local businesses across 27 distinct industry categories.</p>
+          <p>For Users: It’s a tool to discover local suppliers, browse promotional catalogs, save items to personalized project notes, and calculate costs. For Businesses: It’s a platform to showcase their brand, list their contacts, promote products, and track profile views.</p>
+          <p>Wirog is built on a Hybrid Cloud-Local Architecture, meaning it downloads and caches data so it feels blazingly fast and works seamlessly even when your internet connection is poor or completely offline.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accordion 2: Quick Explore -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAcc(this)">
+        <span style="font-weight:600;font-size:13.5px;flex:1;">Quick Explore</span>
+      </div>
+      <div class="accordion-body">
+        <div class="feature-pills-wrap" style="padding:0;display:flex;flex-direction:column;gap:6px;overflow:visible;">
+          <span class="feature-pill" onclick="showGlossary('notes')">📝 Notes</span>
+          <span class="feature-pill" onclick="showGlossary('directory')">🏢 Directory</span>
+          <span class="feature-pill" onclick="showGlossary('promos')">🎁 Promos</span>
+          <span class="feature-pill" onclick="showGlossary('offline')">📶 Offline Mode</span>
+          <span class="feature-pill" onclick="showGlossary('kpi')">📊 KPI Tracking</span>
+          <span class="feature-pill" onclick="showGlossary('agent')">🔑 Wirog Agent</span>
+          <span class="feature-pill" onclick="showGlossary('mobilemoney')">💳 Mobile Money</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accordion 3: FAQs -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAcc(this)">
+        <span style="font-weight:600;font-size:13.5px;flex:1;">FAQs</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-list" id="faq-list">
+          <!-- Nested FAQs from text file -->
+          <div class="accordion">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+              <span style="font-weight:600;font-size:13.5px;flex:1;">Do I need an internet connection to use Wirog App?</span>
+            </div>
+            <div class="accordion-body">
+              You need an internet connection to sync the latest promos and business profiles. However, Wirog is built to be "Offline-First". Once you view an image or sync the platform assets using the "Sync Assets Now" button in your account, the app saves them locally. You can browse your saved notes and cached profiles without using mobile data!
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+              <span style="font-weight:600;font-size:13.5px;flex:1;">How do I calculate the cost of my construction project?</span>
+            </div>
+            <div class="accordion-body">
+              Use the Notes feature! Browse the Promos feed, save the materials you need to a Note, and then open that Note. Adjust the quantities for each item, and Wirog will automatically calculate your total project cost.
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+              <span style="font-weight:600;font-size:13.5px;flex:1;">How do I share my project budget with a client?</span>
+            </div>
+            <div class="accordion-body">
+              Open your compiled Note and tap the green WhatsApp share icon. Wirog will automatically generate a professional, itemized list with quantities, supplier names, and total costs, ready to send via WhatsApp.
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+              <span style="font-weight:600;font-size:13.5px;flex:1;">I am a business owner. How do I get my business listed?</span>
+            </div>
+            <div class="accordion-body">
+              You can submit your business details (Name, Category, Town, GPS link, Social Media, Logo, and Banner) directly through the "Add Business" onboarding form in the app. Once submitted, it goes into a "Pending" queue. A Wirog Administrator will review your submission and approve it, at which point it will instantly appear live in the Directory.
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+              <span style="font-weight:600;font-size:13.5px;flex:1;">Can I see how many people are viewing my business profile?</span>
+            </div>
+            <div class="accordion-body">
+              Yes! Wirog features Live KPI Tracking. Every time a user opens your business profile, your "Views" counter increments, allowing you to track your brand's reach on the platform.
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+              <span style="font-weight:600;font-size:13.5px;flex:1;">How do I pay for Promos or more Notes?</span>
+            </div>
+            <div class="accordion-body">
+              Wirog supports local mobile money. You can select to pay via BTC Smega, Mascom Myzaka, or Orange Money. The app will provide you with the exact payment details and prompt you to send your proof of payment via WhatsApp for quick processing.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav id="bottom-nav" style="display: flex;">
+    <a class="nav-item active" id="nav-promos" onclick="navTab('view-promos','nav-promos')"><img src="assets/icons/solid/bullhorn-2_active.webp" class="nav-icon" alt="Promos"></a>
+    <a class="nav-item" id="nav-directory" onclick="navTab('view-directory','nav-directory')"><img src="assets/icons/solid/address-book-2_inactive.webp" class="nav-icon" alt="Directory"></a>
+    <a class="nav-item" id="nav-notes" onclick="navTab('view-notes','nav-notes')"><img src="assets/icons/solid/clipboard-list_inactive.webp" class="nav-icon" alt="Notes"></a>
+    <a class="nav-item" id="nav-account" onclick="navTab('view-account','nav-account')"><img src="assets/icons/solid/user-circle_inactive.webp" class="nav-icon" alt="Account"></a>
+  </nav>
+</div>
+
+<script>
+  function toggleAcc(header) {
+    header.parentElement.classList.toggle('open');
+  }
+
+  function shareApp() {
+    console.log("Sharing app...");
+  }
+
+  function showGlossary(topic) {
+    console.log("Glossary for", topic);
+  }
+</script>
+
+</body>
+</html>

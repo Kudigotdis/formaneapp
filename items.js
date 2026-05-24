@@ -767,12 +767,33 @@ async function submitPromo() {
   window._editingPromoActive = false;
   document.querySelector('#promo-modal .modal-title').textContent = 'Create Promo / Ad';
 
+  if (cost.total === 0) {
+    /* free promo — go live instantly */
+    const promos = window._promos || JSON.parse(localStorage.getItem('wirog_promos') || '[]');
+    item.promo.status = 'active';
+    promos.push(item);
+    window._promos = promos;
+    localStorage.setItem('wirog_promos', JSON.stringify(promos));
+    renderPromos();
+    updateKPI();
+    renderBusinessCard();
+    closeModal('promo-modal');
+    showToast(isEditing ? '\u2705 Promo updated!' : '\ud83c\udf89 Free promo is live!');
+    return;
+  }
+
+  /* paid promo — create request + open payment proof modal */
   renderPromos();
   updateKPI();
   renderBusinessCard();
-
   closeModal('promo-modal');
-  showToast(isEditing ? '\u2705 Promo updated!' : '\ud83c\udf89 Promo submitted! (P ' + cost.total.toFixed(2) + ')');
+  if (typeof window.createPromoRequest === 'function') {
+    window.createPromoRequest(item);
+  }
+  if (typeof window.openPaymentProofModal === 'function') {
+    window.openPaymentProofModal('Bank Transfer', cost.total, 'Promo boost: ' + title);
+  }
+  showToast(isEditing ? '\u2705 Promo updated!' : '\ud83d\udfe1 Promo request submitted. Pay P' + cost.total.toFixed(2) + ' to activate.');
 }
 
 /* ─── EXPOSE GLOBALS ─── */

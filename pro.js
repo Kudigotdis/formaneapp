@@ -494,15 +494,10 @@ window.openProProfile = function(proId) {
   const locationEsc = locStr.replace(/'/g, "\\'");
 
   const mergedTrade = profile ? profile.trade : (listing.primaryTrade || listing.trade || '');
-  const mergedSkills = profile ? profile.skills : (listing.skills || []);
+  const mergedSkills = profile ? profile.skills : (listing.skills || window.DEMO_PRO_SKILLS[proId] || []);
   const mergedDesc = profile ? profile.description : (listing.description || '');
   const mergedAreas = profile ? profile.serviceAreas : [];
   const mergedRate = profile ? { type: profile.rateType, rate: profile.rate } : null;
-  const mergedAvail = profile ? profile.availability : null;
-
-  const skillPills = mergedSkills.length > 0
-    ? mergedSkills.map(s => `<span class="pill">${s}</span>`).join('')
-    : '';
 
   const starsHtml = listing.rating
     ? '<span>' + '\u2B50'.repeat(Math.floor(Number(listing.rating))) + ' <span style="font-size:12px;color:var(--grey-dark);font-weight:600;">' + listing.rating + '</span></span>'
@@ -514,28 +509,67 @@ window.openProProfile = function(proId) {
       '</span>'
     : '';
 
-  const availHtml = mergedAvail
-    ? '<span style="font-size:12px;color:' +
-      (mergedAvail === 'available' ? 'var(--green, #27ae60)' : mergedAvail === 'busy' ? 'var(--orange)' : '#e74c3c') +
-      ';">' +
-      (mergedAvail === 'available' ? '\u2713 Available' : mergedAvail === 'busy' ? '\u26A0 Busy' : '\u2717 Not taking jobs') +
-      '</span>'
-    : '';
+  var isOnline = getOnlineStatus(proId);
+  var remaining = getOnlineRemaining(proId);
+  const availHtml = '<span style="font-size:12px;color:' + (isOnline ? 'var(--green, #27ae60)' : 'var(--grey-dark)') + ';">' +
+    (isOnline ? '\u25CF Online' : '\u25CB Offline') +
+    (isMine && isOnline ? ' <span id="pro-online-counter" style="font-size:11px;">(' + formatRemaining(remaining) + ')</span>' : '') +
+    '</span>';
 
-  // Skills accordion
+  // Skills accordion with star ratings
   var skillsAccHtml = mergedSkills.length > 0
-    ? '<div class="accordion"><div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-tools" style="color:var(--orange);margin-right:8px;"></i> Skills (' + mergedSkills.length + ')</span></div><div class="accordion-body" style="padding:8px 12px;"><div style="display:flex;flex-wrap:wrap;gap:6px;">' + mergedSkills.map(function(s) { return '<span class="pill">' + s + '</span>'; }).join('') + '</div></div></div>'
-    : '';
-
-  // Services accordion
-  var servicesAccHtml = services.length > 0
-    ? '<div class="accordion"><div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-concierge-bell" style="color:var(--orange);margin-right:8px;"></i> Services (' + services.length + ')</span></div><div class="accordion-body" style="padding:8px 12px;">' + services.map(function(s) {
-        return '<div class="biz-promo-card" style="margin-bottom:8px;padding:10px 12px;"><div style="font-weight:600;font-size:14px;">' + s.title + '</div>' + (s.description ? '<div style="font-size:12px;color:var(--grey-dark);margin-top:4px;">' + s.description + '</div>' : '') + (s.price ? '<div style="font-size:13px;font-weight:600;color:var(--orange);margin-top:6px;">' + s.price + '</div>' : '') + '</div>';
+    ? '<div class="accordion"><div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-tools" style="color:var(--orange);margin-right:8px;"></i> Skills</span><span style="color:var(--orange);font-size:14px;font-weight:700;">' + mergedSkills.length + '</span></div><div class="accordion-body" style="padding:8px 12px;">' +
+      mergedSkills.map(function(s) {
+        var displayName = window.SkillRatings ? SkillRatings.getSkillDisplayName(s) : s;
+        var rating = window.SkillRatings ? SkillRatings.getSkillRatings(proId, s) : null;
+        var userRating = window.SkillRatings && UserState ? SkillRatings.getUserRating(proId, s, UserState.id) : null;
+        var avg = rating ? parseFloat(rating.average) : 0;
+        var count = rating ? rating.count : 0;
+        var showRating = count >= 10;
+        var canRate = UserState && UserState.id && UserState.id !== 'guest';
+        var starsHtml = '';
+        for (var i = 1; i <= 5; i++) {
+          var fill = 'var(--grey-light)';
+          if (showRating && i <= Math.round(avg)) fill = 'var(--orange)';
+          else if (!showRating && userRating && i <= userRating) fill = 'var(--orange)';
+          starsHtml += '<span style="color:' + fill + ';font-size:16px;cursor:' + (canRate ? 'pointer' : 'default') + ';" ' +
+            (canRate ? 'onclick="rateSkillFromProfile(\'' + proId + '\',\'' + s.replace(/'/g, "\\'") + '\',' + i + ')"' : '') +
+            '>\u2605</span>';
+        }
+        var labelHtml = showRating
+          ? '<span style="font-size:11px;color:var(--grey-dark);margin-left:4px;">' + rating.average + ' (' + count + ')</span>'
+          : (count > 0 ? '<span style="font-size:11px;color:var(--grey-dark);margin-left:4px;">(' + count + ' ratings)</span>' : '');
+        return '<div style="padding:6px 0;border-bottom:1px solid var(--grey-light);">' +
+          '<div style="font-size:13px;font-weight:500;">' + displayName + '</div>' +
+          '<div style="display:flex;align-items:center;gap:2px;margin-top:2px;">' + starsHtml + labelHtml + '</div>' +
+        '</div>';
       }).join('') + '</div></div>'
     : '';
 
-  // Projects accordion (placeholder for now)
-  var projHtml = '<div class="accordion"><div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-images" style="color:var(--orange);margin-right:8px;"></i> Projects (0)</span></div><div class="accordion-body" style="padding:8px 12px;"><p style="font-size:12px;color:var(--grey-dark);text-align:center;padding:16px;">No projects listed yet.</p></div></div>';
+  // Services accordion (always visible, like Projects)
+  var servicesAccHtml = '<div class="accordion"><div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-concierge-bell" style="color:var(--orange);margin-right:8px;"></i> Services</span><span style="color:var(--orange);font-size:14px;font-weight:700;">' + services.length + '</span></div><div class="accordion-body" style="padding:8px 12px;">' +
+    (services.length > 0
+      ? services.map(function(s) {
+          return '<div class="biz-promo-card" style="margin-bottom:8px;padding:10px 12px;"><div style="font-weight:600;font-size:14px;">' + s.title + '</div>' + (s.description ? '<div style="font-size:12px;color:var(--grey-dark);margin-top:4px;">' + s.description + '</div>' : '') + (s.price ? '<div style="font-size:13px;font-weight:600;color:var(--orange);margin-top:6px;">' + s.price + '</div>' : '') + '</div>';
+        }).join('')
+      : '<p style="font-size:12px;color:var(--grey-dark);text-align:center;padding:16px;">No services listed yet.</p>'
+    ) + '</div></div>';
+
+  // Projects accordion
+  var portfolio = profile ? profile.portfolio || [] : [];
+  var projHtml = '<div class="accordion"><div class="accordion-header" onclick="toggleAcc(this)"><span><i class="fas fa-images" style="color:var(--orange);margin-right:8px;"></i> Projects</span><span style="color:var(--orange);font-size:14px;font-weight:700;">' + portfolio.length + '</span></div><div class="accordion-body" style="padding:8px 12px;">' +
+    (portfolio.length > 0
+      ? portfolio.map(function(p) {
+          var imgHtml = p.image ? '<img src="' + p.image.replace(/'/g, "\\'") + '" alt="' + (p.title || '').replace(/'/g, "\\'") + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;margin-top:6px;">' : '';
+          var videoHtml = p.videoUrl ? '<div style="margin-top:4px;"><a href="' + p.videoUrl.replace(/'/g, "\\'") + '" target="_blank" style="font-size:12px;color:var(--orange);"><i class="fab fa-facebook"></i> View Video</a></div>' : '';
+          return '<div style="padding:10px 0;border-bottom:1px solid var(--grey-light);">' +
+            '<div style="font-weight:600;font-size:14px;">' + p.title + '</div>' +
+            (p.description ? '<div style="font-size:12px;color:var(--grey-dark);margin-top:4px;">' + p.description + '</div>' : '') +
+            imgHtml + videoHtml +
+          '</div>';
+        }).join('')
+      : '<p style="font-size:12px;color:var(--grey-dark);text-align:center;padding:16px;">No projects listed yet.</p>'
+    ) + '</div></div>';
 
   // Rates accordion
   var ratesAccHtml = mergedRate && mergedRate.rate
@@ -546,6 +580,10 @@ window.openProProfile = function(proId) {
 
   var proInit = listing.initials || (listing.name ? listing.name.split(' ').map(function(w) { return w[0]; }).join('').slice(0, 2).toUpperCase() : '?');
   var proCol = listing.color || window.APP_COLORS[proInit.charCodeAt(0) % window.APP_COLORS.length];
+  var proImgSrc = (profile && profile.image) || listing.image || null;
+  var avatarHtml = proImgSrc
+    ? '<img src="' + proImgSrc.replace(/'/g, "\\'") + '" class="biz-avatar-img" style="object-fit:cover;" alt="">'
+    : '<div class="biz-avatar-img" style="background:' + proCol + ';">' + proInit + '</div>';
 
   // Split location for display
   var townPart = locStr;
@@ -560,7 +598,7 @@ window.openProProfile = function(proId) {
     '<div style="padding:12px;">' +
       '<div class="biz-header-card">' +
         '<div class="biz-header-card-inner">' +
-          '<div class="biz-avatar-img" style="background:' + proCol + ';">' + proInit + '</div>' +
+          avatarHtml +
           '<div class="biz-header-details">' +
             '<div class="biz-header-name">' + nameEsc + '</div>' +
             '<div class="biz-header-location">' + mergedTrade + (mergedTrade && townPart ? ' <span style="opacity:0.4;">\u00B7</span> ' : '') + townPart + (areaPart ? ' <span style="opacity:0.4;">\u00B7</span> ' + areaPart : '') + '</div>' +
@@ -583,20 +621,45 @@ window.openProProfile = function(proId) {
         '<span><i class="fas fa-bullhorn" style="color:var(--orange);margin-right:8px;"></i> Promos</span>' +
         '<span style="color:var(--orange);font-size:14px;font-weight:700;">' + (window._promos || []).filter(function(p) { return p.businessId === proId || p.businessName === listing.name; }).length + '</span>' +
       '</div>' +
-    '</div>' +
-    '<div class="biz-bottom-wrapper">' +
-      '<div class="biz-bottom-bar">' +
-        '<button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>' +
-        '<div id="biz-bar-actions">' +
-          '<img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'call\')">' +
-          '<img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'facebook\')">' +
-          '<img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'gps\')">' +
-          '<img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'whatsapp\')">' +
-          '<img src="assets/icons/' + (UserState.isFavourite(proId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png" class="biz-bar-icon" onclick="toggleFavBiz(\'' + proId + '\')" id="biz-heart-icon">' +
-        '</div>' +
-      '</div>' +
-      '<div id="dd-call" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div><div id="dd-facebook" class="biz-dropdown-container biz-dd-facebook"><div class="biz-dropdown-inner"></div></div><div id="dd-gps" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div><div id="dd-whatsapp" class="biz-dropdown-container biz-dd-whatsapp"><div class="biz-dropdown-inner"></div></div>' +
     '</div>';
+
+  var heartIcon = document.getElementById('biz-heart-icon');
+  if (heartIcon) {
+    heartIcon.setAttribute('onclick', "toggleFavBiz('" + proId + "')");
+    var isFav = window.UserState && UserState.isFavourite(proId);
+    heartIcon.src = 'assets/icons/' + (isFav ? 'heart_active_icon' : 'heart_inactive_icon') + '.png';
+  }
+
+  if (window._onlineCounterInterval) clearInterval(window._onlineCounterInterval);
+  window._onlineCounterInterval = null;
+  if (isMine && getOnlineStatus(proId)) {
+    window._onlineCounterInterval = setInterval(function() {
+      var rem = getOnlineRemaining(proId);
+      var el = document.getElementById('pro-online-counter');
+      if (el) {
+        el.textContent = '(' + formatRemaining(rem) + ')';
+        if (rem <= 0) {
+          clearInterval(window._onlineCounterInterval);
+          window._onlineCounterInterval = null;
+          // Re-render to show offline
+          openProProfile(proId);
+        }
+      }
+    }, 1000);
+  }
 
   goTo('view-pro-profile');
 };
+
+function rateSkillFromProfile(proId, skillKey, stars) {
+  if (!UserState || !UserState.id || UserState.id === 'guest') {
+    showToast('Please log in to rate skills');
+    return;
+  }
+  if (window.SkillRatings) {
+    SkillRatings.rateSkill(proId, skillKey, stars, UserState.id);
+    if (window.openProProfile) openProProfile(proId);
+    showToast('Rated ' + stars + ' star' + (stars > 1 ? 's' : ''));
+  }
+}
+

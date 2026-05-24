@@ -50,16 +50,22 @@ class AdminData {
   }
 
   // === UNIFIED REQUESTS ===
-  getUnifiedRequests(status = 'pending') {
+  getUnifiedRequests(statusFilter = 'pending') {
     let requests = [
       ...this.promoRequests.map(r => ({ type: 'promo', ...r, businessId: this.resolveBizId(r.userId, r.businessName) })),
       ...this.paymentRequests.map(r => ({ type: 'payment', ...r, businessId: this.resolveBizId(r.userId) })),
-      ...this.artworkSubmissions.map(r => ({ type: 'artwork', ...r, businessId: this.resolveBizId(r.userId, r.businessName) })),
+      ...this.artworkSubmissions.map(r => {
+        let s = r.status || 'pending';
+        if (r.items) {
+          s = r.items.some(i => i.status === 'pending') ? 'pending' : 'approved';
+        }
+        return { type: 'artwork', ...r, businessId: this.resolveBizId(r.userId, r.businessName), status: s };
+      }),
       ...this.pendingBusinesses.map(r => ({ type: 'onboarding', ...r, id: r.id || r.localId, businessName: r.name }))
     ];
     
-    if (status && status !== 'all') {
-      requests = requests.filter(r => r.status === status);
+    if (statusFilter && statusFilter !== 'all') {
+      requests = requests.filter(r => r.status === statusFilter);
     }
     
     return requests.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -233,7 +239,32 @@ class AdminData {
   }
 
   getApprovedArtwork() {
-    return this.artworkSubmissions.filter(a => a.status === 'approved');
+    const result = [];
+    this.artworkSubmissions.forEach(sub => {
+      if (sub.items) {
+        sub.items.forEach(item => {
+          if (item.status === 'approved') {
+            result.push(Object.assign({}, item, {
+              submissionId: sub.id,
+              businessName: sub.businessName,
+              category: sub.category
+            }));
+          }
+        });
+      } else if (sub.status === 'approved') {
+        result.push({
+          id: sub.id,
+          submissionId: sub.id,
+          businessName: sub.businessName,
+          category: sub.category,
+          boostDay: sub.boostDay,
+          imageCount: sub.imageCount,
+          title: sub.category || 'Artwork',
+          status: 'approved'
+        });
+      }
+    });
+    return result;
   }
 
   // === APPROVAL ACTIONS ===
@@ -287,29 +318,83 @@ class AdminData {
     return false;
   }
 
+  /* legacy: approve whole submission by setting status */
   approveArtwork(id) {
     const idx = this.artworkSubmissions.findIndex(r => r.id === id);
     if (idx > -1) {
-      this.artworkSubmissions[idx].status = 'approved';
-      this.artworkSubmissions[idx].reviewedAt = Date.now();
-      localStorage.setItem('wirog_artwork_submissions', JSON.stringify(this.artworkSubmissions));
-      this.refresh();
+      const sub = this.artworkSubmissions[idx];
+      if (sub.items) {
+        sub.items.forEach(item => { item.status = 'approved'; });
+        this._recalcSubStatus(idx);
+      } else {
+        sub.status = 'approved';
+      }
+      sub.reviewedAt = Date.now();
+      this._persistArtwork();
       return true;
     }
     return false;
   }
 
+  /* legacy: reject whole submission */
   rejectArtwork(id, reason) {
     const idx = this.artworkSubmissions.findIndex(r => r.id === id);
     if (idx > -1) {
-      this.artworkSubmissions[idx].status = 'rejected';
-      this.artworkSubmissions[idx].reason = reason;
-      this.artworkSubmissions[idx].reviewedAt = Date.now();
-      localStorage.setItem('wirog_artwork_submissions', JSON.stringify(this.artworkSubmissions));
-      this.refresh();
+      const sub = this.artworkSubmissions[idx];
+      if (sub.items) {
+        sub.items.forEach(item => { item.status = 'rejected'; });
+        this._recalcSubStatus(idx);
+      } else {
+        sub.status = 'rejected';
+        sub.reason = reason;
+      }
+      sub.reviewedAt = Date.now();
+      if (reason) sub.reason = reason;
+      this._persistArtwork();
       return true;
     }
     return false;
+  }
+
+  /* per-item approval */
+  approveArtworkItem(submissionId, itemId) {
+    const sub = this.artworkSubmissions.find(s => s.id === submissionId);
+    if (!sub || !sub.items) return false;
+    const item = sub.items.find(i => i.id === itemId);
+    if (!item) return false;
+    item.status = 'approved';
+    this._recalcSubStatus(this.artworkSubmissions.indexOf(sub));
+    this._persistArtwork();
+    return true;
+  }
+
+  rejectArtworkItem(submissionId, itemId, reason) {
+    const sub = this.artworkSubmissions.find(s => s.id === submissionId);
+    if (!sub || !sub.items) return false;
+    const item = sub.items.find(i => i.id === itemId);
+    if (!item) return false;
+    item.status = 'rejected';
+    if (reason) item.reason = reason;
+    this._recalcSubStatus(this.artworkSubmissions.indexOf(sub));
+    this._persistArtwork();
+    return true;
+  }
+
+  _recalcSubStatus(idx) {
+    const sub = this.artworkSubmissions[idx];
+    if (!sub || !sub.items) return;
+    const hasPending = sub.items.some(i => i.status === 'pending');
+    const hasApproved = sub.items.some(i => i.status === 'approved');
+    const hasRejected = sub.items.some(i => i.status === 'rejected');
+    if (hasPending) sub.submissionStatus = 'pending';
+    else if (hasApproved && !hasRejected) sub.submissionStatus = 'approved';
+    else if (hasRejected && !hasApproved) sub.submissionStatus = 'rejected';
+    else sub.submissionStatus = 'mixed';
+  }
+
+  _persistArtwork() {
+    localStorage.setItem('wirog_artwork_submissions', JSON.stringify(this.artworkSubmissions));
+    this.refresh();
   }
 
   // === ANALYTICS ===

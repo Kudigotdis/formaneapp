@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/07/schema",
+  "$id": "https://wirog.com/schemas/pro_rating.json",
+  "title": "Wirog Pro Rating",
+  "description": "User rating for a tradesperson (Pro) after a job, including common skills and trade-specific skills.",
+  "type": "object",
+  "required": ["proId", "userId", "tradeType", "overallRating", "ratings", "comment", "createdAt"],
+  "properties": {
+    "proId": {
+      "type": "string",
+      "description": "Unique identifier of the Pro being rated."
+    },
+    "userId": {
+      "type": "string",
+      "description": "Unique identifier of the user submitting the rating."
+    },
+    "tradeType": {
+      "type": "string",
+      "enum": [
+        "bricklayer_mason",
+        "carpenter_structural",
+        "steel_fixer",
+        "concretor",
+        "scaffolder",
+        "demolition_contractor",
+        "heavy_plant_operator",
+        "welder_fabricator",
+        "tiler_flooring_specialist",
+        "painter_decorator",
+        "plasterer_drywall",
+        "ceiling_installer",
+        "carpenter_finish_joiner",
+        "glass_glazing_specialist",
+        "flooring_polisher",
+        "plumber",
+        "electrician",
+        "solar_installer",
+        "hvac_technician",
+        "appliance_repair",
+        "gas_installer",
+        "landscaper_gardener",
+        "irrigation_technician",
+        "paving_contractor",
+        "fencing_contractor",
+        "fire_protection_technician",
+        "security_access_control",
+        "waterproofing_specialist",
+        "acoustic_installer",
+        "shade_pergola_installer",
+        "skip_waste_operator",
+        "uniform_supplier",
+        "interior_decorator",
+        "kitchen_bathroom_designer",
+        "architect_draftsman",
+        "cleaning_service",
+        "training_facilitator",
+        "general_builder_handyman",
+        "maintenance_technician"
+      ],
+      "description": "The specific trade of the Pro being rated."
+    },
+    "overallRating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Average of all skill ratings, calculated by the system. Can also be manually entered by user."
+    },
+    "ratings": {
+      "type": "object",
+      "properties": {
+        "common": {
+          "type": "object",
+          "properties": {
+            "timeliness": { "$ref": "#/definitions/skillRating" },
+            "communication": { "$ref": "#/definitions/skillRating" },
+            "cleanliness": { "$ref": "#/definitions/skillRating" },
+            "valueForMoney": { "$ref": "#/definitions/skillRating" },
+            "professionalism": { "$ref": "#/definitions/skillRating" },
+            "problemSolving": { "$ref": "#/definitions/skillRating" }
+          },
+          "required": ["timeliness", "communication", "cleanliness", "valueForMoney", "professionalism", "problemSolving"],
+          "additionalProperties": false
+        },
+        "tradeSpecific": {
+          "type": "object",
+          "description": "Skills specific to the tradeType. The exact keys are determined by the 'tradeType' value.",
+          "minProperties": 3,
+          "maxProperties": 6,
+          "additionalProperties": { "$ref": "#/definitions/skillRating" }
+        }
+      },
+      "required": ["common", "tradeSpecific"],
+      "additionalProperties": false
+    },
+    "comment": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "User's written feedback. Required if any skill score ≤ 2."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when the rating was submitted."
+    }
+  },
+  "definitions": {
+    "skillRating": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "1=Poor, 2=Below average, 3=Satisfactory, 4=Good, 5=Excellent"
+        },
+        "comment": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Optional specific comment for this skill."
+        }
+      },
+      "required": ["score"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -132,14 +132,9 @@ function renderPromos() {
     card.id = 'promo-' + p.id;
 
     // Status badge
-    let statusBadge = '';
-    if (isOwnPromo) {
-      if (status.expired) {
-        statusBadge = '<div class="promo-status-badge ended">Ended</div>';
-      } else {
-        statusBadge = '<div class="promo-status-badge active">' + status.text + '</div>';
-      }
-    }
+    let statusBadge = status.expired
+      ? '<div class="promo-status-badge ended">Ended</div>'
+      : (status.text ? '<div class="promo-status-badge active">' + status.text + '</div>' : '');
 
     // Image source (carousel if multiple)
     let imgHtml;
@@ -168,7 +163,6 @@ function renderPromos() {
     card.innerHTML =
       '<div class="promo-img-wrap" onclick="trackPromoView(\'' + p.id + '\'); togglePromo(\'' + p.id + '\')">' +
         imgHtml +
-        statusBadge +
       '</div>' +
       '<div class="promo-details">' +
         '<div class="promo-supplier" onclick="openBizFromPromo(\'' + p.businessId + '\',\'' + p.businessName.replace(/'/g,"\\'") + '\')">' +
@@ -184,9 +178,9 @@ function renderPromos() {
         '<div class="qty-row">' +
           '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--orange);">' + (p.unit || 'each') + '</span></div>' +
           '<div class="qty-controls">' +
-            '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ')">\u2212</button>' +
+            '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ',this)">\u2212</button>' +
             '<span class="qv" style="min-width:20px;text-align:center;">' + (p.qty || 1) + '</span>' +
-            '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ')">+</button>' +
+            '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ',this)">+</button>' +
           '</div>' +
         '</div>' +
 
@@ -196,8 +190,7 @@ function renderPromos() {
         // Cost info (own promos only)
         (isOwnPromo && p.promo ? '<div class="promo-cost-info">Cost: P ' + (p.promo.cost || p.cost || 0).toFixed(2) + '</div>' : '') +
 
-        (_isGuest ? '' :
-        '<div class="promo-actions">' +
+        '<div class="promo-actions">' + statusBadge +
           '<button class="action-btn" onclick="addToNote(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
           '<span class="action-divider">|</span>' +
           '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
@@ -207,7 +200,7 @@ function renderPromos() {
           '<span class="action-divider">|</span><button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
             '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
           '</button>') +
-        '</div>') +
+        '</div>' +
       '</div>';
 
     feed.appendChild(card);
@@ -264,7 +257,10 @@ function togglePromo(id) {
   if (!current) return;
   const wasOpen = current.classList.contains('open');
   cards.forEach(c => c.classList.remove('open'));
-  if (!wasOpen) current.classList.add('open');
+  if (!wasOpen) {
+    current.classList.add('open');
+    current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 /* ─── TEXT PROMO CARD (for text-mode / lite) ─── */
@@ -281,8 +277,12 @@ function renderTextPromos() {
     return;
   }
   feed.innerHTML = '';
-  var _isGuest = window.Auth && window.Auth.isGuest();
   promos.forEach(function(p) {
+    var isOwnPromo = p.businessId === 'biz_user';
+    var status = p.promo ? getPromoRemaining(p.promo.expiresAt) : { text: '', expired: false };
+    var statusBadge = status.expired
+      ? '<div class="promo-status-badge ended">Ended</div>'
+      : (status.text ? '<div class="promo-status-badge active">' + status.text + '</div>' : '');
     var card = document.createElement('div');
     card.className = 'promo-text-card';
     card.id = 'ptext-' + p.id;
@@ -292,9 +292,9 @@ function renderTextPromos() {
         '<div class="qty-row" style="margin-top:0;">' +
           '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--orange);">' + (p.unit || 'each') + '</span></div>' +
           '<div class="qty-controls">' +
-            '<button class="qty-btn" onclick="event.stopPropagation();changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ')">\u2212</button>' +
+            '<button class="qty-btn" onclick="event.stopPropagation();changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ',this)">\u2212</button>' +
             '<span class="qv" style="min-width:20px;text-align:center;">' + (p.qty || 1) + '</span>' +
-            '<button class="qty-btn" onclick="event.stopPropagation();changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ')">+</button>' +
+            '<button class="qty-btn" onclick="event.stopPropagation();changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ',this)">+</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -307,16 +307,17 @@ function renderTextPromos() {
           '</div>' +
         '</div>' +
         '<div class="promo-desc">' + (p.desc || '') + '</div>' +
-        (_isGuest ? '' :
-        '<div class="promo-actions">' +
-          '<button class="action-btn add-to-note-btn" onclick="openAddToNoteModal(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
-          '<span style="color:rgba(128,128,128,0.25);">|</span>' +
+        '<div class="promo-actions">' + statusBadge +
+          '<button class="action-btn" onclick="addToNote(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
+          '<span class="action-divider">|</span>' +
           '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
-          '<span style="color:rgba(128,128,128,0.25);">|</span>' +
-          '<button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
+          (isOwnPromo || window.Auth?.isAdmin() ?
+          '<span class="action-divider">|</span><button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
+          (isOwnPromo ? '' :
+          '<span class="action-divider">|</span><button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
             '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
-          '</button>' +
-        '</div>') +
+          '</button>') +
+        '</div>' +
       '</div>';
     feed.appendChild(card);
   });
@@ -331,8 +332,9 @@ function toggleTextPromo(id) {
   if (!wasOpen) current.classList.add('open');
 }
 
-function changeQty(promoId, delta, basePrice) {
-  const card = document.getElementById('promo-' + promoId);
+function changeQty(promoId, delta, basePrice, btn) {
+  var card = btn ? btn.closest('.promo-card, .promo-text-card') : null;
+  if (!card) card = document.getElementById('promo-' + promoId) || document.getElementById('ptext-' + promoId) || document.getElementById('bizp-' + promoId);
   if (!card) return;
   const qv = card.querySelector('.qv');
   const cp = card.querySelector('.cp');
@@ -351,10 +353,12 @@ async function toggleLike(id, btnEl) {
   const p = window._promos.find(x => String(x.id) === String(id));
   if (!p) return;
   p.liked = !p.liked;
+
   const btn = btnEl || document.getElementById('like-' + id);
-  if (!btn) return;
-  btn.className = 'action-btn' + (p.liked ? ' liked' : '');
-  btn.innerHTML = '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">';
+  if (btn) {
+    btn.className = 'action-btn' + (p.liked ? ' liked' : '');
+    btn.innerHTML = '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">';
+  }
 
   if (p.liked) {
     UserState.kpi.likes++;
@@ -372,6 +376,14 @@ async function toggleLike(id, btnEl) {
     }
   } catch(e) { console.warn('Failed to enqueue promo like update:', e); }
   updateKPI();
+
+  var likedPromos = JSON.parse(localStorage.getItem('wirog_liked_promos') || '[]');
+  if (p.liked) {
+    if (likedPromos.indexOf(id) === -1) likedPromos.push(id);
+  } else {
+    likedPromos = likedPromos.filter(function(pid) { return pid !== id; });
+  }
+  localStorage.setItem('wirog_liked_promos', JSON.stringify(likedPromos));
 }
 
 function openAddToNoteModal(promoId) {
@@ -555,3 +567,5 @@ async function addToNoteQuick(id, title, price, unit, business) {
 }
 
 window.addToNoteQuick = addToNoteQuick;
+window.getPromoRemaining = getPromoRemaining;
+window.openBizFromPromo = openBizFromPromo;

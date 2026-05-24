@@ -889,9 +889,28 @@ const Admin = {
     else if (type === 'artwork') this.data.rejectArtwork(id, reason);
     else if (type === 'onboarding') {
        // Onboarding rejection logic: For now we just update status to rejected
-       // (Could also delete the document if preferred)
+       // (Could also delete the document if needed)
     }
     this.render();
+  },
+
+  approveArtworkItem(submissionId, itemId) {
+    if (this.data.approveArtworkItem(submissionId, itemId)) {
+      showToast('Item approved');
+      this.render();
+    } else {
+      showToast('Could not approve item');
+    }
+  },
+
+  rejectArtworkItem(submissionId, itemId) {
+    const reason = prompt('Rejection reason (optional):');
+    if (this.data.rejectArtworkItem(submissionId, itemId, reason || '')) {
+      showToast('Item rejected');
+      this.render();
+    } else {
+      showToast('Could not reject item');
+    }
   },
 
   showAddAdminModal() {
@@ -916,21 +935,21 @@ const Admin = {
     }
   },
 
-  assignArtwork(submissionId, businessName, selectIdx) {
+  assignArtwork(submissionId, itemId, businessName, title, selectIdx) {
     const selectEl = document.getElementById(`assign-select-${selectIdx}`);
     const slot = selectEl ? selectEl.value : '';
     if (!slot) {
       showToast('Please select a day');
       return;
     }
-    
+
     const state = window.AdminState;
     const year = parseInt(state.fbCalendarMonth.split('-')[0]);
     const month = parseInt(state.fbCalendarMonth.split('-')[1]) - 1;
-    
+
     const slotDays = { 'Monday': 1, 'Wednesday': 3, 'Friday': 5 };
     const dayOfWeek = slotDays[slot];
-    
+
     const now = new Date(year, month, 1);
     let foundDate = null;
     for (let d = new Date(now); d.getMonth() === month; d.setDate(d.getDate() + 1)) {
@@ -939,21 +958,23 @@ const Admin = {
         break;
       }
     }
-    
+
     if (!foundDate) {
       showToast('No available date this month');
       return;
     }
-    
+
     const schedule = JSON.parse(localStorage.getItem('wirog_facebook_schedule') || '[]');
     schedule.push({
       date: foundDate,
       slot: slot,
       submissionId: submissionId,
+      itemId: itemId,
       businessName: businessName,
+      title: title || businessName,
       createdAt: Date.now()
     });
-    
+
     localStorage.setItem('wirog_facebook_schedule', JSON.stringify(schedule));
     showToast(`Assigned to ${slot} ${foundDate}`);
     this.render();

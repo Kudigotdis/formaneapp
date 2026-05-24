@@ -10,12 +10,7 @@ let userInterestsCollapsed = true; // User Interests collapsible state
 let currentLocationMode = 'placeA';
 let selectedPlaceA = 'Nation Wide';
 let selectedPlaceB = 'All Area';
-let locationStep = 'district';
-let locationSelectedDistrict = null;
-let locationSelectedTown = null;
-let selectedTown = '';
 let locationData = null;
-let locationLoadPromise = null;
 
 function openPromoTypeModal() {
   const container = document.getElementById('promo-type-options');
@@ -24,347 +19,116 @@ function openPromoTypeModal() {
     const isSelected = type === promoTypes[promoTypeIdx];
     return `<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); font-size:15px; cursor:pointer; ${isSelected ? 'background:var(--orange-light); font-weight:600; color:var(--orange);' : ''}" onclick="selectPromoType('${type}')">${type}${isSelected ? ' <img src="assets/icons/solid/check-2_orange.webp" style="width:16px;height:16px;float:right;">' : ''}</div>`;
   }).join('');
-  openModal('promo-type-modal');
 }
 
 function selectPromoType(type) {
-  promoTypeIdx = promoTypes.indexOf(type);
-  document.getElementById('promo-type-btn').textContent = type;
-  closeModal('promo-type-modal');
-  renderPromos();
-}
-
-function applyFilters() {
-  let filtered = [...window._promos];
-  const currentPromoType = promoTypes[promoTypeIdx];
-  if (currentPromoType) {
-    filtered = filtered.filter(p => {
-      if (!p.promoType) return true;
-      return p.promoType === currentPromoType;
-    });
-  }
-  if (selectedCategories.length > 0) {
-    filtered = filtered.filter(p => 
-      selectedCategories.includes(p.category)
-    );
-  }
-  if (selectedPlaceA && selectedPlaceA !== 'Nation Wide') {
-    filtered = filtered.filter(p => p.location && p.location.includes(selectedPlaceA));
-  }
-  if (selectedPlaceB !== 'All Area') {
-    filtered = filtered.filter(p => p.location && p.location.includes(selectedPlaceB));
-  }
-  return filtered;
-}
-
-function cyclePromoType() {
-  promoTypeIdx = (promoTypeIdx + 1) % promoTypes.length;
+  var idx = promoTypes.indexOf(type);
+  if (idx !== -1) promoTypeIdx = idx;
   document.getElementById('promo-type-btn').textContent = promoTypes[promoTypeIdx];
-  renderPromos();
+  closeModal('promo-type-modal');
+  if (typeof renderPromos === 'function') renderPromos();
 }
 
-function toggleCategoryCheckbox(catName, isChecked) {
-  if (catName === 'All Services') {
-    selectedCategories = [];
-    renderCategoryCheckboxes();
-    return;
-  }
-  
-  if (isChecked) {
-    if (!selectedCategories.includes(catName)) {
-      selectedCategories.push(catName);
-    }
-  } else {
-    selectedCategories = selectedCategories.filter(c => c !== catName);
-  }
-  
-  renderCategoryCheckboxes();
+/* ─── NEAR ME (Geolocation) ─── */
+var WIROG_TOWN_COORDS = {
+  'Gaborone': { lat: -24.6282, lng: 25.9231 },
+  'Francistown': { lat: -21.1706, lng: 27.5144 },
+  'Maun': { lat: -19.9833, lng: 23.4167 },
+  'Serowe': { lat: -22.3864, lng: 26.7108 },
+  'Molepolole': { lat: -24.4066, lng: 25.4951 },
+  'Kanye': { lat: -24.9667, lng: 25.3333 },
+  'Kasane': { lat: -17.8167, lng: 25.1500 },
+  'Palapye': { lat: -22.5461, lng: 27.1306 },
+  'Lobatse': { lat: -25.2167, lng: 25.6667 },
+  'Ramotswa': { lat: -24.8667, lng: 25.8667 },
+  'Mogoditshane': { lat: -24.6269, lng: 25.8656 },
+  'Tlokweng': { lat: -24.6667, lng: 25.9667 }
+};
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  var R = 6371;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLon = (lon2 - lon1) * Math.PI / 180;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function renderCategoryCheckboxes() {
-  const body = document.getElementById('category-sheet-body');
-  if (!body) return;
-  
-  body.innerHTML = buildCategoryHTML(window.WIROG_PRODUCT_CATEGORIES);
-}
-
-function applyCategoryFilter() {
-  updateCategoryFilterText();
-  closeModal('category-modal');
-  renderPromos();
-  saveCategoriesToDB();
-}
-
-function updateCategoryFilterText() {
-  const btn = document.getElementById('category-filter-btn');
-  if (selectedCategories.length === 0) {
-    btn.textContent = 'All Services';
-  } else if (selectedCategories.length === 1) {
-    btn.textContent = selectedCategories[0];
-  } else {
-    btn.textContent = '+' + selectedCategories.length + ' Services';
-  }
-}
-
-async function saveCategoriesToDB() {
-  if (!WirogDB.db) return;
-  try {
-    await WirogDB.put('filters', { id: 'selectedCategories', categories: selectedCategories });
-    try {
-      if (window.SyncQueue && typeof window.SyncQueue.enqueue === 'function') {
-        await window.SyncQueue.enqueue('filters', { id: 'selectedCategories', categories: selectedCategories }, { clientId: UserState.id });
-        if (window.requestBackgroundSync) window.requestBackgroundSync().catch(()=>{});
+function findNearestTown(lat, lng) {
+  var nearest = null;
+  var minDist = Infinity;
+  for (var town in WIROG_TOWN_COORDS) {
+    if (WIROG_TOWN_COORDS.hasOwnProperty(town)) {
+      var c = WIROG_TOWN_COORDS[town];
+      var dist = haversineKm(lat, lng, c.lat, c.lng);
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = town;
       }
-    } catch(e) { console.warn('Failed to enqueue filters for sync:', e); }
-  } catch(e) { console.error('Failed to save categories:', e); }
-}
-
-async function loadCategoriesFromDB() {
-  if (!WirogDB.db) return;
-  try {
-    const saved = await WirogDB.get('filters', 'selectedCategories');
-    if (saved && saved.categories) {
-      selectedCategories = saved.categories;
-      updateCategoryFilterText();
-    }
-  } catch(e) { console.error('Failed to load categories:', e); }
-}
-
-async function loadLocations() {
-  if (locationData) return;
-  if (locationLoadPromise) return locationLoadPromise;
-
-  locationLoadPromise = new Promise(resolve => {
-    if (window.LOCATIONS_DATA) {
-      locationData = window.LOCATIONS_DATA;
-      resolve();
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'locations.js';
-    script.onload = () => {
-      locationData = window.LOCATIONS_DATA || { districts: [] };
-      resolve();
-    };
-    script.onerror = () => {
-      console.error('Failed to load locations.js');
-      locationData = { districts: [] };
-      resolve();
-    };
-    document.head.appendChild(script);
-  });
-
-  return locationLoadPromise;
-}
-
-function buildCategoryHTML(data) {
-  let html = '';
-  
-  // All Services option
-  const allChecked = selectedCategories.length === 0;
-  html += `<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); cursor:pointer; font-size:15px; font-weight:600; background:${allChecked ? 'var(--orange-light)' : 'transparent'};" onclick="toggleCategoryCheckbox('All Services', true)">
-    <input type="checkbox" ${allChecked ? 'checked' : ''} style="margin-right:10px; accent-color:var(--orange);">All Services
-  </div>`;
-  
-  // User Interests section (if user has interests) - collapsible
-  const userInterests = UserState.interests || [];
-  if (userInterests.length > 0) {
-    const chevron = userInterestsCollapsed ? '▶' : '▼';
-    html += `<div style="padding:12px 16px; background:var(--orange-light); font-size:13px; font-weight:700; color:var(--orange); text-transform:uppercase; cursor:pointer; display:flex; align-items:center;" onclick="toggleUserInterestsCollapsed()"><span style="margin-right:8px;">${chevron}</span>User Interests (${userInterests.length})</div>`;
-    if (!userInterestsCollapsed) {
-      userInterests.forEach(interest => {
-        const isChecked = selectedCategories.includes(interest);
-        html += `<div style="padding:10px 16px 10px 28px; border-bottom:1px solid var(--grey-light); font-size:14px; cursor:pointer;" onclick="event.stopPropagation(); toggleCategoryCheckbox('${interest.replace(/'/g, "\\'")}', ${!isChecked})">
-          <input type="checkbox" ${isChecked ? 'checked' : ''} style="margin-right:10px; accent-color:var(--orange);" onclick="event.stopPropagation(); toggleCategoryCheckbox('${interest.replace(/'/g, "\\'")}', this.checked)">${interest}
-        </div>`;
-      });
     }
   }
-  
-  // All Categories section
-  html += `<div style="padding:12px 16px; font-size:13px; font-weight:700; color:var(--orange); text-transform:uppercase;">All Categories</div>`;
-  
-  const cats = (data && data.categories) ? data.categories : [];
-  
-  // Build hierarchical list with collapsible levels
-  const renderItem = (cat, level) => {
-    const indent = (level - 1) * 16;
-    const isChecked = selectedCategories.includes(cat.name);
-    const hasChildren = cat.children && cat.children.length > 0;
-    const safeName = cat.name.replace(/'/g, "\\'");
-    const childId = 'ch-' + (cat.slug || cat.id || safeName).replace(/[^a-z0-9-]/gi, '');
-    
-    const rowClick = hasChildren
-      ? `event.stopPropagation(); toggleCategoryChildren('${childId}')`
-      : `event.stopPropagation(); toggleCategoryCheckbox('${safeName}', !this.querySelector('input').checked)`;
-    
-    let itemHtml = `<div style="padding:8px 16px; border-bottom:1px solid var(--grey-light); cursor:pointer; font-size:14px; padding-left:${indent + 16}px; display:flex; align-items:center;" onclick="${rowClick}">
-      <input type="checkbox" ${isChecked ? 'checked' : ''} style="margin-right:8px;" onclick="event.stopPropagation(); toggleCategoryCheckbox('${safeName}', this.checked)">${cat.name}
-    </div>`;
-    
-    if (hasChildren) {
-      itemHtml += `<div id="${childId}" style="display:none;">`;
-      cat.children.forEach(child => {
-        itemHtml += renderItem(child, level + 1);
-      });
-      itemHtml += `</div>`;
-    }
-    
-    return itemHtml;
-  };
-  
-  cats.forEach(cat => {
-    html += renderItem(cat, 1);
-  });
-  
-  return html;
+  return { town: nearest, distance: minDist };
 }
 
-function toggleUserInterests() {
-  const userInterests = UserState.interests || [];
-  if (userInterests.length > 0) {
-    const allSelected = userInterests.every(i => selectedCategories.includes(i));
-    if (allSelected) {
-      selectedCategories = selectedCategories.filter(c => !userInterests.includes(c));
-    } else {
-      userInterests.forEach(interest => {
-        if (!selectedCategories.includes(interest)) {
-          selectedCategories.push(interest);
-        }
-      });
-    }
-    renderCategoryCheckboxes();
-  }
-}
+function nearMe() {
+  var btn = document.getElementById('near-me-btn');
+  if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:12px;"></i>';
 
-function toggleUserInterestsCollapsed() {
-  userInterestsCollapsed = !userInterestsCollapsed;
-  renderCategoryCheckboxes();
-}
-
-function toggleCategoryChildren(id, el) {
-  const container = document.getElementById(id);
-  if (container) {
-    const isHidden = container.style.display === 'none';
-    container.style.display = isHidden ? 'block' : 'none';
-    if (el) el.textContent = isHidden ? '▼' : '▶';
-  }
-}
-
-async function openLocationSheet(mode) {
-  currentLocationMode = mode;
-  const title = mode === 'placeA' ? 'Select Town / City' : 'Select Area / Neighbourhood';
-  document.getElementById('location-modal-title').textContent = title;
-  const body = document.getElementById('location-sheet-body');
-  if (body) body.innerHTML = '<p style="padding:20px; text-align:center; color:var(--grey-dark);">Loading locations...</p>';
-  openModal('location-modal');
-  await loadLocations();
-  renderLocationOptions();
-}
-
-function renderLocationOptions() {
-  const body = document.getElementById('location-sheet-body');
-  if (!body) return;
-
-  if (!locationData || !locationData.districts) {
-    body.innerHTML = '<p style="padding:20px; text-align:center; color:var(--grey-dark);">Locations not loaded</p>';
+  if (!navigator.geolocation) {
+    showToast('Geolocation not available on this device');
+    if (btn) btn.innerHTML = '<i class="fas fa-location-dot" style="font-size:12px;"></i>';
     return;
   }
 
-  let html = '';
-
-  if (currentLocationMode === 'placeA') {
-    const townsSet = new Set();
-    locationData.districts.forEach(d => {
-      d.towns.forEach(t => townsSet.add(t.name));
-    });
-    const pinned = ['Gaborone','Mogoditshane','Tlokweng','Francistown','Maun','Molepolole','Serowe','Palapye','Mochudi','Mahalapye','Kanye','Selibe Phikwe','Letlhakane','Ramotswa','Lobatse'];
-    const pinnedSet = new Set(pinned);
-    const allTowns = [...townsSet].sort();
-    const remaining = allTowns.filter(t => !pinnedSet.has(t));
-
-    // Nation Wide
-    const nwActive = selectedPlaceA === 'Nation Wide';
-    html += `<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); font-size:15px; font-weight:600; cursor:pointer; ${nwActive ? 'background:var(--orange-light); font-weight:600; color:var(--orange);' : ''}" onclick="selectLocation('Nation Wide', 'placeA')">Nation Wide${nwActive ? ' <i class="fas fa-check" style="float:right;"></i>' : ''}</div>`;
-
-    // Pinned towns
-    html += `<div style="padding:10px 16px; font-size:12px; color:var(--grey-dark);">Popular towns / cities</div>`;
-    pinned.forEach(name => {
-      const active = selectedPlaceA === name;
-      html += `<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); font-size:15px; cursor:pointer; ${active ? 'background:var(--orange-light); font-weight:600; color:var(--orange);' : ''}" onclick="selectLocation('${name.replace(/'/g, "\\'")}', 'placeA')">${name}${active ? ' <i class="fas fa-check" style="float:right;"></i>' : ''}</div>`;
-    });
-
-    // Rest
-    html += `<div style="padding:10px 16px; font-size:12px; color:var(--grey-dark);">All towns / cities</div>`;
-    remaining.forEach(name => {
-      const active = selectedPlaceA === name;
-      html += `<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); font-size:15px; cursor:pointer; ${active ? 'background:var(--orange-light); font-weight:600; color:var(--orange);' : ''}" onclick="selectLocation('${name.replace(/'/g, "\\'")}', 'placeA')">${name}${active ? ' <i class="fas fa-check" style="float:right;"></i>' : ''}</div>`;
-    });
-  } else {
-    let areas = [];
-    for (const d of locationData.districts) {
-      const town = d.towns.find(t => t.name === selectedPlaceA);
-      if (town) {
-        areas = town.areas || [];
-        break;
-      }
-    }
-    html += `<div style="padding:10px 16px; font-size:12px; color:var(--grey-dark);">Areas in ${selectedPlaceA}</div>`;
-    // All Areas option at top
-    const allAreasActive = selectedPlaceB === 'All Area';
-    html += `<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); font-size:15px; font-weight:600; cursor:pointer; ${allAreasActive ? 'background:var(--orange-light); font-weight:600; color:var(--orange);' : ''}" onclick="selectLocation('All Area', 'placeB')">All Areas${allAreasActive ? ' <i class="fas fa-check" style="float:right;"></i>' : ''}</div>`;
-    if (areas.length === 0) {
-      html += '<p style="padding:20px; text-align:center; color:var(--grey-dark);">No areas found</p>';
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var result = findNearestTown(pos.coords.latitude, pos.coords.longitude);
+    if (result.town && result.distance < 100) {
+      selectedPlaceA = result.town;
+      selectedPlaceB = 'All Area';
+      document.getElementById('place-a-btn').textContent = selectedPlaceA;
+      document.getElementById('place-a-btn-pro').textContent = selectedPlaceA;
+      document.getElementById('place-b-btn').textContent = 'All Area';
+      showToast('Showing results near ' + result.town);
+      renderPromos();
+      renderDirectory();
     } else {
-      areas.forEach(name => {
-        const active = selectedPlaceB === name;
-        html += `<div style="padding:14px 16px; border-bottom:1px solid var(--grey-light); font-size:15px; cursor:pointer; ${active ? 'background:var(--orange-light); font-weight:600; color:var(--orange);' : ''}" onclick="selectLocation('${name.replace(/'/g, "\\'")}', 'placeB')">${name}${active ? ' <i class="fas fa-check" style="float:right;"></i>' : ''}</div>`;
-      });
+      showToast('Could not detect nearby town. Try selecting one manually.');
     }
-  }
-
-  body.innerHTML = html;
+    if (btn) btn.innerHTML = '<i class="fas fa-location-dot" style="font-size:12px;"></i>';
+  }, function(err) {
+    showToast('Location access denied. Enable GPS to use Near Me.');
+    if (btn) btn.innerHTML = '<i class="fas fa-location-dot" style="font-size:12px;"></i>';
+  }, { enableHighAccuracy: false, timeout: 10000 });
 }
 
-function selectLocation(name, mode) {
-  if (mode === 'placeA') {
-    selectedPlaceA = name;
-    document.querySelectorAll('#place-a-btn').forEach(function(b) { b.textContent = name; });
-    selectedPlaceB = 'All Area';
-    document.querySelectorAll('#place-b-btn').forEach(function(b) { b.textContent = 'All Area'; });
-  } else {
-    selectedPlaceB = name;
-    document.querySelectorAll('#place-b-btn').forEach(function(b) { b.textContent = name; });
-  }
-  closeModal('location-modal');
-  var cv = typeof currentView !== 'undefined' ? currentView : '';
-  if (cv === 'view-directory') { renderDirectory(); } else { renderPromos(); }
-}
-
-function openCategorySheet() {
-  renderCategoryCheckboxes();
-  openModal('category-modal');
-}
-
-window.cyclePromoType = cyclePromoType;
-window.openCategorySheet = openCategorySheet;
-window.selectCategory = window.applyCategoryFilter || function(){};
-window.openLocationSheet = openLocationSheet;
-window.selectLocation = selectLocation;
-window.loadLocations = loadLocations;
-window.buildCategoryHTML = buildCategoryHTML;
-window.openSearchModal = openSearchModal;
+window.setSearchMode = setSearchMode;
 window.doSearch = doSearch;
+window.nearMe = nearMe;
 window.openPromoTypeModal = openPromoTypeModal;
+window.openSearchModal = openSearchModal;
 window.selectPromoType = selectPromoType;
-window.toggleUserInterestsCollapsed = toggleUserInterestsCollapsed;
-window.toggleCategoryCheckbox = toggleCategoryCheckbox;
+window.toggleUserInterestsCollapsed = typeof toggleUserInterestsCollapsed !== 'undefined'
+  ? toggleUserInterestsCollapsed : function(){};
+window.toggleCategoryCheckbox = typeof toggleCategoryCheckbox !== 'undefined'
+  ? toggleCategoryCheckbox : function(){};
+window.applyCategoryFilter = typeof applyCategoryFilter !== 'undefined'
+  ? applyCategoryFilter : function(){};
+window.renderCategoryCheckboxes = typeof renderCategoryCheckboxes !== 'undefined'
+  ? renderCategoryCheckboxes : function(){};
+window.toggleUserInterests = typeof toggleUserInterests !== 'undefined'
+  ? toggleUserInterests : function(){};
+window.toggleCategoryChildren = typeof toggleCategoryChildren !== 'undefined'
+  ? toggleCategoryChildren : function(){};
+window.updateCategoryFilterText = typeof updateCategoryFilterText !== 'undefined'
+  ? updateCategoryFilterText : function(){};
+window.loadCategoriesFromDB = typeof loadCategoriesFromDB !== 'undefined'
+  ? loadCategoriesFromDB : function(){};
+window.openCategorySheet = openCategorySheet;
+window.openLocationSheet = openLocationSheet;
 window.applyCategoryFilter = applyCategoryFilter;
-window.renderCategoryCheckboxes = renderCategoryCheckboxes;
-window.toggleUserInterests = toggleUserInterests;
-window.toggleCategoryChildren = toggleCategoryChildren;
 window.updateCategoryFilterText = updateCategoryFilterText;
-window.loadCategoriesFromDB = loadCategoriesFromDB;
+window.selectNationWide = selectNationWide;
 
 let currentSearchMode = 'all';
 function setSearchMode(mode) {
@@ -431,3 +195,186 @@ function doSearch(query) {
     '</div>';
   }).join('');
 }
+
+/* ─── CATEGORY FILTER SHEET ─── */
+function openCategorySheet() {
+  var cats = window.WIROG_PRODUCT_CATEGORIES && window.WIROG_PRODUCT_CATEGORIES.categories;
+  var body = document.getElementById('category-sheet-body');
+  if (!body) return;
+  if (!cats || cats.length === 0) {
+    body.innerHTML = '<p style="padding:20px;text-align:center;color:var(--grey-dark);font-size:13px;">No categories available</p>';
+    openModal('category-modal');
+    return;
+  }
+  body.innerHTML = '<div style="padding:14px 16px;border-bottom:1px solid var(--grey-light);cursor:pointer;font-size:15px;font-weight:600;background:' + (selectedCategories.length === 0 ? 'var(--orange-light)' : 'transparent') + ';" onclick="toggleCategoryCheckbox(\'all\', \'All Services\', true)">' +
+    '<input type="checkbox" ' + (selectedCategories.length === 0 ? 'checked' : '') + ' style="margin-right:10px;accent-color:var(--orange);">All Services' +
+  '</div>';
+  cats.forEach(function(c) {
+    var checked = selectedCategories.some(function(s) { return s.id === c.id; });
+    body.innerHTML += '<div style="padding:10px 16px;border-bottom:1px solid var(--grey-light);font-size:14px;cursor:pointer;" onclick="toggleCategoryCheckbox(\'' + c.id + '\',\'' + c.name.replace(/'/g, "\\'") + '\',' + (!checked) + ')">' +
+      '<input type="checkbox" ' + (checked ? 'checked' : '') + ' style="margin-right:10px;accent-color:var(--orange);" onclick="event.stopPropagation(); toggleCategoryCheckbox(\'' + c.id + '\',\'' + c.name.replace(/'/g, "\\'") + '\',this.checked)">' + c.name +
+    '</div>';
+  });
+  openModal('category-modal');
+}
+
+function toggleCategoryCheckbox(id, name, isChecked) {
+  if (id === 'all') {
+    selectedCategories = [];
+    openCategorySheet();
+    return;
+  }
+  if (isChecked) {
+    if (!selectedCategories.some(function(s) { return s.id === id; })) {
+      selectedCategories.push({ id: id, name: name });
+    }
+  } else {
+    selectedCategories = selectedCategories.filter(function(s) { return s.id !== id; });
+  }
+  openCategorySheet();
+}
+
+function updateCategoryFilterText() {
+  var btn = document.getElementById('category-filter-btn');
+  if (!btn) return;
+  if (selectedCategories.length === 0) {
+    btn.textContent = 'All Services';
+  } else if (selectedCategories.length === 1) {
+    btn.textContent = selectedCategories[0].name;
+  } else {
+    btn.textContent = '+' + selectedCategories.length + ' Categories';
+  }
+}
+
+function applyCategoryFilter() {
+  updateCategoryFilterText();
+  closeModal('category-modal');
+  if (typeof window.currentView !== 'undefined' && window.currentView === 'view-directory') {
+    if (typeof renderDirectory === 'function') renderDirectory();
+  } else {
+    if (typeof renderPromos === 'function') renderPromos();
+  }
+}
+
+/* ─── APPLY FILTERS (category + location + promo type) ─── */
+function applyFilters() {
+  var items = window._promos || [];
+
+  if (selectedCategories.length > 0) {
+    items = items.filter(function(p) {
+      return selectedCategories.some(function(c) { return c.name === p.category; });
+    });
+  }
+
+  if (selectedPlaceA !== 'Nation Wide') {
+    items = items.filter(function(p) { return p.location === selectedPlaceA; });
+  }
+
+  if (promoTypeIdx > 0) {
+    var type = promoTypes[promoTypeIdx];
+    items = items.filter(function(p) { return p.promoType === type; });
+  }
+
+  return items;
+}
+
+window.applyFilters = applyFilters;
+
+/* ─── LOCATION FILTER SHEET ─── */
+function ensureLocationsLoaded() {
+  if (window.locationData) return Promise.resolve(window.locationData);
+  var data = window.LOCATIONS_DATA;
+  if (!data) {
+    showToast('Could not load location data');
+    return Promise.resolve({ districts: [] });
+  }
+  window.locationData = data;
+  locationData = data;
+  return Promise.resolve(data);
+}
+
+function openLocationSheet(mode) {
+  currentLocationMode = mode;
+  var title = document.getElementById('location-modal-title');
+  if (title) title.textContent = 'Select Location';
+  renderLocationSheet();
+  openModal('location-modal');
+}
+
+function renderLocationSheet() {
+  var body = document.getElementById('location-sheet-body');
+  if (!body) return;
+  ensureLocationsLoaded().then(function(data) {
+    var districts = data.districts || [];
+    var html = '';
+    html += '<style>';
+    html += 'details > summary { list-style: none; }';
+    html += 'details > summary::-webkit-details-marker { display: none; }';
+    html += 'details[open] .loc-arrow { transform: rotate(180deg); }';
+    html += '.loc-arrow { transition: transform 0.2s ease; }';
+    html += '</style>';
+    html += '<div style="padding:10px 16px;cursor:pointer;font-size:15px;font-weight:700;background:var(--orange); color:white; border-radius:6px; margin:8px 16px; text-align:center;" onclick="nearMe();closeModal(\'location-modal\');">Near Me</div>';
+    html += '<div style="margin:0 16px;border-bottom:1px solid var(--grey-light);"></div>';
+    districts.forEach(function(d) {
+      if (!d.towns || d.towns.length === 0) return;
+      d.towns.forEach(function(t) {
+        var town = t.name;
+        var areas = t.areas || [];
+        var areaCount = areas.length;
+        var isSelected = selectedPlaceA === town;
+        html += '<details style="padding:0 16px;">';
+        html += '<summary style="padding:14px 0;cursor:pointer;font-size:15px;display:flex;justify-content:space-between;align-items:center;' + (isSelected ? 'background:var(--orange-light);font-weight:600;' : '') + '">' +
+          '<span>' + town + '</span>' +
+          '<span style="font-size:12px;color:var(--grey-dark);">' + areaCount + '</span>' +
+        '</summary>';
+        html += '<div style="padding-left:32px;">';
+        html += '<div style="padding:10px 0;font-size:14px;cursor:pointer;font-weight:500;" onclick="selectTownArea(\'' + town.replace(/'/g, "\\'") + '\',\'All Area\')">All Area</div>';
+        areas.forEach(function(a) {
+          var areaSelected = selectedPlaceB === a;
+          html += '<div style="margin:0 16px 0 48px;border-top:1px solid var(--grey-light);"></div>';
+          html += '<div style="padding:10px 0;font-size:14px;cursor:pointer;' + (areaSelected ? 'background:var(--orange-light);font-weight:600;color:var(--orange);' : '') + '" onclick="selectTownArea(\'' + town.replace(/'/g, "\\'") + '\',\'' + a.replace(/'/g, "\\'") + '\')">' +
+            a +
+            (areaSelected ? ' <img src="assets/icons/solid/check-2_orange.webp" style="width:16px;height:16px;float:right;">' : '') +
+          '</div>';
+        });
+        html += '</div>';
+        html += '</details>';
+        html += '<div style="margin:0 16px;border-top:1px solid var(--grey-light);"></div>';
+      });
+    });
+    body.innerHTML = html;
+  });
+}
+
+function selectTownArea(town, area) {
+  if (currentLocationMode === 'placeA') {
+    selectedPlaceA = town;
+    document.getElementById('place-a-btn').textContent = town;
+    var proBtn = document.getElementById('place-a-btn-pro');
+    if (proBtn) proBtn.textContent = town;
+    selectedPlaceB = area;
+    var bBtn = document.getElementById('place-b-btn');
+    if (bBtn) bBtn.textContent = area;
+  } else {
+    selectedPlaceB = area;
+    var bBtn = document.getElementById('place-b-btn');
+    if (bBtn) bBtn.textContent = area;
+  }
+  closeModal('location-modal');
+  if (typeof renderPromos === 'function') renderPromos();
+  if (typeof renderDirectory === 'function') renderDirectory();
+}
+
+function selectNationWide() {
+  selectedPlaceA = 'Nation Wide';
+  selectedPlaceB = 'All Area';
+  document.getElementById('place-a-btn').textContent = 'Nation Wide';
+  var proBtn = document.getElementById('place-a-btn-pro');
+  if (proBtn) proBtn.textContent = 'Nation Wide';
+  var bBtn = document.getElementById('place-b-btn');
+  if (bBtn) bBtn.textContent = 'All Area';
+  if (typeof renderPromos === 'function') renderPromos();
+  if (typeof renderDirectory === 'function') renderDirectory();
+}
+
+ensureLocationsLoaded();

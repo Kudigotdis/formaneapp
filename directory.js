@@ -2,10 +2,10 @@
    WIROG DIRECTORY - Business & Pro listings with A-Z nav
    ════════════════════════════════════════════════════════ */
 
-let dirMode = 'pros';
+let dirMode = localStorage.getItem('wirog_dirMode') || 'companies';
 let selectedTrades = [];
 
-const DIR_TYPES = ['Companies', 'Pros', 'Council & Public'];
+const DIR_TYPES = ['Suppliers', 'Pros', 'Council & Public'];
 
 function openDirTypeModal() {
   const container = document.getElementById('dir-type-options');
@@ -17,8 +17,9 @@ function openDirTypeModal() {
 }
 
 function selectDirType(label) {
-  const modeMap = { 'Companies': 'companies', 'Pros': 'pros', 'Council & Public': 'council' };
+  const modeMap = { 'Suppliers': 'companies', 'Pros': 'pros', 'Council & Public': 'council' };
   dirMode = modeMap[label] || 'companies';
+  localStorage.setItem('wirog_dirMode', dirMode);
   document.getElementById('dir-type-btn').textContent = label;
   closeModal('dir-type-modal');
 
@@ -35,7 +36,10 @@ function selectDirType(label) {
   renderDirectory();
 }
 
-const dirModeLabels = { 'companies': 'Companies', 'pros': 'Pros', 'council': 'Council & Public' };
+const dirModeLabels = { 'companies': 'Suppliers', 'pros': 'Pros', 'council': 'Council & Public' };
+
+var dirBtn = document.getElementById('dir-type-btn');
+if (dirBtn) dirBtn.textContent = dirModeLabels[dirMode] || 'Suppliers';
 
 function getTradeKeys() {
   return window.TRADE_SPECIFIC ? Object.keys(window.TRADE_SPECIFIC) : [];
@@ -125,6 +129,9 @@ function renderDirectory() {
   if (UserState.hasBusiness()) {
     const biz = UserState.business;
     const isPublic = biz.subscription === 'full' || biz.subscription === 'catalogue';
+    if (businesses.some(b => b.id === biz.id || b.name === biz.name)) {
+      // already in SAMPLE_BUSINESSES, skip duplicate
+    } else {
     businesses.push({
       id: 'biz_user',
       name: biz.name,
@@ -138,6 +145,17 @@ function renderDirectory() {
       isUserBiz: true,
       subscription: biz.subscription || 'free'
     });
+    }
+  }
+
+  if (selectedCategories.length > 0) {
+    businesses = businesses.filter(function(b) {
+      return selectedCategories.some(function(c) { return c.name === b.category; });
+    });
+  }
+
+  if (selectedPlaceA !== 'Nation Wide') {
+    businesses = businesses.filter(function(b) { return b.location === selectedPlaceA; });
   }
 
   if (businesses.length === 0) {
@@ -157,11 +175,10 @@ function renderDirectory() {
     letterGroups[letter].push(b);
   });
 
-  Object.keys(letterGroups).sort().forEach(letter => {
-    const section = document.createElement('div');
-    section.id = 'alpha-' + letter;
-
+  const sortedLetters = Object.keys(letterGroups).sort();
+  sortedLetters.forEach((letter, idx) => {
     const letterHeader = document.createElement('div');
+    letterHeader.id = 'alpha-' + letter;
     letterHeader.style.cssText = 'padding:8px 16px 4px; font-family:var(--font-head); font-size:18px; font-weight:700; color:var(--orange); background:var(--bg); position:sticky; top:0; z-index:2;';
     letterHeader.textContent = letter;
     el.appendChild(letterHeader);
@@ -170,8 +187,11 @@ function renderDirectory() {
       const d = document.createElement('div');
       d.className = 'dir-card';
       d.onclick = () => openBizProfile(b.id, b.name, b.initials, b.color, b.location, b.phone, b.public, b.description, b.isUserBiz);
+      var avatarHtml = b.logo
+        ? '<img src="' + b.logo + '" class="dir-avatar" style="object-fit:cover;" alt="">'
+        : '<div class="dir-avatar" style="background:' + b.color + ';">' + b.initials + '</div>';
       d.innerHTML = `
-        <div class="dir-avatar" style="background:${b.color};">${b.initials}</div>
+        ${avatarHtml}
         <div class="dir-info">
           <h3>${b.name}</h3>
           <p>${b.category} · ${b.location}</p>
@@ -182,6 +202,12 @@ function renderDirectory() {
       `;
       el.appendChild(d);
     });
+
+    if (idx < sortedLetters.length - 1) {
+      const divider = document.createElement('hr');
+      divider.style.cssText = 'margin:0;border:none;border-top:1px solid rgba(0,0,0,0.2);';
+      el.appendChild(divider);
+    }
   });
 
   renderAlphaNav(letterGroups);
@@ -213,16 +239,16 @@ function renderPros(el, alphaNav) {
   var letterGroups = {};
 
   pros.forEach(function(p) {
-    var letter = p.name.charAt(0).toUpperCase();
+    var firstChar = p.name.charAt(0).toUpperCase();
+    var letter = /[A-Z]/.test(firstChar) ? firstChar : '#';
     if (!letterGroups[letter]) letterGroups[letter] = [];
     letterGroups[letter].push(p);
   });
 
-  Object.keys(letterGroups).sort().forEach(function(letter) {
-    var section = document.createElement('div');
-    section.id = 'alpha-' + letter;
-
+  var sortedLettersPros = Object.keys(letterGroups).sort();
+  sortedLettersPros.forEach(function(letter, idx) {
     var letterHeader = document.createElement('div');
+    letterHeader.id = letter === '#' ? 'alpha-hash' : 'alpha-' + letter;
     letterHeader.style.cssText = 'padding:8px 16px 4px; font-family:var(--font-head); font-size:18px; font-weight:700; color:var(--orange); background:var(--bg); position:sticky; top:0; z-index:2;';
     letterHeader.textContent = letter;
     el.appendChild(letterHeader);
@@ -250,6 +276,12 @@ function renderPros(el, alphaNav) {
         '</button>';
       el.appendChild(d);
     });
+
+    if (idx < sortedLettersPros.length - 1) {
+      var divider = document.createElement('hr');
+      divider.style.cssText = 'margin:0;border:none;border-top:1px solid rgba(0,0,0,0.2);';
+      el.appendChild(divider);
+    }
   });
 
   renderAlphaNav(letterGroups);
@@ -259,18 +291,24 @@ function renderAlphaNav(letterGroups) {
   const alphaNav = document.getElementById('alpha-nav');
   if (!alphaNav) return;
 
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const letters = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const activeLetters = Object.keys(letterGroups);
 
   alphaNav.innerHTML = letters.map(letter => {
     const isActive = activeLetters.includes(letter);
-    return `<a href="#alpha-${letter}" class="${isActive ? '' : 'inactive'}" style="${isActive ? '' : 'opacity:0.3;'}" onclick="scrollToAlpha('${letter}')">${letter}</a>`;
+    const id = letter === '#' ? 'alpha-hash' : 'alpha-' + letter;
+    return `<a href="#${id}" class="${isActive ? '' : 'inactive'}" style="${isActive ? '' : 'opacity:0.3;'}" onclick="scrollToAlpha('${letter}');return false">${letter}</a>`;
   }).join('');
 }
 
 function scrollToAlpha(letter) {
-  const section = document.getElementById('alpha-' + letter);
-  if (section) {
+  var id = letter === '#' ? 'alpha-hash' : 'alpha-' + letter;
+  var section = document.getElementById(id);
+  if (!section) return;
+  var scrollContainer = document.querySelector('.dir-scroll');
+  if (scrollContainer) {
+    scrollContainer.scrollTop = section.offsetTop - scrollContainer.offsetTop;
+  } else {
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
@@ -304,13 +342,16 @@ function openBizProfile(bizId, name, init, color, location, phone, isPublic, des
   const locationEsc = location.replace(/'/g, "\\'");
 
   // Store data for bottom-bar dropdowns
-  _bizDropdownData = { bizId: bizId, name: name, phone: phoneClean, phoneWa: phoneWa, location: location };
+  var bizContacts = (isOwner && UserState.business && UserState.business.contacts) ? UserState.business.contacts : null;
+  _bizDropdownData = { bizId: bizId, name: name, phone: phoneClean, phoneWa: phoneWa, location: location, contacts: bizContacts };
 
   const catItems = categories.map(c => `<div class="biz-cat-line" onclick="event.stopPropagation();openBizCatalogue('${bizId}','${nameEsc}','${locationEsc}','${phoneWa}','${color}','${init}','${c.replace(/'/g, "\\'")}')">${c}</div>`).join('');
 
   var bizLogo = window.getBusinessLogo(bizId);
+  var bizLogo2 = window.getBusinessLogo2(bizId);
+  var previewSrc = bizLogo2 || bizLogo;
   var avatarHtml = bizLogo
-    ? '<img src="' + bizLogo + '" class="biz-avatar-img" alt="' + nameEsc + '" onclick="event.stopPropagation();openBizLogoPreview(\'' + bizLogo.replace(/'/g,"\\'") + '\',\'' + nameEsc + '\')">'
+    ? '<img src="' + bizLogo + '" class="biz-avatar-img" alt="' + nameEsc + '" onclick="event.stopPropagation();openBizLogoPreview(\'' + previewSrc.replace(/'/g,"\\'") + '\',\'' + nameEsc + '\')">'
     : '<div class="biz-avatar-img" style="background:' + color + ';">' + init + '</div>';
 
   // Location breakdown: extract town and area
@@ -357,7 +398,6 @@ function openBizProfile(bizId, name, init, color, location, phone, isPublic, des
     </div>
     <div class="biz-bottom-wrapper">
       <div class="biz-bottom-bar">
-        <button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
         <div id="biz-bar-actions">
           <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
           <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
@@ -467,7 +507,7 @@ function _getProData(proId) {
   };
 }
 
-function openProProfile(proId) {
+window.openProProfile = window.openProProfile || function(proId) {
   const content = document.getElementById('pro-profile-content');
   if (!content) return;
 
@@ -484,7 +524,7 @@ function openProProfile(proId) {
     ? '\u2B50'.repeat(Math.floor(pro.rating)) + ' <span style="font-size:12px;color:var(--grey-dark);font-weight:600;">' + pro.rating.toFixed(1) + '</span>'
     : '';
 
-  var skillsBody = '<p style="font-size:12px;color:var(--grey-dark);padding:8px 0;">No skills listed yet.</p>';
+  var skillsBody = '';
 
   var projectsBody = '<div class="project-carousel">' +
     '<div class="project-card">' +
@@ -547,23 +587,10 @@ function openProProfile(proId) {
         '</div>' +
         '<div class="accordion-body">' + servicesBody + '</div>' +
       '</div>' +
-    '</div>' +
-    '<div class="biz-bottom-wrapper">' +
-      '<div class="biz-bottom-bar">' +
-        '<button onclick="goBack()" class="biz-back-round"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>' +
-        '<div id="biz-bar-actions">' +
-          '<img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'call\')">' +
-          '<img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'facebook\')">' +
-          '<img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'gps\')">' +
-          '<img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown(\'whatsapp\')">' +
-          '<img src="assets/icons/' + (UserState.isFavourite(proId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png" class="biz-bar-icon" onclick="toggleFavBiz(\'' + proId + '\')" id="pro-heart-icon">' +
-        '</div>' +
-      '</div>' +
-      '<div id="dd-call" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div><div id="dd-facebook" class="biz-dropdown-container biz-dd-facebook"><div class="biz-dropdown-inner"></div></div><div id="dd-gps" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div><div id="dd-whatsapp" class="biz-dropdown-container biz-dd-whatsapp"><div class="biz-dropdown-inner"></div></div>' +
     '</div>';
 
   goTo('view-pro-profile');
-}
+};
 
 window.calculateProCost = function(hourlyRate) {
   var hours = parseFloat(document.getElementById('rate-hours-input').value) || 1;
@@ -578,12 +605,17 @@ function openBizPromos(bizId, businessName) {
   if (!view) return;
 
   const isOwner = bizId === 'biz_user';
-  const loc = biz ? biz.location : '';
-  const init = biz ? biz.initials : '?';
-  const color = biz ? biz.color : '#999';
-  var bizLogo = window.getBusinessLogo(bizId);
+  const pro = !biz ? (window.DEMO_PROFILES || []).find(function(p) { return p.id === bizId || p.name === businessName; }) : null;
+  const targetView = pro ? 'view-pro-profile' : 'view-business';
+  const loc = biz ? biz.location : (pro ? pro.town : '');
+  const init = biz ? biz.initials : (pro ? (pro.initials || (pro.name ? pro.name.split(' ').map(function(w){return w[0]}).join('').slice(0,2).toUpperCase() : '?')) : '?');
+  const color = biz ? biz.color : (pro ? (pro.color || '#999') : '#999');
+  var bizLogo = biz ? window.getBusinessLogo(bizId) : null;
+  var proImg = pro ? (pro.image || null) : null;
   var bizThumbHtml = bizLogo
     ? '<img src="' + bizLogo + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
+    : proImg
+    ? '<img src="' + proImg.replace(/'/g, "\\'") + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
     : '<div class="biz-profile-thumb" style="background:' + color + ';">' + init + '</div>';
 
   let promoHtml = '';
@@ -625,7 +657,6 @@ function openBizPromos(bizId, businessName) {
         imgHtml = '<div class="promo-img-ph ' + (p.bg || 'img-amber') + '"><span class="promo-img-emoji">' + (p.emoji || '\ud83d\udce6') + '</span></div>';
       }
 
-      const tagsHtml = window.renderPromoTags ? renderPromoTags(p.tags) : '';
       const kpi = p.kpi || {};
       const kpiHtml = '<div class="promo-kpi"><span><span class="kpi-icon">\ud83d\udc41</span> ' + (kpi.views||0) + '</span><span><span class="kpi-icon">\u2764\ufe0f</span> ' + (kpi.likes||0) + '</span><span><span class="kpi-icon">\ud83d\udccb</span> ' + (kpi.addedToNotes||0) + '</span></div>';
 
@@ -648,13 +679,12 @@ function openBizPromos(bizId, businessName) {
             (isOwner ? '<div style="font-size:10px;color:var(--orange);font-weight:600;margin-bottom:4px;">Your Promo</div>' : '') +
             '<div class="promo-title">' + p.title + '</div>' +
             '<div class="promo-desc">' + (p.desc || '') + '</div>' +
-            tagsHtml +
             '<div class="qty-row">' +
               '<div class="qty-price">P <span class="cp">' + ((p.basePrice || p.price || 0) * (p.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--orange);">' + (p.unit || 'each') + '</span></div>' +
               '<div class="qty-controls">' +
-                '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ')">\u2212</button>' +
+                '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1,' + (p.basePrice || p.price || 0) + ',this)">\u2212</button>' +
                 '<span class="qv" style="min-width:20px;text-align:center;font-weight:600;">' + (p.qty || 1) + '</span>' +
-                '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ')">+</button>' +
+                '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',1,' + (p.basePrice || p.price || 0) + ',this)">+</button>' +
               '</div>' +
             '</div>' +
             (isOwner ? kpiHtml : '') +
@@ -678,7 +708,7 @@ function openBizPromos(bizId, businessName) {
     <div id="biz-promos-content" style="flex:1;overflow-y:auto;padding:12px;">
       ${promoHtml}
     </div>
-    <div class="biz-profile-card-nav" onclick="goTo('view-business')">
+    <div class="biz-profile-card-nav" onclick="goTo('${targetView}')">
       ${bizThumbHtml}
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${businessName}</div>
@@ -709,6 +739,7 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init, s
   if (!view) return;
 
   let biz = window.SAMPLE_BUSINESSES.find(b => b.id === bizId || b.name === businessName);
+  const pro = !biz ? (window.DEMO_PROFILES || []).find(function(p) { return p.id === bizId || p.name === businessName; }) : null;
   const isOwner = bizId === 'biz_user' || (biz && biz.id === 'biz_user');
   const cataloguePublic = biz && biz.cataloguePublic !== undefined ? biz.cataloguePublic : true;
   const loc = location || (biz ? biz.location : '');
@@ -724,8 +755,9 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init, s
     ? '<img src="' + bizLogo2 + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
     : '<div class="biz-profile-thumb" style="background:' + color + ';">' + init + '</div>';
 
+  const targetCatView = pro ? 'view-pro-profile' : 'view-business';
   const navHtml = `
-    <div class="biz-profile-card-nav" onclick="goTo('view-business')">
+    <div class="biz-profile-card-nav" onclick="goTo('${targetCatView}')">
       ${bizThumbHtml2}
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${businessName}</div>
@@ -784,8 +816,14 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init, s
     bizId: bizId, businessName: businessName, location: loc,
     phoneWa: phoneWa, color: color, init: init,
     isOwner: isOwner, items: items, catMap: catMap,
-    selectedCat: null
+    isPro: !!pro, selectedCat: null
   };
+
+  var existing = window._catalogueItems || [];
+  var merged = new Map();
+  existing.forEach(function(i) { merged.set(i.id, i); });
+  items.forEach(function(i) { merged.set(i.id, i); });
+  window._catalogueItems = Array.from(merged.values());
 
   // Set up the shell with content and bottom nav, then render categories
   view.innerHTML = '<div id="biz-catalogue-content" style="flex:1;overflow-y:auto;padding:12px;"></div>' + navHtml;
@@ -854,10 +892,10 @@ function toggleFavDir(btn, id) {
 }
 
 function toggleBizPromo(id) {
-  const container = document.getElementById('view-business-promos');
-  if (!container) return;
-  const current = container.querySelector('#bizp-' + id);
+  var current = document.getElementById('bizp-' + id);
   if (!current) return;
+  var container = current.closest('#view-business-promos, #view-biz-catalogue-listed-catalogue');
+  if (!container) return;
   const wasOpen = current.classList.contains('open');
   container.querySelectorAll('.promo-card.open').forEach(c => c.classList.remove('open'));
   if (!wasOpen) current.classList.add('open');
@@ -871,34 +909,26 @@ var _bizDropdownActive = null;
 function _getBizDropdownItems(type) {
   var d = _bizDropdownData;
   if (!d) return [];
-  var isBK = d.bizId === 'biz-1' || d.name === 'Board Kings';
-  var callPhone = isBK ? (d.phone || '+26771234567') : '+26770000000';
-  var waPhone  = isBK ? (d.phoneWa || '26771234567') : '26770000000';
-  var map = {
-    call: [
-      { label: 'Sales',     action: 'call',     phone: callPhone },
-      { label: 'Marketing', action: 'call',     phone: callPhone },
-      { label: 'Accounts',  action: 'call',     phone: callPhone },
-      { label: 'Warehouse', action: 'call',     phone: callPhone }
-    ],
-    facebook: [
-      { label: 'Main Page', action: 'facebook', query: d.name },
-      { label: 'Fan Page',  action: 'facebook', query: d.name }
-    ],
-    gps: [
-      { label: 'Main Branch',         action: 'maps',     name: d.name, location: d.location },
-      { label: 'Phakalane Branch',    action: 'bizpage' },
-      { label: 'Francistown Branch',  action: 'bizpage' },
-      { label: 'Maun Branch',         action: 'bizpage' }
-    ],
-    whatsapp: [
-      { label: 'Sales',     action: 'whatsapp', phone: waPhone,  name: d.name },
-      { label: 'Marketing', action: 'whatsapp', phone: waPhone,  name: d.name },
-      { label: 'Accounts',  action: 'whatsapp', phone: waPhone,  name: d.name },
-      { label: 'Warehouse', action: 'whatsapp', phone: waPhone,  name: d.name }
-    ]
-  };
-  return map[type] || [];
+  var contacts = d.contacts;
+  var typeKey = type === 'call' ? 'calls' : type;
+  var entries = (contacts && contacts[typeKey]) || null;
+  if (!entries || entries.length === 0) {
+    // Fallback: single entry from basic phone if available
+    if (type === 'call' && d.phone) return [{ label: 'Call', action: 'call', phone: d.phone }];
+    if (type === 'whatsapp' && d.phoneWa) return [{ label: 'WhatsApp', action: 'whatsapp', phone: d.phoneWa, name: d.name }];
+    if (type === 'facebook' && d.name) return [{ label: 'Search Facebook', action: 'facebook', query: d.name }];
+    if (type === 'gps' && d.location) return [{ label: 'View Location', action: 'maps', name: d.name, location: d.location }];
+    return [{ label: 'No ' + type + ' entries', action: '', phone: '' }];
+  }
+  var actionMap = { call: 'call', facebook: 'facebook', gps: 'maps', whatsapp: 'whatsapp' };
+  return entries.map(function(e) {
+    var action = actionMap[type] || '';
+    var item = { label: e.title || type.charAt(0).toUpperCase() + type.slice(1), action: action };
+    if (type === 'call' || type === 'whatsapp') { item.phone = e.value || ''; item.name = d.name; }
+    if (type === 'facebook') { item.query = e.value || d.name; }
+    if (type === 'gps') { item.location = e.value || d.location; item.name = d.name; }
+    return item;
+  });
 }
 
 function _renderDropdownContainers() {
@@ -939,7 +969,7 @@ function toggleBizDropdown(type) {
       else if (i.action === 'whatsapp' && i.phone) sub = 'Message for inquiries';
       else if (i.action === 'maps' && i.location) sub = i.location;
       return '<div class="biz-dd-row" onclick="closeBizDropdowns();doBizDropdownAction(\'' + i.action + '\',\'' + p1 + '\',\'' + p2 + '\',\'' + p3 + '\')">' +
-        '<div class="biz-dd-icon"><i class="fas fa-' + iconName + '"></i></div>' +
+        '<div class="biz-dd-icon">' + (i.action === 'facebook' ? '<img src="assets/icons/facebook_icon_f.png" style="width:20px;height:20px;object-fit:contain;">' : i.action === 'whatsapp' ? '<img src="assets/icons/whatsapp_icon_1.webp" style="width:20px;height:20px;object-fit:contain;">' : '<i class="fas fa-' + iconName + '"></i>') + '</div>' +
         '<div class="biz-dd-text"><h4>' + label + '</h4>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' +
       '</div>';
     }).join('');
@@ -1041,52 +1071,65 @@ function renderCatalogueListedItems(selectedCat) {
   if (catItems.length === 0) {
     listedHtml += '<div style="text-align:center;padding:32px 16px;color:var(--grey-dark);"><p>No items in this category.</p></div>';
   } else {
+    var bizLogo = window.getBusinessLogo(state.bizId);
     catItems.forEach(function(it) {
       var price = (it.pricingResult && it.pricingResult.unitPrice) || it.basePrice || it.price || 0;
       var unit = it.unit || 'each';
       var img = it.images && it.images[0] ? it.images[0] : '';
       var isMyItem = state.isOwner && (it.businessId === 'biz_user' || !it.businessId);
       var isStaffRestricted = UserState.businessRole === 'staff' && !it.allowStaffEdits;
-      var tagsHtml = '';
-      if (it.tags && it.tags.length) {
-        tagsHtml = '<div class="cat-item-tags">' + it.tags.slice(0, 3).map(function(t) { return '<span class="pill">' + t + '</span>'; }).join('') + (it.tags.length > 3 ? ' <span style="font-size:11px;color:var(--grey-dark);">+' + (it.tags.length - 3) + '</span>' : '') + '</div>';
-      }
       var nameEsc = (it.title || '').replace(/'/g, "\\'");
-      var descEsc = (it.desc || '').replace(/'/g, "\\'");
-      var bizNameEsc = (state.businessName || '').replace(/'/g, "\\'");
-      var unitEsc = unit.replace(/'/g, "\\'");
 
-      listedHtml += '<div class="cat-item-card" id="cat-item-' + it.id + '">';
-      // Image area
-      listedHtml += '<div class="cat-item-img-wrap">';
+      var imgHtml;
       if (img) {
-        listedHtml += '<img src="' + img + '" class="cat-item-img" onerror="this.style.display=\'none\'">';
-        listedHtml += '<div class="cat-item-img-fallback" style="display:none;">' + (it.emoji || '\ud83d\udce6') + '</div>';
+        imgHtml = '<img src="' + img + '" class="promo-img" alt="' + nameEsc + '" onerror="this.src=\'assets/media/no_link.png\'">';
       } else {
-        listedHtml += '<div class="cat-item-img-ph"><span class="cat-item-emoji">' + (it.emoji || '\ud83d\udce6') + '</span></div>';
+        imgHtml = '<div class="promo-img-ph ' + (it.bg || 'img-amber') + '"><span class="promo-img-emoji">' + (it.emoji || '\ud83d\udce6') + '</span></div>';
       }
-      if (isMyItem) listedHtml += '<div class="cat-item-own-badge">Your Item</div>';
-      listedHtml += '</div>';
-      // Details
-      listedHtml += '<div class="cat-item-details">';
-      listedHtml += '<div class="cat-item-title">' + nameEsc + '</div>';
-      if (descEsc) listedHtml += '<div class="cat-item-desc">' + descEsc + '</div>';
-      listedHtml += tagsHtml;
-      listedHtml += '<div class="cat-item-price-row"><span class="cat-item-price">P ' + price.toFixed(2) + '</span> <span class="cat-item-unit">' + unit + '</span></div>';
-      listedHtml += '<div class="cat-item-qty-row">' +
-        '<button class="qty-btn" onclick="catItemQty(\'' + it.id + '\',-1,' + price + ')">\u2212</button>' +
-        '<span class="cat-qv" id="cat-qv-' + it.id + '">1</span>' +
-        '<button class="qty-btn" onclick="catItemQty(\'' + it.id + '\',1,' + price + ')">+</button>' +
+
+      listedHtml +=
+        '<div class="promo-card" id="bizp-' + it.id + '">' +
+          '<div class="promo-img-wrap" onclick="trackPromoView(\'' + it.id + '\'); toggleBizPromo(\'' + it.id + '\')">' +
+            imgHtml +
+          '</div>' +
+          '<div class="promo-details">' +
+            '<div class="promo-supplier" onclick="goBack()">' +
+              (bizLogo
+                ? '<img src="' + bizLogo + '" class="avatar-square" style="object-fit:cover;" alt="">'
+                : '<div class="avatar-square" style="background:' + (state.color || '#999') + ';">' + (state.init || '?') + '</div>') +
+              '<div>' +
+                '<div style="font-size:14px;">' + (state.businessName || '') + '</div>' +
+                '<div style="font-size:11px;color:var(--grey-dark);font-weight:400;">' + (state.location || '') + '</div>' +
+              '</div>' +
+            '</div>' +
+            (isMyItem ? '<div style="font-size:10px;color:var(--orange);font-weight:600;margin-bottom:4px;">Your Item</div>' : '') +
+            '<div class="promo-title">' + (it.title || '') + '</div>' +
+            '<div class="promo-desc">' + (it.desc || '') + '</div>' +
+            '<div class="qty-row">' +
+              '<div class="qty-price">P <span class="cp">' + (price * (it.qty || 1)).toFixed(2) + '</span> <span style="font-size:12px;font-weight:400;color:var(--orange);">' + unit + '</span></div>' +
+              '<div class="qty-controls">' +
+                '<button class="qty-btn" onclick="changeQty(\'' + it.id + '\',-1,' + price + ',this)">\u2212</button>' +
+                '<span class="qv" style="min-width:20px;text-align:center;font-weight:600;">' + (it.qty || 1) + '</span>' +
+                '<button class="qty-btn" onclick="changeQty(\'' + it.id + '\',1,' + price + ',this)">+</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="promo-actions">' +
+              '<button class="action-btn" onclick="addToNote(\'' + it.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
+              '<button class="action-btn" onclick="sharePromo(\'' + it.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
+              (isMyItem || window.Auth?.isAdmin() ?
+              '<button class="action-btn" onclick="openFbPromo(\'' + it.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
+              (isMyItem ? '' :
+              '<button class="action-btn' + (it.liked ? ' liked' : '') + '" id="like-' + it.id + '" onclick="toggleLike(\'' + it.id + '\', this)">' +
+                '<img src="assets/icons/heart_' + (it.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
+              '</button>') +
+            '</div>' +
+            (isMyItem && !isStaffRestricted ?
+            '<div style="display:flex;gap:8px;margin-top:8px;">' +
+              '<button class="action-btn" style="flex:1;justify-content:center;" onclick="editPromo(\'' + it.id + '\')"><img src="assets/icons/solid/pen_orange.webp" style="height:14px;vertical-align:middle;"> Edit</button>' +
+              '<button class="action-btn" style="flex:1;justify-content:center;" onclick="deleteItem(\'' + it.id + '\')"><img src="assets/icons/solid/delete_icon_orange.webp" style="height:14px;vertical-align:middle;"> Delete</button>' +
+            '</div>' : '') +
+          '</div>' +
         '</div>';
-      // Actions
-      listedHtml += '<div class="cat-item-actions">';
-      listedHtml += '<button class="action-btn" onclick="addToNoteQuick(\'' + it.id + '\',\'' + nameEsc + '\',' + price + ',\'' + unitEsc + '\',\'' + bizNameEsc + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;"></button>';
-      listedHtml += '<button class="action-btn" onclick="shareCatalogueItem(\'' + nameEsc + '\',\'' + bizNameEsc + '\',' + price + ',\'' + unitEsc + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>';
-      if (isMyItem && !isStaffRestricted) {
-        listedHtml += '<button class="action-btn" onclick="editPromo(\'' + it.id + '\')"><img src="assets/icons/solid/pen_orange.webp" style="height:14px;vertical-align:middle;"></button>';
-        listedHtml += '<button class="action-btn" onclick="deleteItem(\'' + it.id + '\')"><img src="assets/icons/solid/delete_icon_orange.webp" style="height:14px;vertical-align:middle;"></button>';
-      }
-      listedHtml += '</div></div></div>';
     });
   }
 
@@ -1100,7 +1143,8 @@ function renderCatalogueListedItems(selectedCat) {
       ? '<img src="' + bizLogo2 + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
       : '<div class="biz-profile-thumb" style="background:' + stateData.color + ';">' + stateData.init + '</div>';
     var bizNameEsc2 = (stateData.businessName || '').replace(/'/g, "\\'");
-    listedHtml += '<div class="biz-profile-card-nav" onclick="goTo(\'view-business\')">' +
+    var navTargetView2 = stateData.isPro ? 'view-pro-profile' : 'view-business';
+    listedHtml += '<div class="biz-profile-card-nav" onclick="goTo(\'' + navTargetView2 + '\')">' +
       navThumbHtml +
       '<div style="flex:1;min-width:0;">' +
         '<div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + bizNameEsc2 + '</div>' +
@@ -1128,19 +1172,43 @@ function backToCatalogueCategories() {
   renderCatalogueCategories();
 }
 
-function catItemQty(itemId, delta) {
-  var qv = document.getElementById('cat-qv-' + itemId);
-  if (!qv) return;
-  var q = parseInt(qv.innerText) + delta;
-  if (q < 1) q = 1;
-  qv.innerText = q;
+/* ─── REQUEST QUOTE & INQUIRY INBOX ─── */
+function getInquiries() {
+  try { return JSON.parse(localStorage.getItem('wirog_inquiries')) || []; }
+  catch { return []; }
 }
 
-function shareCatalogueItem(title, businessName, price, unit) {
-  var text = 'Check out ' + title + ' (' + unit + ') - P' + price.toFixed(2) + ' from ' + businessName + ' on Wirog Supply Solutions!';
-  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+function saveInquiries(inquiries) {
+  localStorage.setItem('wirog_inquiries', JSON.stringify(inquiries));
 }
 
+function requestQuote(businessName, phone, itemTitle, businessId, userId) {
+  if (!phone) { showToast('Contact info not available'); return; }
+  var userName = (window.UserState && UserState.name) || 'A Wirog user';
+  var text = 'Hello ' + businessName + ', I found you on Wirog Supply Solutions and would like to request a quote' +
+    (itemTitle ? ' for ' + itemTitle : '') +
+    '. Please let me know your pricing and availability. Thank you!';
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(text), '_blank');
+
+  // Record the inquiry
+  var inquiries = getInquiries();
+  inquiries.push({
+    id: 'inq_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    businessId: businessId || '',
+    businessName: businessName,
+    itemTitle: itemTitle || '',
+    userId: (window.UserState && UserState.id) || 'guest',
+    userName: userName,
+    phone: phone,
+    createdAt: Date.now(),
+    status: 'sent'
+  });
+  saveInquiries(inquiries);
+  showToast('Quote request sent via WhatsApp');
+}
+
+window.requestQuote = requestQuote;
+window.getInquiries = getInquiries;
 window.renderAlphaNav = renderAlphaNav;
 window.renderDirectory = renderDirectory;
 window.openBizProfile = openBizProfile;
@@ -1158,12 +1226,11 @@ window.toggleFavBiz = toggleFavBiz;
 window.openDirTypeModal = openDirTypeModal;
 window.selectDirType = selectDirType;
 window.toggleBizPromo = toggleBizPromo;
-window.openProProfile = openProProfile;
+// openProProfile preserved from pro.js (enhanced version with skills, rates, etc.)
 window.toggleBizDropdown = toggleBizDropdown;
 window.closeBizDropdowns = closeBizDropdowns;
 window.selectCatalogueCategory = selectCatalogueCategory;
 window.renderCatalogueListedItems = renderCatalogueListedItems;
 window.backToCatalogueCategories = backToCatalogueCategories;
 window.catItemQty = catItemQty;
-window.shareCatalogueItem = shareCatalogueItem;
-window.openBizLogoPreview = openBizLogoPreview;
+window.toggleBizPromo = toggleBizPromo;

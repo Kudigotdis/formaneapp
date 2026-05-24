@@ -1,0 +1,53 @@
+About Wirog
+
+About Wirog App: The Ultimate Brand Discovery & Supply Solution
+Welcome to the Wirog App! This document provides a deep dive into what Wirog is, who it is for, and how to make the most of its powerful features. It is designed to give you a complete understanding of the platform, with a special focus on the Notes feature, and includes a ready-to-use FAQ section.
+
+1. What is Wirog App?
+Wirog App is a brand-centric discovery platform and business directory designed specifically for the Botswana market. It serves as a "Digital Engine" connecting general users, tradespeople, and professionals with local businesses across 27 distinct industry categories (such as Building Materials, Attire & Uniforms, Cleaning Services, and Tools & Equipment).
+
+For Users: It’s a tool to discover local suppliers, browse promotional catalogs, save items to personalized project notes, calculate costs, and unlock VIP rewards. For Businesses: It’s a platform to showcase their brand (logos, banners), list their contacts (WhatsApp, Mobile, GPS), promote products, and track how many times their profile is viewed (Live KPI Tracking).
+
+Wirog is built on a Hybrid Cloud-Local Architecture, meaning it downloads and caches data so it feels blazingly fast and works seamlessly even when your internet connection is poor or completely offline.
+
+2. Core Features Overview
+The Directory: Browse through 27 industry categories to find exactly what you need. View rich business profiles with direct contact links (WhatsApp, Phone), Google Maps GPS routing, and social media pages.
+Promos & Catalogues: Businesses upload promotional items and catalogues. Users can scroll through these active deals to find the best prices for materials or services.
+VIP & Rewards: Active users can unlock a "VIP Pass" and "Claim Prizes" (Wirog reward tokens).
+Platform Sync (Offline Mode): Users can manually trigger a "Sync Assets Now" feature to download all industry icons and images, allowing the app to function beautifully without consuming mobile data later.
+3. Deep Dive: The Notes Feature 📝
+The Notes feature is Wirog's most powerful tool for project management, budgeting, and quoting. It allows users to build personalized lists of items they discover in the Promos feed.
+
+How Notes Work:
+Saving Items: While browsing the Promos feed, if you see a product you need (e.g., Meranti Planks from Board Kings or Dulux Paint from BuildIt), you can save it directly to a Note.
+Creating & Managing Notes: You can create multiple notes for different projects (e.g., "Phakalane Site Prep" or "Office Shopfitting"). Each note acts as a smart folder.
+Automatic Budgeting: Inside a note, you can view all saved items. You can tap the + or - buttons to adjust the quantity of each item. The app automatically calculates the total cost for that specific item and updates the Grand Total for the entire note in real-time.
+Customization:
+Title: Rename your note to match your project.
+Description: Add text descriptions or project details.
+Thumbnail: Upload an image (like a site photo or blueprint) to act as the cover image for the note.
+WhatsApp Sharing: Once your list is complete, you can tap the Share (WhatsApp) icon. Wirog will automatically format your note into a clean text message, listing every item, its price, quantity, the supplier's name, and the grand total, and open it in WhatsApp so you can send it to a client, boss, or contractor.
+Limits & Upgrades: Users get 10 free notes. If you need more, you can purchase note packs (e.g., 25 additional notes) via local payment methods like BTC Smega, Mascom Myzaka, or Orange Money.
+4. VIP & Agent Verification 🏆
+To maintain trust and reward active members, Wirog features a verified VIP system.
+
+Locked Rewards: By default, the "VIP Pass" and "Claim Prize" buttons in a user's account are locked.
+How to Verify: To unlock these features, a user must visit a Wirog Agent located at partner hardware stores (e.g., Kago Timber, Builders Mart).
+The Agent Portal: Wirog Agents have access to a secure portal on their app. They simply search for the user's ID or phone number and click "Verify". Once verified, the user instantly gains access to exclusive discounts, early access to promos, and the ability to redeem Wirog reward tokens.
+5. Frequently Asked Questions (FAQ)
+You can use the following Q&A to populate the help section or website for Wirog App:
+
+Q: Do I need an internet connection to use Wirog App? A: You need an internet connection to sync the latest promos and business profiles. However, Wirog is built to be "Offline-First". Once you view an image or sync the platform assets using the "Sync Assets Now" button in your account, the app saves them locally. You can browse your saved notes and cached profiles without using mobile data!
+
+Q: How do I calculate the cost of my construction project? A: Use the Notes feature! Browse the Promos feed, save the materials you need to a Note, and then open that Note. Adjust the quantities for each item, and Wirog will automatically calculate your total project cost.
+
+Q: How do I share my project budget with a client? A: Open your compiled Note and tap the green WhatsApp share icon. Wirog will automatically generate a professional, itemized list with quantities, supplier names, and total costs, ready to send via WhatsApp.
+
+Q: Why are my VIP Pass and Claim Prize buttons locked? A: VIP rewards are reserved for verified users. To unlock them, simply visit a Wirog Agent at any of our partner hardware stores (such as Kago Timber or Builders Mart) and ask them to verify your account. It takes just a few seconds!
+
+Q: I am a business owner. How do I get my business listed? A: You can submit your business details (Name, Category, Town, GPS link, Social Media, Logo, and Banner) directly through the "Add Business" onboarding form in the app. Once submitted, it goes into a "Pending" queue. A Wirog Administrator will review your submission and approve it, at which point it will instantly appear live in the Directory.
+
+Q: Can I see how many people are viewing my business profile? A: Yes! Wirog features Live KPI Tracking. Every time a user opens your business profile, your "Views" counter increments, allowing you to track your brand's reach on the platform.
+
+Q: How do I pay for Promos or more Notes? A: Wirog supports local mobile money. You can select to pay via BTC Smega, Mascom Myzaka, or Orange Money. The app will provide you with the exact payment details and prompt you to send your proof of payment via WhatsApp for quick processing.
+

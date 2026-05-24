@@ -134,13 +134,22 @@ function renderAnalytics(range) {
   // Facebook
   var subs = JSON.parse(localStorage.getItem('wirog_artwork_submissions') || '[]');
   var bizName = UserState.business && UserState.business.name;
-  var fbSubs = subs.filter(function(s) { return s.businessName === bizName; });
-  var fbThisMonth = fbSubs.filter(function(s) {
-    var d = new Date(s.createdAt);
+  var fbItems = [];
+  subs.filter(function(s) { return s.businessName === bizName; }).forEach(function(s) {
+    if (s.items) {
+      s.items.forEach(function(item) {
+        fbItems.push(item);
+      });
+    } else {
+      fbItems.push({ id: s.id, scheduledDay: s.boostDay, status: s.status, createdAt: s.createdAt });
+    }
+  });
+  var fbThisMonth = fbItems.filter(function(it) {
+    var d = new Date(it.createdAt || Date.now());
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
   var dayCounts = {};
-  fbSubs.forEach(function(s) { dayCounts[s.boostDay] = (dayCounts[s.boostDay] || 0) + 1; });
+  fbItems.forEach(function(it) { dayCounts[it.scheduledDay] = (dayCounts[it.scheduledDay] || 0) + 1; });
   var bestDay = Object.keys(dayCounts).sort(function(a, b) { return (dayCounts[b] || 0) - (dayCounts[a] || 0); })[0] || '—';
 
   // Monthly history
@@ -205,7 +214,7 @@ function renderAnalytics(range) {
 
   view.innerHTML =
     '<div class="analytics-bar">' +
-      '<div class="analytics-bar-back" onclick="goTo(\'view-account\')"><img src="assets/icons/solid/chevron-left_white.webp" style="width:18px;height:18px;"></div>' +
+      '<div class="analytics-bar-back" onclick="goBack()"><img src="assets/icons/solid/chevron-left_white.webp" style="width:18px;height:18px;"></div>' +
       '<div class="analytics-bar-title">Analytics</div>' +
     '</div>' +
     '<div style="padding:0 14px;overflow-y:auto;flex:1;">' +
@@ -423,15 +432,22 @@ function renderAnalyticsMonth(yearMonth, activeTab) {
         (catWithViews.filter(function(it) { return it.views === 0; }).length > 0 ? '<div class="analytics-annotation">Items with 0 views may need a better image or description.</div>' : '');
     }
     if (activeTab === 'facebook') {
-      var fbMonthSubs = fbSubs.filter(function(s) {
-        var d = new Date(s.createdAt);
+      var _allSubs = JSON.parse(localStorage.getItem('wirog_artwork_submissions') || '[]');
+      var _bizName = UserState.business && UserState.business.name;
+      var _allItems = [];
+      _allSubs.filter(function(s) { return s.businessName === _bizName; }).forEach(function(s) {
+        if (s.items) { s.items.forEach(function(it) { _allItems.push(it); }); }
+        else { _allItems.push({ id: s.id, scheduledDay: s.boostDay, status: s.status, createdAt: s.createdAt }); }
+      });
+      var fbMonthSubs = _allItems.filter(function(it) {
+        var d = new Date(it.createdAt || Date.now());
         return d.getMonth() === month && d.getFullYear() === year;
       });
-      var approved = fbMonthSubs.filter(function(s) { return s.status === 'approved'; });
-      var pending = fbMonthSubs.filter(function(s) { return s.status === 'pending'; });
-      var rejected = fbMonthSubs.filter(function(s) { return s.status === 'rejected'; });
+      var approved = fbMonthSubs.filter(function(it) { return it.status === 'approved'; });
+      var pending = fbMonthSubs.filter(function(it) { return it.status === 'pending'; });
+      var rejected = fbMonthSubs.filter(function(it) { return it.status === 'rejected'; });
       var dayCount = {};
-      fbMonthSubs.forEach(function(s) { dayCount[s.boostDay] = (dayCount[s.boostDay] || 0) + 1; });
+      fbMonthSubs.forEach(function(it) { dayCount[it.scheduledDay] = (dayCount[it.scheduledDay] || 0) + 1; });
       var best = Object.keys(dayCount).sort(function(a, b) { return (dayCount[b] || 0) - (dayCount[a] || 0); })[0] || '—';
       return '<div class="analytics-section-head">FACEBOOK POSTS</div>' +
         '<div class="analytics-stat-row">' +
@@ -454,7 +470,7 @@ function renderAnalyticsMonth(yearMonth, activeTab) {
 
   view.innerHTML =
     '<div class="analytics-bar">' +
-      '<div class="analytics-bar-back" onclick="goTo(\'view-analytics\');renderAnalytics(\'this-month\')"><img src="assets/icons/solid/chevron-left_white.webp" style="width:18px;height:18px;"></div>' +
+      '<div class="analytics-bar-back" onclick="goBack()"><img src="assets/icons/solid/chevron-left_white.webp" style="width:18px;height:18px;"></div>' +
       '<div class="analytics-bar-title">' + label + '</div>' +
     '</div>' +
     '<div style="flex:1;overflow-y:auto;">' +

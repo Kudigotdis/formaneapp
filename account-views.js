@@ -170,7 +170,7 @@
   };
 
   /* ─── OPEN ADD ITEM MODAL ─── */
-  window.openAddItemModal = function(){
+  window.openAddItemModal = function(categoryName){
     const user = getCurrentUser();
     const sheet = document.getElementById('add-item-modal');
     if (!sheet) return;
@@ -186,6 +186,15 @@
   }
 
     renderItemCategoryPills();
+    /* pre-select category if provided */
+    if (categoryName) {
+      const pills = document.querySelectorAll('#item-category-pills .pill');
+      pills.forEach(p => {
+        if (p.textContent.trim() === categoryName) {
+          toggleItemCategoryPill(p);
+        }
+      });
+    }
     populateTownSelects();
 
     _selectedAreas = [];
@@ -292,6 +301,79 @@
     document.getElementById('add-item-promo-locked').style.display = 'block';
   };
 
+  /* ─── CATALOGUE ACTIONS SHEET ─── */
+  window.openCatalogueActions = function(){
+    const user = getCurrentUser();
+    const biz = user.business;
+    if (!biz) { showToast('Register a business first'); return; }
+
+    const existing = document.getElementById('catalogue-actions-overlay');
+    if (existing) existing.remove();
+
+    const init = biz.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const col = window.APP_COLORS[init.charCodeAt(0) % window.APP_COLORS.length];
+    const nameEsc = biz.name.replace(/'/g, "\\'");
+
+    const overlay = document.createElement('div');
+    overlay.id = 'catalogue-actions-overlay';
+    overlay.className = 'modal-overlay';
+    overlay.style.cssText = 'align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.5);';
+    overlay.onclick = function(e) { if (e.target === this) this.remove(); };
+    overlay.innerHTML =
+      '<div class="modal-sheet" style="width:100%;max-width:500px;border-radius:20px 20px 0 0;background:white;padding:24px 20px 20px;">' +
+        '<div style="text-align:center;margin-bottom:20px;">' +
+          '<div style="width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 12px;"></div>' +
+          '<span style="font-size:17px;font-weight:700;color:var(--grey-dark);">Catalogue</span>' +
+        '</div>' +
+        '<button class="btn" style="width:100%;padding:14px;margin-bottom:10px;font-weight:600;text-align:left;display:flex;align-items:center;gap:12px;font-size:14px;" onclick="this.closest(\'.modal-overlay\').remove();openBizCatalogue(\'biz_user\',\'' + nameEsc + '\',\'' + biz.town + '\',\'' + (biz.phone || '') + '\',\'' + col + '\',\'' + init + '\')">' +
+          '<span style="width:28px;height:28px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;"><i class="fas fa-eye"></i></span> View Catalogue' +
+        '</button>' +
+        '<button class="btn" style="width:100%;padding:14px;margin-bottom:10px;font-weight:600;text-align:left;display:flex;align-items:center;gap:12px;font-size:14px;background:rgba(237,102,38,0.06);border:1px solid var(--orange);" onclick="this.closest(\'.modal-overlay\').remove();openAddItemWithCategory()">' +
+          '<span style="width:28px;height:28px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;"><i class="fas fa-plus"></i></span> Add Item' +
+        '</button>' +
+        '<button class="btn" style="width:100%;padding:14px;margin-bottom:10px;font-weight:600;text-align:left;display:flex;align-items:center;gap:12px;font-size:14px;background:rgba(237,102,38,0.06);border:1px solid var(--orange);" onclick="this.closest(\'.modal-overlay\').remove();openAddItemWithCategory()">' +
+          '<span style="width:28px;height:28px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;"><i class="fas fa-plus-circle"></i></span> Create New Catalogue' +
+        '</button>' +
+        '<button class="btn-outline" style="width:100%;padding:14px;font-size:14px;" onclick="this.closest(\'.modal-overlay\').remove()">Cancel</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    requestAnimationFrame(function(){ overlay.style.display = 'flex'; });
+  };
+
+  /* ─── CATEGORY SELECTOR FOR ADD ITEM ─── */
+  window.openAddItemWithCategory = function(){
+    const cats = getAllCategories();
+    if (cats.length === 0) { showToast('No categories available'); return; }
+
+    const existing = document.getElementById('add-item-cat-selector-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'add-item-cat-selector-overlay';
+    overlay.className = 'modal-overlay';
+    overlay.style.cssText = 'align-items:center;justify-content:center;background:rgba(0,0,0,0.5);';
+    overlay.onclick = function(e) { if (e.target === this) this.remove(); };
+
+    const catHtml = cats.map(function(c){
+      return '<button class="pill" style="font-size:13px;padding:10px 16px;text-align:left;width:100%;border:1px solid #eee;border-radius:8px;background:white;cursor:pointer;display:flex;align-items:center;gap:10px;" onclick="this.closest(\'.modal-overlay\').remove();openAddItemModal(\'' + c.name.replace(/'/g,"\\'") + '\')">' +
+        '<span style="width:24px;height:24px;border-radius:50%;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;">' + c.name.charAt(0) + '</span>' +
+        '<span>' + c.name + '</span>' +
+        (c.children && c.children.length ? '<span style="margin-left:auto;font-size:11px;color:#999;">' + c.children.length + ' sub</span>' : '') +
+      '</button>';
+    }).join('');
+
+    overlay.innerHTML =
+      '<div class="modal-sheet" style="width:95%;max-width:500px;border-radius:20px;background:white;display:flex;flex-direction:column;max-height:80vh;">' +
+        '<div class="modal-header" style="padding:16px 20px;border-bottom:1px solid var(--grey-light);display:flex;justify-content:space-between;align-items:center;">' +
+          '<span style="font-size:17px;font-weight:700;">Select a Category</span>' +
+          '<button class="modal-close" style="background:none;border:none;cursor:pointer;padding:5px;" onclick="this.closest(\'.modal-overlay\').remove()"><img src="assets/icons/solid/xmark_orange.webp" style="width:20px;height:20px;display:block;"></button>' +
+        '</div>' +
+        '<div class="modal-body" style="overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;">' + catHtml + '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    requestAnimationFrame(function(){ overlay.style.display = 'flex'; });
+  };
+
   /* ─── TOWN SELECT POPULATION ─── */
   function populateTownSelects(){
     const towns = getAllTowns();
@@ -308,181 +390,781 @@
     });
   }
 
-  /* ─── ARTWORK SUBMISSION ─── */
-  let _artworkFiles = [];
+  /* ─── ARTWORK SUBMISSION (Facebook Boost) ─── */
+  let _artworkItems = [];
+  let _artCategoryBrowserItemIdx = -1;
+  let _artCurrentItemIdx = 0;
 
-  window.openArtworkSubmission = function(){
-    const modal = document.getElementById('artwork-submission-modal');
-    if (!modal) return;
-    modal.style.display = 'block';
-    _artworkFiles = [];
-    syncBoostCounter();
-    populateArtCategory();
-    renderBoostSubmissionStatus();
-    document.getElementById('art-upload-input').value = '';
-    document.getElementById('art-previews').innerHTML = '';
-    document.getElementById('art-upload-count').textContent = '0 of 12 images selected';
-    document.querySelectorAll('#artwork-submission-modal .pill').forEach(p => p.classList.remove('pill-selected'));
-    document.getElementById('boost-day-next').textContent = '';
-    const nextDate = getNextBoostDay();
-    if (nextDate) document.getElementById('boost-day-next').textContent = 'Next available: ' + nextDate;
+  const LINK_LABELS = {
+    website:'Website', email:'Email', call:'Call', whatsapp:'WhatsApp',
+    instagram:'Instagram', tiktok:'TikTok', snapchat:'Snapchat', linkedin:'LinkedIn'
   };
+  const ALL_LINK_TYPES = Object.keys(LINK_LABELS);
 
-  function populateArtCategory() {
-    const sel = document.getElementById('art-category');
-    if (!sel) return;
-    sel.innerHTML = '';
-    const bizCats = getBusinessCategories();
-    const cats = getAllCategories();
-    (bizCats.length ? cats.filter(c => bizCats.includes(c.name)) : cats).forEach(c => {
-      const o = document.createElement('option');
-      o.value = c.id || c.name;
-      o.textContent = c.name;
-      sel.appendChild(o);
+  const ART_MAX_TAGS = 30;
+
+  function _genThumbnail(file, maxW) {
+    return new Promise(resolve => {
+      maxW = maxW || 200;
+      const r = new FileReader();
+      r.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const c = document.createElement('canvas');
+          const s = Math.min(1, maxW / img.width);
+          c.width = img.width * s;
+          c.height = img.height * s;
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = e.target.result;
+      };
+      r.readAsDataURL(file);
     });
   }
 
-  window.handleArtworkFiles = function(files) {
+  function _getAvailableDates() {
+    const dayMap = [
+      { name:'Monday', num:1 }, { name:'Wednesday', num:3 }, { name:'Friday', num:5 }
+    ];
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() + 1);
+    const out = [];
+    for (let d = 0; d < 28; d++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + d);
+      const dn = date.getDay();
+      for (const day of dayMap) {
+        if (dn === day.num) {
+          out.push({
+            dateStr: date.toISOString().split('T')[0],
+            dayName: day.name,
+            display: date.toLocaleString('default',{weekday:'short'})+' '+date.getDate()+' '+date.toLocaleString('default',{month:'short'})
+          });
+        }
+      }
+    }
+    return out;
+  }
+
+  function _escHtml(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+
+  function _hasUnsavedArtwork() {
+    return _artworkItems.some(i => i.title || i.facebookLink || i.scheduledDate);
+  }
+
+  function _clearArtworkState() {
+    _artworkItems = [];
+    _artCurrentItemIdx = 0;
+    window.removeEventListener('beforeunload', _artBeforeUnload);
+    const container = document.getElementById('art-item-details');
+    if (container) container.innerHTML = '';
+    _renderSummary();
+  }
+
+  function _artBeforeUnload(e) {
+    if (_hasUnsavedArtwork()) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  }
+
+  /* ─── ARTWORK ONBOARDING ─── */
+  var _artOnboardingStep = 0;
+  var ARTWORK_ONBOARDING_STEPS = [
+    { icon: '\uD83D\uDCF7', title: 'Add Your Images', desc: 'Tap the + button to add up to 12 artwork images. Each image becomes a card where you fill in the details for your Facebook boost.' },
+    { icon: '\u270F\uFE0F', title: 'Fill in Details', desc: 'Add a title, description, and Facebook link (required) for each item. You can also add optional links, pick a category, and add #tags.' },
+    { icon: '\uD83D\uDCC5', title: 'Pick a Schedule Date', desc: 'Choose from available boost dates \u2014 Mondays, Wednesdays, and Fridays in the next 4 weeks. Each item must have its own date.' },
+    { icon: '\uD83D\uDE80', title: 'Submit for Boosts', desc: 'Each item costs 1 boost. Review your items, swipe through them to check everything, then tap Submit to send for admin approval.' }
+  ];
+
+  window.showArtworkOnboarding = function() {
+    _artOnboardingStep = 0;
+    renderArtworkOnboardingStep();
+    openModal('art-onboarding-modal');
+  };
+
+  function renderArtworkOnboardingStep() {
+    var step = ARTWORK_ONBOARDING_STEPS[_artOnboardingStep];
+    document.getElementById('art-onboarding-icon').textContent = step.icon;
+    document.getElementById('art-onboarding-title').textContent = step.title;
+    document.getElementById('art-onboarding-desc').textContent = step.desc;
+    for (var i = 0; i < ARTWORK_ONBOARDING_STEPS.length; i++) {
+      var dot = document.getElementById('art-odot-' + i);
+      if (dot) dot.style.background = i === _artOnboardingStep ? 'var(--orange)' : 'var(--grey-light)';
+    }
+    var btn = document.getElementById('art-onboarding-btn');
+    if (_artOnboardingStep === ARTWORK_ONBOARDING_STEPS.length - 1) {
+      btn.textContent = 'Get Started';
+    } else {
+      btn.textContent = 'Next';
+    }
+  }
+
+  window.nextArtworkOnboardingStep = function() {
+    _artOnboardingStep++;
+    if (_artOnboardingStep >= ARTWORK_ONBOARDING_STEPS.length) {
+      closeArtworkOnboarding();
+      return;
+    }
+    renderArtworkOnboardingStep();
+  };
+
+  window.closeArtworkOnboarding = function() {
+    closeModal('art-onboarding-modal');
+  };
+
+  function _syncItemFromDom() {
+    const container = document.getElementById('art-item-details');
+    if (!container) return;
+    container.querySelectorAll('.art-item-card').forEach(card => {
+      const idx = parseInt(card.dataset.itemIdx);
+      if (isNaN(idx) || !_artworkItems[idx]) return;
+      const titleEl = card.querySelector('.art-title-input');
+      const descEl = card.querySelector('.art-desc-input');
+      const fbEl = card.querySelector('.art-fb-input');
+      const catEl = card.querySelector('.art-cat-select');
+      if (titleEl) _artworkItems[idx].title = titleEl.value;
+      if (descEl) _artworkItems[idx].description = descEl.value;
+      if (fbEl) _artworkItems[idx].facebookLink = fbEl.value;
+      if (catEl && catEl.value) _artworkItems[idx].category = catEl.value;
+      const checkedDate = card.querySelector('.art-date-radio:checked');
+      if (checkedDate) {
+        _artworkItems[idx].scheduledDate = checkedDate.value;
+        _artworkItems[idx].scheduledDay = checkedDate.dataset.day || '';
+      }
+      card.querySelectorAll('.art-link-input').forEach(inp => {
+        const linkKey = inp.dataset.link;
+        if (linkKey) _artworkItems[idx].links[linkKey] = inp.value;
+      });
+    });
+  }
+
+  function _renderItemDetails() {
+    const container = document.getElementById('art-item-details');
+    if (!container) return;
+    _syncItemFromDom();
+
+    if (_artworkItems.length === 0) {
+      container.innerHTML = '';
+      _renderSummary();
+      return;
+    }
+
+    if (_artCurrentItemIdx >= _artworkItems.length) _artCurrentItemIdx = _artworkItems.length - 1;
+    if (_artCurrentItemIdx < 0) _artCurrentItemIdx = 0;
+
+    const idx = _artCurrentItemIdx;
+    const item = _artworkItems[idx];
+    const total = _artworkItems.length;
+
+    const dates = _getAvailableDates();
+    const weeks = [];
+    for (let i = 0; i < dates.length; i += 3) {
+      weeks.push(dates.slice(i, i + 3));
+    }
+
+    function _populateItemCatSelect(sel, itm) {
+      if (!sel) return;
+      sel.innerHTML = '';
+      const bizCats = typeof getBusinessCategories === 'function' ? getBusinessCategories() : [];
+      const cats = typeof getAllCategories === 'function' ? getAllCategories() : [];
+      const noneOpt = document.createElement('option');
+      noneOpt.value = '';
+      noneOpt.textContent = 'Select category...';
+      sel.appendChild(noneOpt);
+      (bizCats.length ? cats.filter(c => bizCats.includes(c.name)) : cats).forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.id || c.name;
+        o.textContent = c.name;
+        if (itm.category === (c.id || c.name)) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
+
+    const added = Object.keys(item.links);
+    const avail = ALL_LINK_TYPES.filter(l => !added.includes(l));
+    const linkRows = added.map(k => {
+      const label = LINK_LABELS[k] || k;
+      return `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+        <span style="font-size:11px;font-weight:600;color:#3f3f46;min-width:70px;text-transform:uppercase;letter-spacing:0.5px;">${label}</span>
+        <input type="text" class="art-link-input" data-item="${idx}" data-link="${k}" value="${_escHtml(item.links[k]||'')}" placeholder="${label} URL" style="flex:1;padding:8px 10px;border:1px solid #d4d4d8;border-radius:6px;font-size:12px;color:#18181b;outline:none;box-sizing:border-box;transition:border-color 0.15s ease;" onfocus="this.style.borderColor='var(--orange,#f97316)'" onblur="this.style.borderColor='#d4d4d8'">
+        <button type="button" class="art-remove-link" data-item="${idx}" data-link="${k}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px;padding:2px;line-height:1;">✕</button>
+      </div>`;
+    }).join('');
+
+    const addLinkHtml = avail.length > 0
+      ? `<select class="art-add-link" data-item="${idx}" style="width:100%;margin-top:6px;padding:8px 12px;font-size:12px;font-weight:500;border:1px dashed #d4d4d8;border-radius:6px;background:#fff;color:var(--orange);cursor:pointer;outline:none;box-sizing:border-box;text-align:center;transition:border-color 0.15s ease;" onfocus="this.style.borderColor='var(--orange,#f97316)'" onblur="this.style.borderColor='#d4d4d8'">
+          <option value="">+ Add Link</option>
+          ${avail.map(l => `<option value="${l}">${LINK_LABELS[l]}</option>`).join('')}
+         </select>`
+      : '';
+
+    const weekHtml = weeks.map((weekDates, wi) => {
+      const isLast = wi === weeks.length - 1;
+      const rows = weekDates.map(d => {
+        const checked = item.scheduledDate === d.dateStr ? ' checked' : '';
+        const takenByOther = _artworkItems.some((o, oi) => oi !== idx && o.scheduledDate === d.dateStr);
+        const disabled = takenByOther ? ' disabled' : '';
+        return `<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e4e4e7;border-radius:6px;font-size:13px;color:#27272a;background:#fafafa;cursor:${takenByOther?'not-allowed':'pointer'};max-width:100%;box-sizing:border-box;${takenByOther?'opacity:0.4;pointer-events:none;':''}">
+          <input type="radio" class="art-date-radio" name="art-date-${idx}" value="${d.dateStr}" data-day="${d.dayName}" data-item="${idx}"${checked}${disabled} style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
+          <span class="art-custom-radio" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;border:2px solid ${checked?'#ed6626':'#d4d4d8'};background:${checked?'#ed6626':'#fff'};flex-shrink:0;transition:all 0.1s;">${checked?'<span style="color:#fff;font-size:12px;line-height:1;">✓</span>':''}</span>
+          <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.display}</span>
+        </label>`;
+      }).join('');
+      return `<div style="margin-bottom:${isLast?'4px':'12px'};">
+        <div style="font-size:11px;font-weight:700;color:#a1a1aa;text-transform:uppercase;margin-bottom:6px;letter-spacing:0.5px;">Week ${wi+1}</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">${rows}</div>
+      </div>`;
+    }).join('');
+
+    const tags = item.tags || [];
+    const tagPills = tags.map((t, ti) =>
+      `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;margin:2px;background:rgba(237,102,38,0.12);color:var(--orange);border-radius:12px;font-size:11px;font-weight:600;">
+        ${_escHtml(t)}
+        <button type="button" class="art-tag-remove" data-item="${idx}" data-tag-idx="${ti}" style="background:none;border:none;color:var(--orange);cursor:pointer;font-size:14px;line-height:1;padding:0;">✕</button>
+      </span>`
+    ).join('');
+    const tagsFull = tags.length >= ART_MAX_TAGS;
+
+    const isOpen = cardHasOpen(idx);
+
+    const html = `
+      <div class="art-item-card${isOpen?' open':''}" data-item-idx="${idx}" style="background:#fff;border:1px solid #e4e4e7;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:12px;overflow:hidden;max-width:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+        <div class="art-item-header" onclick="toggleArtItem(this)" style="display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;user-select:none;background:#fafafa;border-bottom:1px solid #e4e4e7;">
+          <img src="${item.thumbnail}" onclick="showArtworkImagePreview(this.src,${idx})" style="width:42px;height:42px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid #e4e4e7;cursor:pointer;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:#18181b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;">${_escHtml(item.title) || 'Untitled'}</div>
+            <div style="font-size:11px;color:#71717a;">${item.scheduledDate || 'No date set'}</div>
+          </div>
+          <button type="button" class="art-remove-item" onclick="removeArtworkItem(event,${idx})" style="width:28px;height:28px;border-radius:50%;background:#fee2e2;border:none;color:#ef4444;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1;">✕</button>
+        </div>
+
+        <div class="art-item-body" style="padding:16px;overflow-x:hidden;${isOpen?'':'display:none;'}">
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:8px 12px;background:#f4f4f5;border-radius:8px;">
+            <button type="button" class="art-prev-item" data-item="${idx}" style="background:none;border:none;font-size:12px;color:#71717a;cursor:pointer;padding:4px;${idx===0?'visibility:hidden;':''}">◀</button>
+            <span style="font-size:12px;font-weight:600;color:#27272a;letter-spacing:0.5px;">Item ${idx+1} of ${total}</span>
+            <button type="button" class="art-next-item" data-item="${idx}" style="background:none;border:none;font-size:12px;color:#71717a;cursor:pointer;padding:4px;${idx>=total-1?'visibility:hidden;':''}">▶</button>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:11px;font-weight:600;color:#3f3f46;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Title *</label>
+            <input type="text" class="art-title-input" data-item="${idx}" value="${_escHtml(item.title)}" placeholder="Image title" style="width:100%;padding:10px 12px;border:1px solid #d4d4d8;border-radius:6px;font-size:13px;font-weight:500;color:#18181b;box-sizing:border-box;outline:none;transition:border-color 0.15s ease;" oninput="liveUpdateTitle(this,${idx})" onfocus="this.style.borderColor='var(--orange,#f97316)'" onblur="this.style.borderColor='#d4d4d8'">
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:11px;font-weight:600;color:#3f3f46;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Description</label>
+            <textarea class="art-desc-input" data-item="${idx}" placeholder="Describe this image (optional)" style="width:100%;padding:10px 12px;border:1px solid #d4d4d8;border-radius:6px;font-size:13px;color:#18181b;resize:vertical;min-height:54px;box-sizing:border-box;outline:none;transition:border-color 0.15s ease;" onfocus="this.style.borderColor='var(--orange,#f97316)'" onblur="this.style.borderColor='#d4d4d8'">${_escHtml(item.description)}</textarea>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <label style="font-size:11px;font-weight:600;color:#3f3f46;display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Schedule Date *</label>
+            ${weekHtml}
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:11px;font-weight:600;color:#3f3f46;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Facebook Link *</label>
+            <input type="url" class="art-fb-input" data-item="${idx}" value="${_escHtml(item.facebookLink)}" placeholder="https://facebook.com/..." style="width:100%;padding:10px 12px;border:1px solid #d4d4d8;border-radius:6px;font-size:13px;color:#18181b;box-sizing:border-box;outline:none;transition:border-color 0.15s ease;" onfocus="this.style.borderColor='var(--orange,#f97316)'" onblur="this.style.borderColor='#d4d4d8'">
+          </div>
+
+          <div class="art-links-section" style="margin-bottom:14px;padding-top:10px;border-top:1px solid #f4f4f5;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:600;color:#3f3f46;text-transform:uppercase;letter-spacing:0.5px;">Additional Links</span>
+            </div>
+            ${linkRows}
+            ${addLinkHtml}
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:11px;font-weight:600;color:#3f3f46;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Category *</label>
+            <select class="art-cat-select" data-item="${idx}" style="width:100%;padding:10px 12px;border:1px solid #d4d4d8;border-radius:6px;font-size:13px;color:#18181b;background-color:#fff;outline:none;box-sizing:border-box;transition:border-color 0.15s ease;" onfocus="this.style.borderColor='var(--orange,#f97316)'" onblur="this.style.borderColor='#d4d4d8'"></select>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:600;color:#3f3f46;text-transform:uppercase;letter-spacing:0.5px;">Tags <span style="font-weight:400;color:#a1a1aa;margin-left:2px;">${tags.length}/${ART_MAX_TAGS}</span></span>
+              <button type="button" class="art-browse-cats" data-item="${idx}" onclick="openArtCategoryBrowser(${idx})" style="background:none;border:1px solid var(--orange);color:var(--orange);border-radius:6px;padding:4px 8px;font-size:11px;font-weight:500;cursor:pointer;">Browse</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">${tagPills}</div>
+            ${tagsFull ? '<div style="font-size:10px;color:#a1a1aa;">Max tags reached</div>'
+              : `<div style="display:flex;gap:6px;">
+                  <input type="text" class="art-tag-input" data-item="${idx}" placeholder="Type #tag and press Enter" style="flex:1;padding:8px 12px;border:1px solid #d4d4d8;border-radius:6px;font-size:13px;color:#18181b;outline:none;box-sizing:border-box;transition:border-color 0.15s ease;" onfocus="this.style.borderColor='var(--orange,#f97316)'" onblur="this.style.borderColor='#d4d4d8'">
+                  <button type="button" class="art-tag-add" data-item="${idx}" style="background:var(--orange);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:16px;line-height:1;font-weight:600;cursor:pointer;">+</button>
+                 </div>`}
+          </div>
+
+        </div>
+      </div>`;
+
+    container.innerHTML = html;
+
+    container.querySelectorAll('.art-cat-select').forEach(sel => {
+      const i = parseInt(sel.dataset.item);
+      if (!isNaN(i) && _artworkItems[i]) _populateItemCatSelect(sel, _artworkItems[i]);
+    });
+
+    _renderSummary();
+  }
+
+  function cardHasOpen(idx) {
+    const card = document.querySelector(`.art-item-card[data-item-idx="${idx}"]`);
+    if (card) return card.classList.contains('open');
+    return true;
+  }
+
+  function _renderSummary() {
+    const summary = document.getElementById('art-summary');
+    const text = document.getElementById('art-summary-text');
+    const boostCount = document.getElementById('boost-counter-modal');
+    if (!summary || !text) return;
+    if (_artworkItems.length === 0) { summary.style.display = 'none'; return; }
+    summary.style.display = 'block';
+    const valid = _artworkItems.filter(i => i.title && i.facebookLink && i.scheduledDate).length;
+    const key = 'wirog_boosts_remaining';
+    const remaining = parseInt(localStorage.getItem(key) || '12', 10);
+    text.textContent = _artworkItems.length+' item'+(_artworkItems.length!==1?'s':'')+' · '+_artworkItems.length+' boost'+
+      (_artworkItems.length!==1?'s':'')+(valid<_artworkItems.length?' · '+valid+'/'+_artworkItems.length+' complete':'');
+    if (boostCount) {
+      boostCount.textContent = _artworkItems.length + ' boost' + (_artworkItems.length!==1?'s':'') + ' needed · ' + remaining + ' available';
+    }
+  }
+
+  function addArtworkTag(idx, tag) {
+    if (!_artworkItems[idx]) return;
+    const trimmed = tag.trim();
+    if (!trimmed) return;
+    if (!trimmed.startsWith('#')) {
+      addArtworkTag(idx, '#' + trimmed);
+      return;
+    }
+    if (_artworkItems[idx].tags.length >= ART_MAX_TAGS) {
+      showToast('Max ' + ART_MAX_TAGS + ' tags per item');
+      return;
+    }
+    if (_artworkItems[idx].tags.includes(trimmed)) {
+      showToast('Tag already added');
+      return;
+    }
+    _artworkItems[idx].tags.push(trimmed);
+    _renderItemDetails();
+  }
+
+  function removeArtworkTag(idx, tagIdx) {
+    if (!_artworkItems[idx]) return;
+    _artworkItems[idx].tags.splice(tagIdx, 1);
+    _renderItemDetails();
+  }
+
+  function _renderCategoryBrowser(idx) {
+    const modal = document.getElementById('art-category-browser');
+    if (!modal) return;
+    _artCategoryBrowserItemIdx = idx;
+    const list = modal.querySelector('.art-category-browser-list');
+    if (!list) return;
+    const cats = typeof getAllCategories === 'function' ? getAllCategories() : [];
+    const chosen = (_artworkItems[idx] && _artworkItems[idx].tags) || [];
+
+    function isChosen(name) { return chosen.includes('#' + name); }
+
+    let treeHtml = '';
+    const topLevel = cats.filter(c => !c.parentId && !c.parent);
+    const childMap = {};
+    cats.forEach(c => {
+      const p = c.parentId || c.parent;
+      if (p) {
+        if (!childMap[p]) childMap[p] = [];
+        childMap[p].push(c);
+      }
+    });
+
+    function renderBranch(node, depth) {
+      const indent = depth * 20;
+      const checked = isChosen(node.name) ? ' checked' : '';
+      const children = childMap[node.id] || childMap[node.name] || [];
+      let h = `<div style="padding-left:${indent}px;margin:2px 0;">
+        <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" class="art-cat-browser-cb" value="${_escHtml(node.name)}"${checked}>
+          ${_escHtml(node.name)}
+        </label>`;
+      children.forEach(ch => { h += renderBranch(ch, depth + 1); });
+      h += '</div>';
+      return h;
+    }
+
+    topLevel.forEach(c => { treeHtml += renderBranch(c, 0); });
+    list.innerHTML = treeHtml || '<p style="color:#999;text-align:center;">No categories available.</p>';
+  }
+
+  window.openArtCategoryBrowser = function(idx) {
+    _renderCategoryBrowser(idx);
+    openModal('art-category-browser');
+  };
+
+  window.closeArtCategoryBrowser = function() {
+    closeModal('art-category-browser');
+  };
+
+  window.applyArtCategoryTags = function() {
+    const modal = document.getElementById('art-category-browser');
+    if (!modal) return;
+    const idx = _artCategoryBrowserItemIdx;
+    if (idx < 0 || !_artworkItems[idx]) return;
+    const checks = modal.querySelectorAll('.art-cat-browser-cb:checked');
+    checks.forEach(cb => {
+      const tagName = '#' + cb.value;
+      if (!_artworkItems[idx].tags.includes(tagName) && _artworkItems[idx].tags.length < ART_MAX_TAGS) {
+        _artworkItems[idx].tags.push(tagName);
+      }
+    });
+    _artCategoryBrowserItemIdx = -1;
+    closeModal('art-category-browser');
+    _renderItemDetails();
+  };
+
+  window.renderArtCategoryBrowser = function(idx) {
+    _renderCategoryBrowser(idx);
+  };
+
+  window.toggleArtItem = function(headerEl) {
+    const card = headerEl.closest('.art-item-card');
+    if (!card) return;
+    card.classList.toggle('open');
+    const body = card.querySelector('.art-item-body');
+    const chevron = card.querySelector('.art-chevron');
+    if (body) {
+      body.style.display = card.classList.contains('open') ? '' : 'none';
+    }
+    if (chevron) {
+      chevron.style.transform = card.classList.contains('open') ? 'rotate(0deg)' : 'rotate(-90deg)';
+    }
+  };
+
+  /* ─── OPEN VIEW ─── */
+  window.openArtworkSubmission = function() {
+    if (typeof goTo !== 'function') return;
+    const existing = document.getElementById('view-artwork-submission');
+    if (!existing) return;
+    _artworkItems = [];
+    _artCurrentItemIdx = 0;
+    syncBoostCounter();
+    const fileInput = document.getElementById('art-file-input');
+    if (fileInput) fileInput.value = '';
+    const details = document.getElementById('art-item-details');
+    if (details) details.innerHTML = '';
+    _renderItemDetails();
+    const summary = document.getElementById('art-summary');
+    if (summary) summary.style.display = 'none';
+    _renderSummary();
+    window.addEventListener('beforeunload', _artBeforeUnload);
+    goTo('view-artwork-submission');
+  };
+
+  /* ─── HANDLE FILE UPLOAD ─── */
+  window.handleArtworkFiles = async function(files) {
     if (!files || files.length === 0) return;
     const max = 12;
-    const remaining = max - _artworkFiles.length;
+    const remaining = max - _artworkItems.length;
     const toAdd = Math.min(remaining, files.length);
-    for (let i = 0; i < toAdd; i++) _artworkFiles.push(files[i]);
-    renderArtPreviews();
-    document.getElementById('art-upload-count').textContent = _artworkFiles.length + ' of 12 images selected';
-    if (_artworkFiles.length >= max) showToast('Max 12 images reached');
+    for (let i = 0; i < toAdd; i++) {
+      const f = files[i];
+      const thumb = await _genThumbnail(f);
+      _artworkItems.push({
+        file: f,
+        thumbnail: thumb,
+        title: '',
+        description: '',
+        facebookLink: '',
+        links: {},
+        scheduledDate: '',
+        scheduledDay: '',
+        category: '',
+        tags: []
+      });
+    }
+    if (_artworkItems.length >= max) showToast('Max 12 images reached');
+    _artCurrentItemIdx = _artworkItems.length - toAdd;
+    _renderItemDetails();
   };
 
-  function renderArtPreviews() {
-    const container = document.getElementById('art-previews');
-    if (!container) return;
-    container.innerHTML = '';
-    _artworkFiles.forEach((f, idx) => {
-      const wrapper = document.createElement('div');
-      wrapper.style.position = 'relative';
-      wrapper.style.display = 'inline-block';
-      const img = document.createElement('img');
-      img.style.width = '100px';
-      img.style.height = '100px';
-      img.style.objectFit = 'cover';
-      img.style.borderRadius = '6px';
-      img.style.cursor = 'pointer';
-      const reader = new FileReader();
-      reader.onload = e => { img.src = e.target.result; };
-      reader.readAsDataURL(f);
-      wrapper.appendChild(img);
-      const removeBtn = document.createElement('button');
-      removeBtn.innerHTML = '&times;';
-      removeBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:none;background:#e74c3c;color:white;font-size:14px;line-height:1;cursor:pointer;';
-      removeBtn.onclick = () => {
-        _artworkFiles.splice(idx, 1);
-        renderArtPreviews();
-        document.getElementById('art-upload-count').textContent = _artworkFiles.length + ' of 12 images selected';
-      };
-      wrapper.appendChild(removeBtn);
-      container.appendChild(wrapper);
-    });
-  }
-
-  function getNextBoostDay() {
-    const dayMap = { monday: 1, wednesday: 3, friday: 5 };
-    const now = new Date();
-    const today = now.getDay();
-    let nearest = null;
-    let nearestDiff = 8;
-    Object.entries(dayMap).forEach(([name, dayNum]) => {
-      let diff = dayNum - today;
-      if (diff <= 0) diff += 7;
-      if (diff < nearestDiff) { nearestDiff = diff; nearest = name; }
-    });
-    if (!nearest) return null;
-    const next = new Date(now);
-    next.setDate(now.getDate() + nearestDiff);
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    return days[next.getDay()] + ' ' + next.getDate() + ' ' + next.toLocaleString('default',{month:'short'});
-  }
-
-  window.selectBoostDay = function(day) {
-    document.querySelectorAll('#artwork-submission-modal .pill').forEach(b => b.classList.remove('pill-selected'));
-    const btn = Array.from(document.querySelectorAll('#artwork-submission-modal .pill')).find(b => b.dataset.day === day);
-    if (btn) btn.classList.add('pill-selected');
-    const nextDate = getNextBoostDay();
-    const el = document.getElementById('boost-day-next');
-    if (el) el.textContent = 'Next: ' + (nextDate || 'TBD');
-  };
-
+  /* ─── SUBMIT ─── */
   window.submitArtwork = function() {
     (async function() {
-      if (_artworkFiles.length === 0) { showToast('Please select at least 1 image (max 12)'); return; }
-      const category = document.getElementById('art-category') ? document.getElementById('art-category').value : 'uncategorized';
-      const boostBtn = document.querySelector('#artwork-submission-modal .pill-selected');
-      const boostDay = boostBtn ? boostBtn.dataset.day : '';
-      if (!boostDay) { showToast('Please select a boost day'); return; }
+      _syncItemFromDom();
+
+      if (_artworkItems.length === 0) { showToast('Please add at least 1 image (max 12)'); return; }
+
+      const missing = [];
+      _artworkItems.forEach((item, idx) => {
+        const errs = [];
+        if (!item.title) errs.push('title');
+        if (!item.facebookLink) errs.push('Facebook link');
+        if (!item.scheduledDate) errs.push('schedule date');
+        if (!item.category) errs.push('category');
+        if (errs.length) missing.push('Item ' + (idx + 1) + ': missing ' + errs.join(', '));
+      });
+      if (missing.length) { showToast(missing[0]); return; }
+
       const user = getCurrentUser();
       const biz = user.business || {};
-      const form = new FormData();
-      form.append('category', category);
-      form.append('userId', user.id);
-      form.append('boostDay', boostDay);
-      form.append('businessName', biz.name || user.name);
-      _artworkFiles.forEach(f => form.append('files', f, f.name));
 
-      const uploadUrl = (window.UPLOAD_SERVER_URL || 'http://localhost:3001') + '/upload-artwork';
-      showToast('Uploading artwork...');
-      try {
-        const resp = await fetch(uploadUrl, { method: 'POST', body: form });
-        if (!resp.ok) throw new Error('Server responded ' + resp.status);
-        const json = await resp.json();
-        if (json && json.ok) {
-          const key = 'wirog_boosts_remaining';
-          let b = parseInt(localStorage.getItem(key) || '12', 10);
-          b = Math.max(0, b - 1);
-          localStorage.setItem(key, String(b));
-          syncBoostCounter();
+      const key = 'wirog_boosts_remaining';
+      let boostsLeft = parseInt(localStorage.getItem(key) || '12', 10);
+      if (boostsLeft < _artworkItems.length) {
+        showToast('Not enough boosts. You need ' + _artworkItems.length + ' but only ' + boostsLeft + ' remaining.');
+        return;
+      }
 
-          const submission = {
-            id: 'sub_' + Date.now(),
-            category, boostDay, businessName: biz.name || user.name,
-            userId: user.id,
-            imageCount: _artworkFiles.length,
-            status: 'pending',
-            createdAt: Date.now()
-          };
-          const subs = JSON.parse(localStorage.getItem('wirog_artwork_submissions') || '[]');
-          subs.push(submission);
-          localStorage.setItem('wirog_artwork_submissions', JSON.stringify(subs));
+      boostsLeft = Math.max(0, boostsLeft - _artworkItems.length);
+      localStorage.setItem(key, String(boostsLeft));
+      syncBoostCounter();
 
-          showToast('Artwork submitted. Admin will review. Boosts left: ' + b);
-          _artworkFiles = [];
-          closeModal('artwork-submission-modal');
-          renderBoostSubmissionStatus();
-        } else {
-          throw new Error((json && json.error) || 'Unknown server error');
-        }
-      } catch (e) {
-        console.error('Upload failed', e);
-        showToast('Upload failed: ' + (e.message || e));
+      const submission = {
+        id: 'sub_' + Date.now(),
+        userId: user.id,
+        businessName: biz.name || user.name,
+        category: '', /* per-item category below */
+        status: 'pending',
+        createdAt: Date.now(),
+        items: _artworkItems.map(item => ({
+          id: 'item_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          thumbnail: item.thumbnail,
+          title: item.title,
+          description: item.description,
+          facebookLink: item.facebookLink,
+          links: Object.assign({}, item.links),
+          scheduledDate: item.scheduledDate,
+          scheduledDay: item.scheduledDay,
+          category: item.category,
+          tags: item.tags.slice(),
+          status: 'pending'
+        }))
+      };
+
+      const subs = JSON.parse(localStorage.getItem('wirog_artwork_submissions') || '[]');
+      subs.push(submission);
+      localStorage.setItem('wirog_artwork_submissions', JSON.stringify(subs));
+
+      showToast(_artworkItems.length + ' item' + (_artworkItems.length !== 1 ? 's' : '') + ' submitted. Boosts left: ' + boostsLeft);
+
+      const _filesForUpload = _artworkItems.filter(i => i.file).map(i => i.file);
+      _clearArtworkState();
+      if (typeof goBack === 'function') goBack();
+
+      /* background upload of full-res files if online */
+      if (_filesForUpload.length > 0) {
+        try {
+          if (navigator.onLine) {
+            const uploadUrl = (window.UPLOAD_SERVER_URL || 'http://localhost:3001') + '/upload-artwork';
+            const form = new FormData();
+            form.append('submissionId', submission.id);
+            form.append('category', submission.category);
+            form.append('userId', user.id);
+            form.append('businessName', biz.name || user.name);
+            submission.items.forEach(item => { form.append('itemIds', item.id); });
+            _filesForUpload.forEach(f => form.append('files', f, f.name));
+            await fetch(uploadUrl, { method: 'POST', body: form }).catch(() => {});
+          }
+        } catch (_e) {}
       }
     })();
   };
 
-  function renderBoostSubmissionStatus() {
-    const list = document.getElementById('artwork-submission-list');
-    if (!list) return;
-    const subs = JSON.parse(localStorage.getItem('wirog_artwork_submissions') || '[]');
-    if (subs.length === 0) {
-      list.innerHTML = '<p style="color:var(--grey-dark);">No submissions yet.</p>';
-      return;
+  /* ─── CANCEL ─── */
+  window.cancelArtworkSubmission = function() {
+    if (_hasUnsavedArtwork()) {
+      if (!confirm('You have unsaved changes. Discard them and leave?')) return;
     }
-    list.innerHTML = subs.slice().reverse().map(s => {
-      const date = new Date(s.createdAt).toLocaleDateString();
-      const statusColors = { pending: 'var(--orange)', approved: '#2e7d32', rejected: '#e74c3c', live: '#1565c0', completed: 'var(--grey-dark)' };
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--grey-light);">' +
-        '<div><span style="font-weight:600;text-transform:capitalize;">' + s.boostDay + '</span> · ' + s.category + '<br><span style="font-size:11px;color:var(--grey-dark);">' + date + ' · ' + s.imageCount + ' img</span></div>' +
-        '<span style="font-size:12px;font-weight:600;color:' + (statusColors[s.status] || 'var(--grey-dark)') + ';text-transform:capitalize;">' + s.status + '</span>' +
-        '</div>';
-    }).join('');
+    _clearArtworkState();
+    if (typeof goBack === 'function') goBack();
+  };
+
+  window.showArtworkImagePreview = function(src, idx) {
+    var overlay = document.createElement('div');
+    overlay.id = 'art-preview-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;';
+    overlay.onclick = function(e) { if (e.target === overlay) document.body.removeChild(overlay); };
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:100%;max-height:calc(100% - 80px);border-radius:8px;display:block;object-fit:contain;cursor:pointer;';
+    img.onclick = function() { document.body.removeChild(overlay); };
+    overlay.appendChild(img);
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:12px;margin-top:16px;width:100%;max-width:320px;flex-shrink:0;';
+    btnRow.innerHTML =
+      '<button onclick="changeArtworkImage(' + idx + ')" style="flex:1;height:44px;border:none;border-radius:8px;background:var(--orange);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Change</button>' +
+      '<button onclick="deleteArtworkFromPreview(' + idx + ')" style="flex:1;height:44px;border:none;border-radius:8px;background:var(--orange);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Delete</button>';
+    overlay.appendChild(btnRow);
+    document.body.appendChild(overlay);
+  };
+
+  window.changeArtworkImage = async function(idx) {
+    if (idx < 0 || idx >= _artworkItems.length) return;
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var thumb = await _genThumbnail(file);
+      _artworkItems[idx].file = file;
+      _artworkItems[idx].thumbnail = thumb;
+      closeArtPreview();
+      _renderItemDetails();
+    };
+    input.click();
+  };
+
+  window.deleteArtworkFromPreview = function(idx) {
+    if (idx < 0 || idx >= _artworkItems.length) return;
+    _artworkItems.splice(idx, 1);
+    if (_artCurrentItemIdx >= _artworkItems.length) {
+      _artCurrentItemIdx = Math.max(0, _artworkItems.length - 1);
+    }
+    closeArtPreview();
+    _renderItemDetails();
+  };
+
+  function closeArtPreview() {
+    var ov = document.getElementById('art-preview-overlay');
+    if (ov) document.body.removeChild(ov);
   }
+
+  window.removeArtworkItem = function(e, idx) {
+    e.stopPropagation();
+    if (idx < 0 || idx >= _artworkItems.length) return;
+    _artworkItems.splice(idx, 1);
+    if (_artCurrentItemIdx >= _artworkItems.length) {
+      _artCurrentItemIdx = Math.max(0, _artworkItems.length - 1);
+    }
+    _renderItemDetails();
+  };
+
+  window.liveUpdateTitle = function(el, idx) {
+    if (!_artworkItems[idx]) return;
+    _artworkItems[idx].title = el.value;
+    var card = el.closest('.art-item-card');
+    if (card) {
+      var headerTitle = card.querySelector('.art-item-header > div:nth-child(2) > div:first-child');
+      if (headerTitle) headerTitle.textContent = el.value || 'Untitled';
+    }
+  };
+
+  /* ─── EVENT DELEGATION for dynamic item fields ─── */
+  document.addEventListener('change', function(e) {
+    const target = e.target;
+    const idx = parseInt(target.dataset.item);
+    if (isNaN(idx) || !_artworkItems[idx]) return;
+
+    if (target.classList.contains('art-date-radio')) {
+      _artworkItems[idx].scheduledDate = target.value;
+      _artworkItems[idx].scheduledDay = target.dataset.day || '';
+      _renderItemDetails();
+    }
+    if (target.classList.contains('art-add-link') && target.value) {
+      const linkType = target.value;
+      _artworkItems[idx].links[linkType] = '';
+      _renderItemDetails();
+    }
+    if (target.classList.contains('art-cat-select')) {
+      _artworkItems[idx].category = target.value;
+    }
+  });
+
+  document.addEventListener('input', function(e) {
+    const target = e.target;
+    const idx = parseInt(target.dataset.item);
+    if (isNaN(idx) || !_artworkItems[idx]) return;
+    if (target.classList.contains('art-title-input')) _artworkItems[idx].title = target.value;
+    else if (target.classList.contains('art-desc-input')) _artworkItems[idx].description = target.value;
+    else if (target.classList.contains('art-fb-input')) _artworkItems[idx].facebookLink = target.value;
+    else if (target.classList.contains('art-link-input')) {
+      const linkKey = target.dataset.link;
+      if (linkKey) _artworkItems[idx].links[linkKey] = target.value;
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+    if (target.classList.contains('art-remove-link')) {
+      const idx = parseInt(target.dataset.item);
+      const linkKey = target.dataset.link;
+      if (!isNaN(idx) && _artworkItems[idx] && linkKey) {
+        delete _artworkItems[idx].links[linkKey];
+        _renderItemDetails();
+      }
+    }
+    if (target.classList.contains('art-tag-remove')) {
+      const idx = parseInt(target.dataset.item);
+      const tagIdx = parseInt(target.dataset.tagIdx);
+      if (!isNaN(idx) && !isNaN(tagIdx)) {
+        removeArtworkTag(idx, tagIdx);
+      }
+    }
+    if (target.classList.contains('art-tag-add')) {
+      const idx = parseInt(target.dataset.item);
+      const card = target.closest('.art-item-card');
+      const input = card ? card.querySelector('.art-tag-input') : null;
+      if (input && input.value.trim()) {
+        addArtworkTag(idx, input.value.trim());
+        input.value = '';
+        input.focus();
+      }
+    }
+    if (target.classList.contains('art-prev-item')) {
+      if (_artCurrentItemIdx > 0) {
+        _artCurrentItemIdx--;
+        _renderItemDetails();
+      }
+    }
+    if (target.classList.contains('art-next-item')) {
+      if (_artCurrentItemIdx < _artworkItems.length - 1) {
+        _artCurrentItemIdx++;
+        _renderItemDetails();
+      }
+    }
+    if (target.classList.contains('art-cancel-btn')) {
+      window.cancelArtworkSubmission();
+    }
+    if (target.classList.contains('art-submit-btn')) {
+      window.submitArtwork();
+    }
+    if (target.classList.contains('art-add-item-btn')) {
+      const fileInput = document.getElementById('art-file-input');
+      if (fileInput) fileInput.click();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      const target = e.target;
+      if (target.classList.contains('art-tag-input')) {
+        e.preventDefault();
+        const idx = parseInt(target.dataset.item);
+        if (!isNaN(idx) && target.value.trim()) {
+          addArtworkTag(idx, target.value.trim());
+          target.value = '';
+        }
+      }
+    }
+  });
+
+  window.addArtworkTag = addArtworkTag;
+  window.removeArtworkTag = removeArtworkTag;
+
+  window.hasUnsavedArtwork = _hasUnsavedArtwork;
+  window.clearUnsavedArtwork = _clearArtworkState;
+
+  /* ─── ADD ITEM via + button ─── */
+  window.addArtworkItem = function() {
+    const fileInput = document.getElementById('art-file-input');
+    if (fileInput) fileInput.click();
+  };
 
   /* ─── PROMO REQUESTS VIEW ─── */
   window.renderPromoRequests = function(){
@@ -529,6 +1211,21 @@
     }).catch(() => {});
     syncBoostCounter();
     updateMyCatalogueList();
+
+    /* Populate register modal nationality dropdown */
+    var natSel = document.getElementById('id-nationality');
+    if (natSel && window.NATIONALITIES_DATA && natSel.options.length <= 1) {
+      window.NATIONALITIES_DATA.forEach(function(item) {
+        var opt = document.createElement('option');
+        opt.value = item.nationality;
+        opt.textContent = item.country + ' (' + item.nationality + ')';
+        natSel.appendChild(opt);
+      });
+    }
+    /* Populate register modal town datalist */
+    if (typeof window.populateTownDatalist === 'function') {
+      window.populateTownDatalist();
+    }
   });
 
   window.WirogAccountViews = {
