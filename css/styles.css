@@ -311,6 +311,8 @@ label { font-size: 12px; font-weight: 600; color: var(--orange); text-transform:
 }
 .promo-details { display: none; padding: 14px 16px; }
 .promo-card.open .promo-details { display: block; animation: fadeUp 0.2s ease; }
+.promo-load-more { display: block; width: 100%; padding: 14px; margin-bottom: 10px; background: var(--grey-light); border: 1px dashed var(--grey-mid); border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--orange); cursor: pointer; text-align: center; transition: 0.15s; }
+.promo-load-more:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
 .promo-supplier { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
 .avatar {
   width: 40px; height: 40px; border-radius: 50%;

@@ -55,10 +55,17 @@ window.ITEM_EMOJIS = {
 
 window.BG_CLASSES = ['img-amber','img-green','img-blue','img-rust','img-teal'];
 
+window._bizLogoCache = null;
 window.getBusinessLogo = function(bizId) {
   if (!bizId || !window.SAMPLE_BUSINESSES) return null;
-  var biz = window.SAMPLE_BUSINESSES.find(function(b) { return b.id === bizId; });
-  return biz && biz.logo ? window.assetUrl(biz.logo) : null;
+  if (!window._bizLogoCache) {
+    window._bizLogoCache = {};
+    for (var i = 0; i < window.SAMPLE_BUSINESSES.length; i++) {
+      var b = window.SAMPLE_BUSINESSES[i];
+      window._bizLogoCache[b.id] = b.logo ? window.assetUrl(b.logo) : null;
+    }
+  }
+  return window._bizLogoCache[bizId] || null;
 };
 
 window.getBusinessLogo2 = function(bizId) {

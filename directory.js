@@ -122,6 +122,10 @@ function renderDirectory() {
     return;
   }
 
+  if (currentCountry === 'zimbabwe') {
+    el.innerHTML = '<div style="text-align:center;padding:48px 16px;color:var(--grey-dark);"><i class="fas fa-address-book" style="font-size:40px;margin-bottom:12px;display:block;color:var(--grey-mid);"></i><p style="font-size:15px;font-weight:600;margin-bottom:4px;">Zimbabwe coming soon</p><p style="font-size:13px;">Supplier listings will appear here once they are registered in Zimbabwe.</p></div>';
+    return;
+  }
   let businesses = [...window.SAMPLE_BUSINESSES];
 
   if (UserState.hasBusiness()) {
@@ -185,7 +189,7 @@ function renderDirectory() {
       d.className = 'dir-card';
       d.onclick = () => openBizProfile(b.id, b.name, b.initials, b.color, b.location, b.phone, b.public, b.description, b.isUserBiz);
       var avatarHtml = b.logo
-        ? '<img src="' + b.logo + '" class="dir-avatar" style="object-fit:cover;" alt="">'
+        ? '<img src="' + window.assetUrl(b.logo) + '" class="dir-avatar" style="object-fit:cover;" alt="" loading="lazy" width="48" height="48" onerror="this.outerHTML=\'<div class=dir-avatar style=background:' + b.color + ';>' + b.initials + '</div>\'">'
         : '<div class="dir-avatar" style="background:' + b.color + ';">' + b.initials + '</div>';
       d.innerHTML = `
         ${avatarHtml}
@@ -194,7 +198,7 @@ function renderDirectory() {
           <p>${b.category} · ${b.location}</p>
         </div>
         <button onclick="event.stopPropagation();toggleFavDir(this,'${b.id}')" style="background:none;border:none;cursor:pointer;padding:4px 8px;flex-shrink:0;margin-left:auto;" title="Toggle favourite">
-          <img src="assets/icons/${UserState.isFavourite(b.id) ? 'heart_active_icon' : 'heart_inactive_icon'}.png" style="width:22px;height:22px;display:block;">
+          <img src="assets/icons/${UserState.isFavourite(b.id) ? 'heart_active_icon' : 'heart_inactive_icon'}.webp" style="width:22px;height:22px;display:block;" loading="lazy">
         </button>
       `;
       el.appendChild(d);
@@ -210,6 +214,10 @@ function renderDirectory() {
 }
 
 function renderPros(el) {
+  if (currentCountry === 'zimbabwe') {
+    el.innerHTML = '<div style="text-align:center;padding:48px 16px;color:var(--grey-dark);"><i class="fas fa-user-tie" style="font-size:40px;margin-bottom:12px;display:block;color:var(--grey-mid);"></i><p style="font-size:15px;font-weight:600;margin-bottom:4px;">Zimbabwe coming soon</p><p style="font-size:13px;">Professional listings will appear here once they are registered in Zimbabwe.</p></div>';
+    return;
+  }
   var allProfiles = window.DEMO_PROFILES || [];
   var pros = allProfiles.filter(function(p) {
     return p.role === 'Tradesperson (Contractor)' || p.role === 'Business & Materials Supplier';
@@ -258,7 +266,7 @@ function renderPros(el) {
       var col = p.color || window.APP_COLORS[init.charCodeAt(0) % window.APP_COLORS.length];
       var profileImg = p.image || null;
       var avatarHtml = profileImg
-        ? '<img src="' + profileImg + '" class="dir-avatar" style="object-fit:cover;" alt="">'
+        ? '<img src="' + window.assetUrl(profileImg) + '" class="dir-avatar" style="object-fit:cover;" alt="" loading="lazy" width="48" height="48" onerror="this.outerHTML=\'<div class=dir-avatar style=background:' + col + ';>' + init + '</div>\'">'
         : '<div class="dir-avatar" style="background:' + col + ';">' + init + '</div>';
       d.innerHTML =
         avatarHtml +
@@ -267,7 +275,7 @@ function renderPros(el) {
           '<p>' + roleName + ' &middot; ' + locStr + '</p>' +
         '</div>' +
         '<button onclick="event.stopPropagation();toggleFavDir(this,\'' + p.id + '\')" style="background:none;border:none;cursor:pointer;padding:4px 8px;flex-shrink:0;margin-left:auto;" title="Toggle favourite">' +
-          '<img src="assets/icons/' + (UserState.isFavourite(p.id) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png" style="width:22px;height:22px;display:block;">' +
+          '<img src="assets/icons/' + (UserState.isFavourite(p.id) ? 'heart_active_icon' : 'heart_inactive_icon') + '.webp" style="width:22px;height:22px;display:block;" loading="lazy">' +
         '</button>';
       el.appendChild(d);
     });
@@ -331,7 +339,7 @@ function openBizProfile(bizId, name, init, color, location, phone, isPublic, des
   var bizLogo2 = window.getBusinessLogo2(bizId);
   var previewSrc = bizLogo2 || bizLogo;
   var avatarHtml = bizLogo
-    ? '<img src="' + bizLogo + '" class="biz-avatar-img" alt="' + nameEsc + '" onclick="event.stopPropagation();openBizLogoPreview(\'' + previewSrc.replace(/'/g,"\\'") + '\',\'' + nameEsc + '\')">'
+    ? '<img src="' + bizLogo + '" class="biz-avatar-img" alt="' + nameEsc + '" onclick="event.stopPropagation();openBizLogoPreview(\'' + previewSrc.replace(/'/g,"\\'") + '\',\'' + nameEsc + '\')" loading="lazy" width="80" height="80">'
     : '<div class="biz-avatar-img" style="background:' + color + ';">' + init + '</div>';
 
   // Location breakdown: extract town and area
@@ -379,11 +387,11 @@ function openBizProfile(bizId, name, init, color, location, phone, isPublic, des
     <div class="biz-bottom-wrapper">
       <div class="biz-bottom-bar">
         <div id="biz-bar-actions">
-          <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
-          <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
-          <img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
-          <img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
-          <img src="assets/icons/${UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon'}.png" class="biz-bar-icon" onclick="toggleFavBiz('${bizId}')" id="biz-heart-icon">
+          <img src="assets/icons/Call_on.webp" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
+          <img src="assets/icons/facebook_icon_on.webp" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
+          <img src="assets/icons/GPS_On.webp" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
+          <img src="assets/icons/whatsApp_icon_on.webp" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
+          <img src="assets/icons/${UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon'}.webp" class="biz-bar-icon" onclick="toggleFavBiz('${bizId}')" id="biz-heart-icon">
         </div>
       </div>
       ${_renderDropdownContainers()}
@@ -495,9 +503,9 @@ window.openProProfile = window.openProProfile || function(proId) {
   if (!pro) { showToast('Professional not found'); return; }
 
   var avatarHtml = pro.proBizLogo
-    ? '<img src="' + pro.proBizLogo + '" class="pro-avatar" style="object-fit:cover;" onclick="openProImagePreview(\'' + pro.proBizLogo.replace(/'/g,"\\'") + '\',\'' + pro.nameEsc + '\')" alt="">'
+    ? '<img src="' + pro.proBizLogo + '" class="pro-avatar" style="object-fit:cover;" onclick="openProImagePreview(\'' + pro.proBizLogo.replace(/'/g,"\\'") + '\',\'' + pro.nameEsc + '\')" alt="" loading="lazy" width="80" height="80">'
     : pro.proImg
-    ? '<img src="' + pro.proImg + '" class="pro-avatar" style="object-fit:cover;" onclick="openProImagePreview(\'' + pro.proImg.replace(/'/g,"\\'") + '\',\'' + pro.nameEsc + '\')" alt="">'
+    ? '<img src="' + pro.proImg + '" class="pro-avatar" style="object-fit:cover;" onclick="openProImagePreview(\'' + pro.proImg.replace(/'/g,"\\'") + '\',\'' + pro.nameEsc + '\')" alt="" loading="lazy" width="80" height="80">'
     : '<div class="pro-avatar pro-avatar-initials" style="background:' + pro.proCol + ';">' + pro.proInit + '</div>';
 
   var starsHtml = pro.rating
@@ -593,9 +601,9 @@ function openBizPromos(bizId, businessName) {
   var bizLogo = biz ? window.getBusinessLogo(bizId) : null;
   var proImg = pro ? (pro.image || null) : null;
   var bizThumbHtml = bizLogo
-    ? '<img src="' + bizLogo + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
+    ? '<img src="' + bizLogo + '" class="biz-profile-thumb" style="object-fit:cover;" alt="" loading="lazy" width="48" height="48">'
     : proImg
-    ? '<img src="' + proImg.replace(/'/g, "\\'") + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
+    ? '<img src="' + proImg.replace(/'/g, "\\'") + '" class="biz-profile-thumb" style="object-fit:cover;" alt="" loading="lazy" width="48" height="48">'
     : '<div class="biz-profile-thumb" style="background:' + color + ';">' + init + '</div>';
 
   let promoHtml = '';
@@ -619,7 +627,7 @@ function openBizPromos(bizId, businessName) {
         imgHtml = '<div class="promo-carousel" id="carousel-' + p.id + '">';
         p.images.forEach(function(img) {
           var src = FOROMANE_IMG_MODE.getImgSrc(img);
-          imgHtml += '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'"' +
+          imgHtml += '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'" loading="lazy" width="800" height="800"' +
             (FOROMANE_IMG_MODE.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
         });
         imgHtml += '</div>' +
@@ -631,7 +639,7 @@ function openBizPromos(bizId, businessName) {
       } else if (p.images && p.images.length === 1) {
         var img = p.images[0];
         var src = FOROMANE_IMG_MODE.getImgSrc(img);
-        imgHtml = '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'"' +
+        imgHtml = '<img src="' + src + '" class="promo-img" alt="' + p.title + '" onerror="this.src=\'assets/media/no_link.png\'" loading="lazy" width="800" height="800"' +
           (FOROMANE_IMG_MODE.needsAsyncResolve(img) ? ' data-original-url="' + img.replace(/"/g, '&quot;') + '"' : '') + '>';
       } else {
         imgHtml = '<div class="promo-img-ph ' + (p.bg || 'img-amber') + '"><span class="promo-img-emoji">' + (p.emoji || '\ud83d\udce6') + '</span></div>';
@@ -649,7 +657,7 @@ function openBizPromos(bizId, businessName) {
           '<div class="promo-details">' +
             '<div class="promo-supplier" onclick="goBack()">' +
               (bizLogo
-                ? '<img src="' + bizLogo + '" class="avatar-square" style="object-fit:cover;" alt="">'
+                ? '<img src="' + bizLogo + '" class="avatar-square" style="object-fit:cover;" alt="" loading="lazy" width="48" height="48">'
                 : '<div class="avatar-square" style="background:' + (p.businessColor || '#999') + ';">' + (p.businessInit || '?') + '</div>') +
               '<div>' +
                 '<div style="font-size:14px;">' + (p.businessName || businessName) + '</div>' +
@@ -673,10 +681,10 @@ function openBizPromos(bizId, businessName) {
               '<button class="action-btn" onclick="addToNote(\'' + p.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
               '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
               (isOwner || window.Auth?.isAdmin() ?
-              '<button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
+              '<button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.webp" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
               (isOwner ? '' :
               '<button class="action-btn' + (p.liked ? ' liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
-                '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
+                '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.webp" style="width:16px;height:16px;vertical-align:middle;" loading="lazy">' +
               '</button>') +
             '</div>' +
           '</div>' +
@@ -731,7 +739,7 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init, s
 
   var bizLogo2 = window.getBusinessLogo(bizId);
   var bizThumbHtml2 = bizLogo2
-    ? '<img src="' + bizLogo2 + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
+    ? '<img src="' + bizLogo2 + '" class="biz-profile-thumb" style="object-fit:cover;" alt="" loading="lazy" width="48" height="48">'
     : '<div class="biz-profile-thumb" style="background:' + color + ';">' + init + '</div>';
 
   const targetCatView = pro ? 'view-pro-profile' : 'view-business';
@@ -759,7 +767,7 @@ function openBizCatalogue(bizId, businessName, location, phoneWa, color, init, s
             publicise their catalogue.
           </p>
           <button class="btn" onclick="requestCatalogueAccess('${nameEsc}','${phoneWa}')">
-            <img src="assets/icons/whatsApp_icon_on.png" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;"> Send WhatsApp Message
+            <img src="assets/icons/whatsApp_icon_on.webp" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;"> Send WhatsApp Message
           </button>
         </div>
       </div>
@@ -820,7 +828,7 @@ function requestCatalogueAccess(businessName, phone) {
 function toggleFavBiz(bizId) {
   closeBizDropdowns();
   UserState.toggleFavourite(bizId);
-  const src = 'assets/icons/' + (UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png';
+  const src = 'assets/icons/' + (UserState.isFavourite(bizId) ? 'heart_active_icon' : 'heart_inactive_icon') + '.webp';
   var icon = document.getElementById('biz-heart-icon');
   if (icon) icon.src = src;
   icon = document.getElementById('pro-heart-icon');
@@ -865,7 +873,7 @@ function toggleFavDir(btn, id) {
   UserState.toggleFavourite(id);
   const img = btn.querySelector('img');
   if (img) {
-    img.src = 'assets/icons/' + (UserState.isFavourite(id) ? 'heart_active_icon' : 'heart_inactive_icon') + '.png';
+    img.src = 'assets/icons/' + (UserState.isFavourite(id) ? 'heart_active_icon' : 'heart_inactive_icon') + '.webp';
   }
 }
 
@@ -950,7 +958,7 @@ function toggleBizDropdown(type) {
       else if (i.action === 'whatsapp' && i.phone) sub = 'Message for inquiries';
       else if (i.action === 'maps' && i.location) sub = i.location;
       return '<div class="biz-dd-row" onclick="closeBizDropdowns();doBizDropdownAction(\'' + i.action + '\',\'' + p1 + '\',\'' + p2 + '\',\'' + p3 + '\')">' +
-        '<div class="biz-dd-icon">' + (i.action === 'facebook' ? '<img src="assets/icons/facebook_icon_f.png" style="width:20px;height:20px;object-fit:contain;">' : i.action === 'whatsapp' ? '<img src="assets/icons/whatsapp_icon_1.webp" style="width:20px;height:20px;object-fit:contain;">' : '<i class="fas fa-' + iconName + '"></i>') + '</div>' +
+        '<div class="biz-dd-icon">' + (i.action === 'facebook' ? '<img src="assets/icons/facebook_icon_f.webp" style="width:20px;height:20px;object-fit:contain;">' : i.action === 'whatsapp' ? '<img src="assets/icons/whatsapp_icon_1.webp" style="width:20px;height:20px;object-fit:contain;">' : '<i class="fas fa-' + iconName + '"></i>') + '</div>' +
         '<div class="biz-dd-text"><h4>' + label + '</h4>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' +
       '</div>';
     }).join('');
@@ -1063,7 +1071,7 @@ function renderCatalogueListedItems(selectedCat) {
 
       var imgHtml;
       if (img) {
-        imgHtml = '<img src="' + img + '" class="promo-img" alt="' + nameEsc + '" onerror="this.src=\'assets/media/no_link.png\'">';
+        imgHtml = '<img src="' + img + '" class="promo-img" alt="' + nameEsc + '" onerror="this.src=\'assets/media/no_link.png\'" loading="lazy" width="800" height="800">';
       } else {
         imgHtml = '<div class="promo-img-ph ' + (it.bg || 'img-amber') + '"><span class="promo-img-emoji">' + (it.emoji || '\ud83d\udce6') + '</span></div>';
       }
@@ -1076,7 +1084,7 @@ function renderCatalogueListedItems(selectedCat) {
           '<div class="promo-details">' +
             '<div class="promo-supplier" onclick="goBack()">' +
               (bizLogo
-                ? '<img src="' + bizLogo + '" class="avatar-square" style="object-fit:cover;" alt="">'
+                ? '<img src="' + bizLogo + '" class="avatar-square" style="object-fit:cover;" alt="" loading="lazy" width="48" height="48">'
                 : '<div class="avatar-square" style="background:' + (state.color || '#999') + ';">' + (state.init || '?') + '</div>') +
               '<div>' +
                 '<div style="font-size:14px;">' + (state.businessName || '') + '</div>' +
@@ -1098,10 +1106,10 @@ function renderCatalogueListedItems(selectedCat) {
               '<button class="action-btn" onclick="addToNote(\'' + it.id + '\')"><img src="assets/icons/solid/add-to-note_orange.webp" style="height:16px;vertical-align:middle;object-fit:contain;"></button>' +
               '<button class="action-btn" onclick="sharePromo(\'' + it.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
               (isMyItem || window.Auth?.isAdmin() ?
-              '<button class="action-btn" onclick="openFbPromo(\'' + it.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
+              '<button class="action-btn" onclick="openFbPromo(\'' + it.id + '\')"><img src="assets/icons/facebook_icon_f.webp" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
               (isMyItem ? '' :
               '<button class="action-btn' + (it.liked ? ' liked' : '') + '" id="like-' + it.id + '" onclick="toggleLike(\'' + it.id + '\', this)">' +
-                '<img src="assets/icons/heart_' + (it.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
+                '<img src="assets/icons/heart_' + (it.liked ? 'active' : 'inactive') + '_icon.webp" style="width:16px;height:16px;vertical-align:middle;" loading="lazy">' +
               '</button>') +
             '</div>' +
             (isMyItem && !isStaffRestricted ?
@@ -1121,7 +1129,7 @@ function renderCatalogueListedItems(selectedCat) {
   if (stateData) {
     var bizLogo2 = window.getBusinessLogo(stateData.bizId);
     var navThumbHtml = bizLogo2
-      ? '<img src="' + bizLogo2 + '" class="biz-profile-thumb" style="object-fit:cover;" alt="">'
+      ? '<img src="' + bizLogo2 + '" class="biz-profile-thumb" style="object-fit:cover;" alt="" loading="lazy" width="48" height="48">'
       : '<div class="biz-profile-thumb" style="background:' + stateData.color + ';">' + stateData.init + '</div>';
     var bizNameEsc2 = (stateData.businessName || '').replace(/'/g, "\\'");
     var navTargetView2 = stateData.isPro ? 'view-pro-profile' : 'view-business';
