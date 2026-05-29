@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Foromane | Facebook Boost</title>
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    :root {
+      --orange: #fd7600;
+      --orange-dark: #ca5e00;
+      --orange-light: #fff1e6;
+      --white: #ffffff;
+      --grey-light: #ececec;
+      --grey-mid: #c8c8c8;
+      --grey-dark: #888888;
+      --text-main: #2a2a2a;
+      --text-sub: #666;
+      --bg: #faf5f0;
+      --card-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      --border: rgba(200,200,200,0.5);
+      --radius: 2px;
+      --font-head: 'Barlow Condensed', sans-serif;
+      --font-body: 'Barlow', sans-serif;
+      --header-h: 56px;
+      --nav-h: 58px;
+      --green: #27ae60;
+      --green-light: #eafaf1;
+      --blue: #2980b9;
+      --blue-light: #eaf4fb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(253,118,0,0.012) 0px, rgba(253,118,0,0.012) 1px, transparent 1px, transparent 6px),
+        repeating-linear-gradient(90deg, rgba(200,150,100,0.015) 0px, rgba(200,150,100,0.015) 1px, transparent 1px, transparent 20px);
+    }
+
+    /* ─── SHELL ─── */
+    header {
+      height: var(--header-h);
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .back-btn { color: var(--grey-dark); font-size: 18px; cursor: pointer; }
+    .header-title { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: var(--orange); }
+
+    main { flex: 1; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; scrollbar-width: none; padding-bottom: calc(var(--nav-h) + 100px); }
+    main::-webkit-scrollbar { display: none; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ─── TABS ─── */
+    .mode-tabs {
+      display: flex;
+      background: var(--white);
+      border-bottom: 2px solid var(--grey-light);
+      flex-shrink: 0;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 12px 8px 10px;
+      text-align: center;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .mode-tab .tab-label {
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--grey-dark);
+      display: block;
+    }
+    .mode-tab .tab-sub {
+      font-size: 10px;
+      color: var(--grey-mid);
+      display: block;
+      margin-top: 1px;
+    }
+    .mode-tab.active { border-bottom-color: var(--orange); }
+    .mode-tab.active .tab-label { color: var(--orange); }
+    .mode-tab.active .tab-sub { color: var(--orange-dark); opacity: 0.7; }
+
+    /* ─── VIEWS ─── */
+    .view { display: none; padding: 14px; animation: fadeUp 0.22s ease; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
+    .view.active { display: block; }
+
+    /* ─── BOOST COUNTER CARD ─── */
+    .boost-tracker {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .boost-tracker-main {
+      flex: 1;
+    }
+    .boost-tracker-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--grey-dark);
+      margin-bottom: 8px;
+    }
+    .boost-pips-row {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .boost-pip {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      border: 1.5px solid var(--grey-light);
+      background: var(--white);
+      transition: all 0.2s;
+      cursor: default;
+      position: relative;
+    }
+    .boost-pip.used {
+      background: var(--orange);
+      border-color: var(--orange);
+    }
+    .boost-pip.used::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7px;
+      color: white;
+      font-weight: 900;
+    }
+    .boost-pip.pending {
+      background: var(--orange-light);
+      border-color: var(--orange);
+      animation: pipPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pipPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .boost-tracker-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--grey-dark);
+    }
+    .boost-tracker-count-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-left: 12px;
+      border-left: 1px solid var(--grey-light);
+      min-width: 52px;
+    }
+    .boost-big-num {
+      font-family: var(--font-head);
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--orange);
+      line-height: 1;
+    }
+    .boost-big-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--grey-dark);
+      margin-top: 3px;
+    }
+
+    /* ─── SECTION HEADER ─── */
+    .section-hd {
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--grey-dark);
+      margin: 16px 0 8px;
+    }
+
+    /* ─── UPLOAD ZONE ─── */
+    .upload-zone {
+      border: 2px dashed var(--orange);
+      border-radius: var(--radius);
+      padding: 22px 16px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--orange-light);
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    .upload-zone:active { transform: scale(0.98); }
+    .upload-zone-icon { font-size: 28px; color: var(--orange); margin-bottom: 6px; }
+    .upload-zone-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--orange-dark); }
+    .upload-zone-sub { font-size: 12px; color: var(--orange-dark); opacity: 0.8; margin-top: 2px; }
+
+    /* ─── GALLERY GRID ─── */
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
+    .gallery-thumb-wrap {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .gallery-thumb-wrap.selected { border-color: var(--orange); box-shadow: 0 0 0 2px var(--orange-light); }
+    .gallery-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gallery-thumb-num {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: var(--orange);
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 5px;
+      border-radius: 10px;
+      line-height: 1;
+    }
+    .gallery-remove {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      cursor: pointer;
+    }
+
+    /* ─── SCHEDULE GRID ─── */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .sched-slot {
+      border: 1.5px solid var(--grey-light);
+      border-radius: var(--radius);
+      padding: 10px 6px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--white);
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .sched-slot.on {
+      border-color: var(--orange);
+      background: var(--orange-light);
+    }
+    .sched-slot.taken {
+      opacity: 0.4;
+      pointer-events: none;
+      background: var(--grey-light);
+    }
+    .sched-slot .day-name {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: 0.5px;
+    }
+    .sched-slot.on .day-name { color: var(--orange); }
+    .sched-slot .day-date {
+      font-size: 10px;
+      color: var(--grey-dark);
+      margin-top: 2px;
+    }
+    .sched-slot .day-status {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 4px;
+      color: var(--grey-dark);
+    }
+    .sched-slot.on .day-status { color: var(--orange); }
+    .sched-slot.taken .day-status { color: #e74c3c; }
+
+    /* Multi-schedule: image assignment grid inside slot */
+    .sched-image-assign {
+      display: none;
+      background: var(--orange-light);
+      border: 1px solid var(--orange);
+      border-radius: var(--radius);
+      padding: 10px;
+      margin-bottom: 6px;
+      animation: fadeUp 0.2s ease;
+    }
+    .sched-image-assign.open { display: block; }
+    .sched-assign-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .sched-thumb-pick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .sched-thumb-item {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius);
+      border: 2px solid var(--grey-light);
+      object-fit: cover;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .sched-thumb-item.picked {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 2px rgba(253,118,0,0.3);
+    }
+    .sched-thumb-add {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius);
+      border: 1.5px dashed var(--grey-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--grey-dark);
+      cursor: pointer;
+    }
+
+    /* ─── APPLY ALL BANNER ─── */
+    .apply-all-banner {
+      display: none;
+      background: #2a2a2a;
+      color: white;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--card-shadow);
+      gap: 10px;
+    }
+    .apply-all-banner.visible { display: flex; animation: fadeUp 0.3s ease; }
+    .apply-all-text { font-size: 12px; flex: 1; line-height: 1.4; }
+    .apply-all-btn {
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ─── ACCORDION (Foromane Stacked Pattern) ─── */
+    .accordion { background: var(--white); border: 2px solid rgba(200,200,200,0.15); border-radius: var(--radius); margin-bottom: 6px; overflow: hidden; transition: all 0.2s; }
+    .accordion-header { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; gap: 12px; position: relative; }
+    .accordion-body { display: none; padding: 16px; border-top: 1px solid rgba(200,200,200,0.1); animation: fadeUp 0.2s ease; }
+    .accordion.open .accordion-body { display: block; }
+    .accordion.open { border-color: var(--orange); }
+
+    .acc-thumb { width: 44px; height: 44px; border-radius: var(--radius); object-fit: cover; background: var(--grey-light); }
+    .acc-info { flex: 1; min-width: 0; }
+    .acc-title { font-weight: 700; font-size: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acc-sub { font-size: 11px; color: var(--grey-dark); margin-top: 1px; }
+    .acc-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--orange); padding: 4px 8px; background: var(--orange-light); border-radius: 4px; }
+    .acc-badge.complete { color: var(--green); background: var(--green-light); }
+
+    .accordion.open .acc-badge { background: var(--orange-light); color: var(--orange); }
+    .acc-badge.complete { background: var(--green-light); color: var(--green); }
+
+    .accordion-body {
+      display: none;
+      padding: 0 14px 14px;
+      border-top: 1px solid var(--grey-light);
+      animation: fadeUp 0.18s ease;
+    }
+    .accordion.open .accordion-body { display: block; }
+
+    /* ─── FORM FIELDS ─── */
+    label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 12px;
+      display: block;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 5px;
+      border: 1px solid var(--grey-light);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font-body);
+      background: #fafafa;
+      color: var(--text-main);
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--orange);
+      background: white;
+    }
+    textarea { resize: vertical; min-height: 60px; }
+
+    /* ─── DYNAMIC ROWS ─── */
+    .dynamic-section { margin-top: 12px; }
+    .dynamic-row-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dyn-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .dynamic-row { display: flex; gap: 6px; align-items: center; }
+    .dynamic-row input, .dynamic-row select { margin: 0; flex: 1; }
+    .dynamic-row input.narrow { flex: 0 0 90px; }
+    .remove-row-btn {
+      background: #fee;
+      color: #e74c3c;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-size: 12px;
+    }
+    .add-entry-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: none;
+      border: 1px dashed var(--grey-mid);
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      font-size: 12px;
+      color: var(--grey-dark);
+      cursor: pointer;
+      margin-top: 6px;
+      width: 100%;
+      font-family: var(--font-body);
+      transition: 0.15s;
+    }
+    .add-entry-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+    /* ─── BOOST TYPE CARD (one-off) ─── */
+    .oneoff-info {
+      background: var(--blue-light);
+      border: 1px solid rgba(41,128,185,0.25);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .oneoff-info i { color: var(--blue); margin-top: 2px; font-size: 14px; }
+    .oneoff-info-text { font-size: 12px; color: #2a4f6a; line-height: 1.5; }
+
+    /* ─── PILLS ─── */
+    .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .pill {
+      padding: 8px 14px;
+      background: var(--white);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid var(--grey-light);
+      transition: 0.15s;
+      text-align: center;
+    }
+    .pill.on { background: var(--orange); color: white; border-color: var(--orange); }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--orange);
+      color: white;
+      font-family: var(--font-head);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .btn:active { background: var(--orange-dark); }
+    .btn-outline {
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      background: transparent;
+      border: 2px solid var(--orange);
+      color: var(--orange);
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ─── TOAST ─── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #2a2a2a;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+      z-index: 99;
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ─── WARNING STRIP ─── */
+    .warn-strip {
+      background: #fef9e7;
+      border: 1px solid #f39c12;
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #7d6608;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .warn-strip i { color: #f39c12; flex-shrink: 0; }
+
+    /* ─── CATEGORY SELECT ─── */
+    .cat-select-wrap { position: relative; }
+    .cat-select-wrap select { padding-right: 32px; appearance: none; }
+    .cat-select-wrap::after {
+      content: '\f078';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--grey-dark);
+      font-size: 11px;
+      pointer-events: none;
+    }
+
+    /* ─── STICKY SUBMIT BAR ─── */
+    .submit-bar {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 10px 14px;
+      z-index: 10;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    .submit-bar-inner {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .submit-bar-info {
+      flex: 1;
+      font-size: 11px;
+      color: var(--grey-dark);
+      line-height: 1.4;
+    }
+    .submit-bar-info strong { color: var(--text-main); font-size: 13px; display: block; }
+    .submit-btn {
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .submit-btn:active { background: var(--orange-dark); }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--grey-dark);
+    }
+    .empty-state i { font-size: 36px; color: var(--grey-light); margin-bottom: 10px; }
+    .empty-state p { font-size: 13px; line-height: 1.5; }
+
+    /* ─── SCHEDULE WEEK STRIP ─── */
+    .week-schedule {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .week-hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .week-hd-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--grey-dark);
+    }
+    .week-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .week-nav-btn {
+      background: none;
+      border: none;
+      color: var(--orange);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+    }
+    .week-nav-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+    .week-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .week-slot {
+      border: 1.5px solid var(--grey-light);
+      border-radius: var(--radius);
+      padding: 8px 6px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--white);
+      transition: all 0.15s;
+    }
+    .week-slot.on { border-color: var(--orange); background: var(--orange-light); }
+    .week-slot.taken { background: var(--grey-light); opacity: 0.6; pointer-events: none; }
+    .week-slot .ws-day { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
+    .week-slot.on .ws-day { color: var(--orange); }
+    .week-slot .ws-date { font-size: 10px; color: var(--grey-dark); margin-top: 1px; }
+    .week-slot .ws-tag { font-size: 9px; font-weight: 700; margin-top: 4px; text-transform: uppercase; }
+    .week-slot.on .ws-tag { color: var(--orange); }
+    .week-slot.taken .ws-tag { color: #e74c3c; }
+
+    /* ─── IMAGES ASSIGNED TO SCHEDULE ─── */
+    .assign-panel {
+      background: #f8f8f8;
+      border: 1px solid var(--grey-light);
+      border-radius: var(--radius);
+      padding: 10px;
+      margin-top: 6px;
+      animation: fadeUp 0.18s ease;
+    }
+    .assign-panel-hd {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .assign-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .assign-date-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-main);
+      min-width: 70px;
+    }
+    .assign-thumbs {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+    .assign-img-pick {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius);
+      border: 2px solid var(--grey-light);
+      object-fit: cover;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .assign-img-pick.picked { border-color: var(--orange); box-shadow: 0 0 0 2px rgba(253,118,0,0.25); }
+
+  </style>
+</head>
+<body>
+  <div id="fb-root" style="display: flex; flex-direction: column; height: 100dvh;">
+    <header id="app-header">
+      <div class="logo">
+        <img src="assets/images/company_logos_dummy/foromane_logo_icon_online.png" alt="Foromane" style="height:27px;">
+      </div>
+      <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
+        <button class="icon-btn" onclick="shareApp()"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:18px;height:18px;display:block;"></button>
+        <img src="assets/icons/circle-flag-of-botswana.webp" style="width:24px;height:24px;border-radius:50%;border:3px solid rgba(200,200,200,0.2);object-fit:cover;">
+        <div class="back-btn" onclick="navTab('view-directory')" style="margin-left: 5px;"><i class="fas fa-times"></i></div>
+      </div>
+    </header>
+
+  <!-- MODE TABS -->
+  <div class="mode-tabs" id="mode-tabs">
+    <div class="mode-tab active" data-tab="monthly" onclick="switchTab('monthly', this)">
+      <span class="tab-label">Monthly Plan</span>
+      <span class="tab-sub">P350 · 12 Boosts</span>
+    </div>
+    <div class="mode-tab" data-tab="oneoff" onclick="switchTab('oneoff', this)">
+      <span class="tab-label">Single Boost</span>
+      <span class="tab-sub">One-off post</span>
+    </div>
+  </div>
+
+  <main id="main-scroll">
+
+    <!-- ══════════════════════════════════════════════
+         VIEW 1: MONTHLY P350 PLAN
+    ══════════════════════════════════════════════ -->
+    <div class="view active" id="view-monthly">
+
+      <!-- Boost Counter -->
+      <div class="boost-tracker">
+        <div class="boost-tracker-main">
+          <div class="boost-tracker-title">May 2025 — Boosts Used</div>
+          <div class="boost-pips-row" id="monthly-pips"></div>
+          <div class="boost-tracker-meta">
+            <span id="boost-used-label">3 used · 9 remaining</span>
+            <span>Resets Jun 1</span>
+          </div>
+        </div>
+        <div class="boost-tracker-count-col">
+          <div class="boost-big-num" id="boost-remain-num">9</div>
+          <div class="boost-big-label">Left</div>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="section-hd">Business Category</div>
+      <div class="cat-select-wrap">
+        <select id="monthly-category">
+          <option value="">Loading categories…</option>
+        </select>
+      </div>
+
+      <!-- Step 1: Upload -->
+      <div class="section-hd" style="margin-top:16px;">1 — Select Images</div>
+      <div class="upload-zone" onclick="document.getElementById('monthly-file-input').click()">
+        <div class="upload-zone-icon"><i class="fas fa-images"></i></div>
+        <div class="upload-zone-title">Add Images</div>
+        <div class="upload-zone-sub">Up to <strong id="monthly-upload-cap">9</strong> more · Tap to browse</div>
+      </div>
+      <input type="file" id="monthly-file-input" accept="image/*" multiple style="display:none" onchange="handleMonthlyFiles(event)">
+
+      <div class="gallery-grid" id="monthly-gallery"></div>
+
+      <!-- Step 2: Schedule -->
+      <div id="monthly-schedule-section" style="display:none">
+        <div class="section-hd">2 — Assign to Posting Days</div>
+        <p style="font-size:12px; color:var(--grey-dark); margin-bottom:10px; line-height:1.5;">Select up to <strong>3 days per week</strong> (Mon/Wed/Fri). You can assign the <em>same image</em> multiple times or <em>different images</em> to each slot — up to your remaining boosts.</p>
+
+        <!-- Week Navigator -->
+        <div class="week-schedule">
+          <div class="week-hd">
+            <span class="week-hd-label">Posting Week</span>
+            <div class="week-nav">
+              <button class="week-nav-btn" onclick="changeWeek(-1)"><i class="fas fa-chevron-left"></i></button>
+              <span class="week-nav-label" id="week-range-label">Week of May 19</span>
+              <button class="week-nav-btn" onclick="changeWeek(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <div class="week-slots" id="week-slots-grid"></div>
+        </div>
+
+        <!-- Assign Images to Selected Days -->
+        <div class="assign-panel" id="assign-panel" style="display:none">
+          <div class="assign-panel-hd">Assign Images to Each Day</div>
+          <div id="assign-rows"></div>
+        </div>
+      </div>
+
+      <!-- Step 3: Per-image Details -->
+      <div id="monthly-details-section" style="display:none">
+        <div class="apply-all-banner" id="monthly-apply-banner">
+          <div class="apply-all-text">Copy contacts & links from <strong>Image 1</strong> to all images?</div>
+          <button class="apply-all-btn" onclick="applyToAll()">Apply All</button>
+        </div>
+
+        <div class="section-hd">3 — Image Details</div>
+        <p style="font-size:12px; color:var(--grey-dark); margin-bottom:10px;">Tap an image to add title, description, contacts & links for that post.</p>
+        <div id="monthly-accordions"></div>
+      </div>
+
+      <!-- Submit pad -->
+      <div style="height:20px"></div>
+
+    </div><!-- /view-monthly -->
+
+
+    <!-- ══════════════════════════════════════════════
+         VIEW 2: ONE-OFF SINGLE BOOST
+    ══════════════════════════════════════════════ -->
+    <div class="view" id="view-oneoff">
+
+      <div class="oneoff-info">
+        <i class="fas fa-info-circle"></i>
+        <div class="oneoff-info-text">
+          This is a <strong>one-off Facebook boost</strong> — outside your monthly P350 plan. You'll be charged per post. Great for flash sales, urgent promotions, or extra visibility.
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="section-hd">Business Category</div>
+      <div class="cat-select-wrap">
+        <select id="oneoff-category">
+          <option value="">Loading categories…</option>
+        </select>
+      </div>
+
+      <!-- Upload (1 image for one-off) -->
+      <div class="section-hd" style="margin-top:16px;">Select Image</div>
+      <div class="upload-zone" onclick="document.getElementById('oneoff-file-input').click()">
+        <div class="upload-zone-icon"><i class="fas fa-image"></i></div>
+        <div class="upload-zone-title" id="oneoff-upload-title">Choose Image</div>
+        <div class="upload-zone-sub">Tap to browse · 1 image per boost</div>
+      </div>
+      <input type="file" id="oneoff-file-input" accept="image/*" style="display:none" onchange="handleOneoffFile(event)">
+
+      <div id="oneoff-image-preview" style="display:none; margin-bottom:12px; position:relative;">
+        <img id="oneoff-img" style="width:100%; border-radius:var(--radius); max-height:200px; object-fit:cover; display:block;">
+        <button onclick="clearOneoff()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="fas fa-times"></i></button>
+      </div>
+
+      <!-- Boost Day -->
+      <div class="section-hd">Preferred Day</div>
+      <div class="week-schedule">
+        <div class="week-hd">
+          <span class="week-hd-label">Pick a Date</span>
+          <div class="week-nav">
+            <button class="week-nav-btn" onclick="changeOneoffWeek(-1)"><i class="fas fa-chevron-left"></i></button>
+            <span class="week-nav-label" id="oneoff-week-label">Week of May 19</span>
+            <button class="week-nav-btn" onclick="changeOneoffWeek(1)"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+        <div class="week-slots" id="oneoff-week-slots"></div>
+      </div>
+
+      <!-- Post Details -->
+      <div id="oneoff-details" style="display:none;">
+        <div class="section-hd">Post Details</div>
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+
+          <label>Post Title</label>
+          <input type="text" id="oo-title" placeholder="e.g. Weekend Flash Sale">
+
+          <label>Caption / Description</label>
+          <textarea id="oo-desc" rows="3" placeholder="Write the post caption here…"></textarea>
+
+          <!-- Contacts -->
+          <div class="dynamic-section">
+            <div class="dynamic-row-label">
+              <label style="margin-top:0">Contact Details</label>
+            </div>
+            <div class="dyn-rows" id="oo-contacts"></div>
+            <button class="add-entry-btn" onclick="addOORow('contacts')"><i class="fas fa-plus"></i> Add Contact</button>
+          </div>
+
+          <!-- Socials -->
+          <div class="dynamic-section">
+            <div class="dynamic-row-label">
+              <label style="margin-top:0">Social Links</label>
+            </div>
+            <div class="dyn-rows" id="oo-socials"></div>
+            <button class="add-entry-btn" onclick="addOORow('socials')"><i class="fas fa-plus"></i> Add Social Link</button>
+          </div>
+
+          <!-- Call to Action -->
+          <label>Call to Action Button (Optional)</label>
+          <div class="cat-select-wrap">
+            <select id="oo-cta">
+              <option value="">No CTA</option>
+              <option>Shop Now</option>
+              <option>Learn More</option>
+              <option>Contact Us</option>
+              <option>Book Now</option>
+              <option>Sign Up</option>
+              <option>Get Offer</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:20px"></div>
+    </div><!-- /view-oneoff -->
+
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    // ═══════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════
+    const BOOSTS_TOTAL = 12;
+    let boostsUsed = 3;         // Simulate existing used boosts
+    let activeTab = 'monthly';
+
+    // Monthly state
+    let monthlyFiles = [];       // { file, previewUrl, title, desc, contacts, socials }
+    let openAccIndex = -1;
+    let selectedWeekOffset = 0;  // weeks from now
+    let selectedDays = {};       // { 'Mon-2025-05-19': true }
+    let dayAssignments = {};     // { 'Mon-2025-05-19': [imgIndex, imgIndex] }
+
+    // Oneoff state
+    let oneoffFile = null;
+    let oneoffWeekOffset = 0;
+    let selectedOneoffDay = null;
+    let ooContacts = [];
+    let ooSocials = [];
+
+    const DAYS = ['Mon','Wed','Fri'];
+
+    // ═══════════════════════════════════════════════════
+    // TAB SWITCH
+    // ═══════════════════════════════════════════════════
+    function switchTab(tab, el) {
+      activeTab = tab;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('view-monthly').classList.toggle('active', tab === 'monthly');
+      document.getElementById('view-oneoff').classList.toggle('active', tab === 'oneoff');
+      updateSubmitBar();
+    }
+
+    // ═══════════════════════════════════════════════════
+    // BOOST COUNTER
+    // ═══════════════════════════════════════════════════
+    function renderBoostCounter() {
+      const pips = document.getElementById('monthly-pips');
+      pips.innerHTML = '';
+      for (let i = 0; i < BOOSTS_TOTAL; i++) {
+        const pip = document.createElement('div');
+        pip.className = 'boost-pip' + (i < boostsUsed ? ' used' : '');
+        pips.appendChild(pip);
+      }
+      const remain = BOOSTS_TOTAL - boostsUsed;
+      document.getElementById('boost-remain-num').textContent = remain;
+      document.getElementById('boost-used-label').textContent = `${boostsUsed} used · ${remain} remaining`;
+      document.getElementById('monthly-upload-cap').textContent = remain;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // MONTHLY FILE HANDLING
+    // ═══════════════════════════════════════════════════
+    function handleMonthlyFiles(e) {
+      const remain = BOOSTS_TOTAL - boostsUsed;
+      const slots = remain - monthlyFiles.length;
+      const newFiles = Array.from(e.target.files).slice(0, slots);
+      if (slots <= 0) { showToast('No boost slots remaining this month'); return; }
+
+      newFiles.forEach(f => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          monthlyFiles.push({ file: f, previewUrl: ev.target.result, title: f.name.replace(/\.[^.]+$/, ''), desc: '', contacts: [], socials: [] });
+          renderMonthlyGallery();
+          if (monthlyFiles.length > 0) {
+            document.getElementById('monthly-schedule-section').style.display = 'block';
+            document.getElementById('monthly-details-section').style.display = 'block';
+            renderWeekSlots();
+            renderMonthlyAccordions();
+          }
+        };
+        reader.readAsDataURL(f);
+      });
+      e.target.value = '';
+    }
+
+    function renderMonthlyGallery() {
+      const grid = document.getElementById('monthly-gallery');
+      grid.innerHTML = monthlyFiles.map((item, i) => `
+        <div class="gallery-thumb-wrap" onclick="openAccordion(${i})">
+          <img class="gallery-thumb" src="${item.previewUrl}">
+          <div class="gallery-thumb-num">#${i+1}</div>
+          <button class="gallery-remove" onclick="event.stopPropagation(); removeMonthlyFile(${i})"><i class="fas fa-times"></i></button>
+        </div>
+      `).join('');
+      document.getElementById('monthly-upload-cap').textContent = BOOSTS_TOTAL - boostsUsed - monthlyFiles.length;
+      updateBannerVisibility();
+      updateSubmitBar();
+    }
+
+    function removeMonthlyFile(i) {
+      monthlyFiles.splice(i, 1);
+      if (openAccIndex >= monthlyFiles.length) openAccIndex = -1;
+      renderMonthlyGallery();
+      renderMonthlyAccordions();
+      if (monthlyFiles.length === 0) {
+        document.getElementById('monthly-schedule-section').style.display = 'none';
+        document.getElementById('monthly-details-section').style.display = 'none';
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // WEEK SCHEDULER (MONTHLY)
+    // ═══════════════════════════════════════════════════
+    function getWeekDates(offset) {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
+
+      const wed = new Date(monday); wed.setDate(monday.getDate() + 2);
+      const fri = new Date(monday); fri.setDate(monday.getDate() + 4);
+      return [monday, wed, fri];
+    }
+
+    function formatDate(d) {
+      return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+    }
+
+    function dateKey(d) {
+      return d.toISOString().split('T')[0];
+    }
+
+    function changeWeek(dir) {
+      selectedWeekOffset += dir;
+      if (selectedWeekOffset < 0) selectedWeekOffset = 0;
+      renderWeekSlots();
+    }
+
+    function renderWeekSlots() {
+      const dates = getWeekDates(selectedWeekOffset);
+      const labels = ['Mon', 'Wed', 'Fri'];
+      const grid = document.getElementById('week-slots-grid');
+      const rangeEl = document.getElementById('week-range-label');
+
+      rangeEl.textContent = `Week of ${formatDate(dates[0])}`;
+
+      grid.innerHTML = dates.map((d, i) => {
+        const key = DAYS[i] + '-' + dateKey(d);
+        const isOn = !!selectedDays[key];
+        const count = (dayAssignments[key] || []).length;
+        return `
+          <div class="week-slot ${isOn ? 'on' : ''}" onclick="toggleDay('${key}', ${i})">
+            <div class="ws-day">${labels[i]}</div>
+            <div class="ws-date">${formatDate(d)}</div>
+            <div class="ws-tag">${isOn ? (count > 0 ? count + ' image' + (count>1?'s':'') : 'Selected') : 'Available'}</div>
+          </div>
+        `;
+      }).join('');
+
+      renderAssignPanel(dates);
+    }
+
+    function toggleDay(key, dayIdx) {
+      if (selectedDays[key]) {
+        delete selectedDays[key];
+        delete dayAssignments[key];
+      } else {
+        selectedDays[key] = true;
+        dayAssignments[key] = [];
+      }
+      renderWeekSlots();
+      updateSubmitBar();
+    }
+
+    function renderAssignPanel(dates) {
+      const panel = document.getElementById('assign-panel');
+      const assignedKeys = Object.keys(selectedDays);
+      if (assignedKeys.length === 0 || monthlyFiles.length === 0) {
+        panel.style.display = 'none';
+        return;
+      }
+      panel.style.display = 'block';
+      const rows = document.getElementById('assign-rows');
+      rows.innerHTML = assignedKeys.map(key => {
+        const assigned = dayAssignments[key] || [];
+        const parts = key.split('-');
+        const dayName = parts[0];
+        const dateStr = parts.slice(1).join('-');
+        const d = new Date(dateStr + 'T00:00:00');
+        return `
+          <div class="assign-row" style="margin-bottom:10px;">
+            <div class="assign-date-label">${dayName}<br><span style="font-size:10px;font-weight:400;color:var(--grey-dark)">${formatDate(d)}</span></div>
+            <div class="assign-thumbs" id="assign-thumbs-${key.replace(/-/g,'_')}">
+              ${monthlyFiles.map((f, i) => `
+                <img class="assign-img-pick ${assigned.includes(i) ? 'picked' : ''}" src="${f.previewUrl}" onclick="toggleAssign('${key}', ${i})" title="Image ${i+1}">
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleAssign(key, imgIdx) {
+      if (!dayAssignments[key]) dayAssignments[key] = [];
+      const arr = dayAssignments[key];
+      const pos = arr.indexOf(imgIdx);
+      if (pos > -1) arr.splice(pos, 1);
+      else arr.push(imgIdx);
+      renderWeekSlots();
+      updateSubmitBar();
+    }
+
+    // ═══════════════════════════════════════════════════
+    // MONTHLY ACCORDIONS (Image Details)
+    // ═══════════════════════════════════════════════════
+    function renderMonthlyAccordions() {
+      const container = document.getElementById('monthly-accordions');
+      container.innerHTML = monthlyFiles.map((item, i) => {
+        const isOpen = openAccIndex === i;
+        const isComplete = item.title.trim() !== '';
+        return `
+          <div class="accordion ${isOpen ? 'open' : ''}" id="macc-${i}">
+            <div class="accordion-header" onclick="openAccordion(${i})">
+              <img class="acc-thumb" src="${item.previewUrl}">
+              <div class="acc-info">
+                <div class="acc-title">${item.title || 'Image ' + (i+1)}</div>
+                <div class="acc-sub">#${i+1} · ${item.contacts.length} contact${item.contacts.length!==1?'s':''} · ${item.socials.length} link${item.socials.length!==1?'s':''}</div>
+              </div>
+              <div class="acc-badge ${isComplete ? 'complete' : ''}">${isOpen ? 'Close' : (isComplete ? 'Ready ✓' : 'Edit')}</div>
+            </div>
+            <div class="accordion-body">
+
+              <label>Post Title</label>
+              <input type="text" value="${item.title}" placeholder="e.g. Premium Planks" oninput="monthlyFiles[${i}].title = this.value; refreshAccTitle(${i})">
+
+              <label>Caption / Description</label>
+              <textarea rows="2" placeholder="Add a caption for this post…" oninput="monthlyFiles[${i}].desc = this.value">${item.desc}</textarea>
+
+              <div class="dynamic-section">
+                <div class="dynamic-row-label">
+                  <label style="margin-top:0">Contact Details</label>
+                </div>
+                <div class="dyn-rows" id="mc-${i}">
+                  ${item.contacts.map((c, r) => contactRow(i, r, c)).join('')}
+                </div>
+                <button class="add-entry-btn" onclick="addMonthlyRow(${i}, 'contacts')"><i class="fas fa-plus"></i> Add Contact</button>
+              </div>
+
+              <div class="dynamic-section">
+                <div class="dynamic-row-label">
+                  <label style="margin-top:0">Social Links</label>
+                </div>
+                <div class="dyn-rows" id="ms-${i}">
+                  ${item.socials.map((s, r) => socialRow(i, r, s)).join('')}
+                </div>
+                <button class="add-entry-btn" onclick="addMonthlyRow(${i}, 'socials')"><i class="fas fa-plus"></i> Add Social Link</button>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function contactRow(i, r, c) {
+      const labelField = typeof i === 'string'
+        ? `oninput="ooContacts[${r}].label=this.value"`
+        : `oninput="monthlyFiles[${i}].contacts[${r}].label=this.value"`;
+      const valField = typeof i === 'string'
+        ? `oninput="ooContacts[${r}].value=this.value"`
+        : `oninput="monthlyFiles[${i}].contacts[${r}].value=this.value"`;
+      const rmFn = typeof i === 'string' ? `removeOORow('contacts',${r})` : `removeMonthlyRow(${i},'contacts',${r})`;
+      return `
+        <div class="dynamic-row">
+          <input type="text" class="narrow" placeholder="Label" value="${c.label||''}" ${labelField}>
+          <input type="tel" placeholder="Number / Handle" value="${c.value||''}" ${valField}>
+          <button class="remove-row-btn" onclick="${rmFn}"><i class="fas fa-times"></i></button>
+        </div>
+      `;
+    }
+
+    function socialRow(i, r, s) {
+      const selField = typeof i === 'string'
+        ? `onchange="ooSocials[${r}].label=this.value"`
+        : `onchange="monthlyFiles[${i}].socials[${r}].label=this.value"`;
+      const valField = typeof i === 'string'
+        ? `oninput="ooSocials[${r}].value=this.value"`
+        : `oninput="monthlyFiles[${i}].socials[${r}].value=this.value"`;
+      const rmFn = typeof i === 'string' ? `removeOORow('socials',${r})` : `removeMonthlyRow(${i},'socials',${r})`;
+      const opts = ['Facebook','Instagram','TikTok','Website','WhatsApp','Twitter'].map(o => `<option ${(s.label||'')==o?'selected':''}>${o}</option>`).join('');
+      return `
+        <div class="dynamic-row">
+          <select style="flex:0 0 110px;margin:0" ${selField}>${opts}</select>
+          <input type="url" placeholder="@handle or link" value="${s.value||''}" ${valField}>
+          <button class="remove-row-btn" onclick="${rmFn}"><i class="fas fa-times"></i></button>
+        </div>
+      `;
+    }
+
+    function openAccordion(i) {
+      openAccIndex = openAccIndex === i ? -1 : i;
+      renderMonthlyAccordions();
+      if (openAccIndex !== -1) {
+        setTimeout(() => {
+          document.getElementById(`macc-${openAccIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+      }
+    }
+
+    function refreshAccTitle(i) {
+      const el = document.querySelector(`#macc-${i} .acc-title`);
+      if (el) el.textContent = monthlyFiles[i].title || 'Image ' + (i+1);
+    }
+
+    function addMonthlyRow(i, type, defaultLabel) {
+      if (type === 'contacts') monthlyFiles[i].contacts.push({ label: 'Mobile', value: '' });
+      else monthlyFiles[i].socials.push({ label: 'Facebook', value: '' });
+      renderMonthlyAccordions();
+    }
+
+    function removeMonthlyRow(i, type, r) {
+      if (type === 'contacts') monthlyFiles[i].contacts.splice(r, 1);
+      else monthlyFiles[i].socials.splice(r, 1);
+      renderMonthlyAccordions();
+    }
+
+    function updateBannerVisibility() {
+      const banner = document.getElementById('monthly-apply-banner');
+      banner.classList.toggle('visible', monthlyFiles.length > 1);
+    }
+
+    function applyToAll() {
+      if (monthlyFiles.length < 2) return;
+      const base = monthlyFiles[0];
+      for (let i = 1; i < monthlyFiles.length; i++) {
+        monthlyFiles[i].contacts = JSON.parse(JSON.stringify(base.contacts));
+        monthlyFiles[i].socials = JSON.parse(JSON.stringify(base.socials));
+      }
+      renderMonthlyAccordions();
+      showToast('Contacts & links copied to all images');
+    }
+
+    // ═══════════════════════════════════════════════════
+    // ONE-OFF FILE & SCHEDULE
+    // ═══════════════════════════════════════════════════
+    function handleOneoffFile(e) {
+      const f = e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        oneoffFile = { file: f, previewUrl: ev.target.result };
+        document.getElementById('oneoff-img').src = ev.target.result;
+        document.getElementById('oneoff-image-preview').style.display = 'block';
+        document.getElementById('oneoff-upload-title').textContent = 'Change Image';
+        document.getElementById('oneoff-details').style.display = 'block';
+        updateSubmitBar();
+      };
+      reader.readAsDataURL(f);
+      e.target.value = '';
+    }
+
+    function clearOneoff() {
+      oneoffFile = null;
+      document.getElementById('oneoff-image-preview').style.display = 'none';
+      document.getElementById('oneoff-upload-title').textContent = 'Choose Image';
+      document.getElementById('oneoff-details').style.display = 'none';
+      updateSubmitBar();
+    }
+
+    function changeOneoffWeek(dir) {
+      oneoffWeekOffset += dir;
+      if (oneoffWeekOffset < 0) oneoffWeekOffset = 0;
+      renderOneoffWeekSlots();
+    }
+
+    function renderOneoffWeekSlots() {
+      const dates = getWeekDates(oneoffWeekOffset);
+      const labels = ['Mon', 'Wed', 'Fri'];
+      const grid = document.getElementById('oneoff-week-slots');
+      document.getElementById('oneoff-week-label').textContent = `Week of ${formatDate(dates[0])}`;
+
+      grid.innerHTML = dates.map((d, i) => {
+        const key = DAYS[i] + '-' + dateKey(d);
+        const isOn = selectedOneoffDay === key;
+        return `
+          <div class="week-slot ${isOn ? 'on' : ''}" onclick="selectOneoffDay('${key}')">
+            <div class="ws-day">${labels[i]}</div>
+            <div class="ws-date">${formatDate(d)}</div>
+            <div class="ws-tag">${isOn ? 'Selected' : 'Available'}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectOneoffDay(key) {
+      selectedOneoffDay = selectedOneoffDay === key ? null : key;
+      renderOneoffWeekSlots();
+      updateSubmitBar();
+    }
+
+    // ─── One-off dynamic rows ───
+    function addOORow(type) {
+      if (type === 'contacts') {
+        ooContacts.push({ label: 'Mobile', value: '' });
+        const el = document.getElementById('oo-contacts');
+        el.innerHTML = ooContacts.map((c, r) => contactRow('oo', r, c)).join('');
+      } else {
+        ooSocials.push({ label: 'Facebook', value: '' });
+        const el = document.getElementById('oo-socials');
+        el.innerHTML = ooSocials.map((s, r) => socialRow('oo', r, s)).join('');
+      }
+    }
+
+    function removeOORow(type, r) {
+      if (type === 'contacts') { ooContacts.splice(r, 1); addOORow('contacts'); ooContacts.pop(); document.getElementById('oo-contacts').innerHTML = ooContacts.map((c,i)=>contactRow('oo',i,c)).join(''); }
+      else { ooSocials.splice(r, 1); document.getElementById('oo-socials').innerHTML = ooSocials.map((s,i)=>socialRow('oo',i,s)).join(''); }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // SUBMIT BAR
+    // ═══════════════════════════════════════════════════
+    function updateSubmitBar() {
+      const titleEl = document.getElementById('submit-bar-title');
+      const subEl = document.getElementById('submit-bar-sub');
+
+      if (activeTab === 'monthly') {
+        titleEl.textContent = 'Monthly Plan';
+        const imgCount = monthlyFiles.length;
+        const dayCount = Object.keys(selectedDays).length;
+        const assignedCount = Object.values(dayAssignments).reduce((a, b) => a + b.length, 0);
+        if (imgCount === 0) subEl.textContent = 'Select images to continue';
+        else if (dayCount === 0) subEl.textContent = `${imgCount} image${imgCount>1?'s':''} selected — pick posting days`;
+        else subEl.textContent = `${imgCount} image${imgCount>1?'s':''} · ${dayCount} day${dayCount>1?'s':''} · ${assignedCount} assignment${assignedCount!==1?'s':''}`;
+      } else {
+        titleEl.textContent = 'Single Boost';
+        if (!oneoffFile) subEl.textContent = 'Upload an image to continue';
+        else if (!selectedOneoffDay) subEl.textContent = 'Pick a posting day';
+        else subEl.textContent = `Ready to submit · ${selectedOneoffDay.split('-').slice(1).join('-')}`;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // SUBMIT HANDLER
+    // ═══════════════════════════════════════════════════
+    function handleSubmit() {
+      if (activeTab === 'monthly') {
+        if (monthlyFiles.length === 0) { showToast('Please upload at least one image'); return; }
+        if (Object.keys(selectedDays).length === 0) { showToast('Please select at least one posting day'); return; }
+        const payload = {
+          type: 'monthly_p350',
+          category: document.getElementById('monthly-category').value,
+          schedule: dayAssignments,
+          items: monthlyFiles.map(f => ({ title: f.title, desc: f.desc, contacts: f.contacts, socials: f.socials }))
+        };
+        console.log('📦 Monthly Payload:', JSON.stringify(payload, null, 2));
+        showToast('✓ Submitted! Check console for payload');
+      } else {
+        if (!oneoffFile) { showToast('Please upload an image'); return; }
+        if (!selectedOneoffDay) { showToast('Please select a posting day'); return; }
+        const payload = {
+          type: 'one_off_boost',
+          category: document.getElementById('oneoff-category').value,
+          boostDay: selectedOneoffDay,
+          title: document.getElementById('oo-title').value,
+          desc: document.getElementById('oo-desc').value,
+          cta: document.getElementById('oo-cta').value,
+          contacts: ooContacts,
+          socials: ooSocials
+        };
+        console.log('📦 One-off Payload:', JSON.stringify(payload, null, 2));
+        showToast('✓ Boost submitted! Check console');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // TOAST
+    // ═══════════════════════════════════════════════════
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // ═══════════════════════════════════════════════════
+    // CATEGORY LOADING
+    // ═══════════════════════════════════════════════════
+    async function loadCategories() {
+      try {
+        const response = await fetch('foromane_product_categories_may_2026.json');
+        const data = await response.json();
+        const flattened = [];
+
+        function walk(nodes, parentPath = '') {
+          nodes.forEach(node => {
+            const currentPath = parentPath ? `${parentPath} > ${node.name}` : node.name;
+            flattened.push({ id: node.id, name: node.name, path: currentPath });
+            if (node.children && node.children.length > 0) {
+              walk(node.children, currentPath);
+            }
+          });
+        }
+
+        walk(data.categories);
+
+        const optionsHtml = '<option value="">Select a category…</option>' + 
+          flattened.map(c => `<option value="${c.id}">${c.path}</option>`).join('');
+        
+        document.getElementById('monthly-category').innerHTML = optionsHtml;
+        document.getElementById('oneoff-category').innerHTML = optionsHtml;
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+        showToast('Error loading categories');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // NAVIGATION
+    // ═══════════════════════════════════════════════════
+    function navTab(viewId, navId) {
+      // For this standalone section, we redirect back to the main app
+      window.location.href = 'index.html?view=' + viewId;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════
+    loadCategories();
+    renderBoostCounter();
+    renderWeekSlots();
+    renderOneoffWeekSlots();
+    updateSubmitBar();
+  </script>
+
+  <!-- STICKY SUBMIT BAR -->
+  <div class="submit-bar" id="submit-bar">
+    <div class="submit-bar-inner">
+      <div class="submit-bar-info">
+        <strong id="submit-bar-title">Monthly Plan</strong>
+        <span id="submit-bar-sub">Select images to continue</span>
+      </div>
+      <button class="submit-btn" onclick="handleSubmit()">Submit <i class="fas fa-arrow-right"></i></button>
+    </div>
+  </div>
+  <nav id="bottom-nav" style="display: flex; z-index: 1000;">
+    <a class="nav-item" id="nav-promos" onclick="navTab('view-promos','nav-promos')"><img src="assets/icons/solid/bullhorn-2_inactive.webp" class="nav-icon" alt="Promos"></a>
+    <a class="nav-item active" id="nav-directory" onclick="navTab('view-directory','nav-directory')"><img src="assets/icons/solid/address-book-2_active.webp" class="nav-icon" alt="Directory"></a>
+    <a class="nav-item" id="nav-notes" onclick="navTab('view-notes','nav-notes')"><img src="assets/icons/solid/clipboard-list_inactive.webp" class="nav-icon" alt="Notes"></a>
+    <a class="nav-item" id="nav-account" onclick="navTab('view-account','nav-account')"><img src="assets/icons/solid/user-circle_inactive.webp" class="nav-icon" alt="Account"></a>
+  </nav>
+  </div><!-- /#fb-root -->
+</body>
+</html>

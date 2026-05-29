@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PricingEngine Test</title>
+  <style>body{font-family:sans-serif;padding:16px} pre{background:#f6f6f6;padding:12px;border-radius:6px}</style>
+</head>
+<body>
+  <h2>PricingEngine Quick Test</h2>
+  <p id="out">Loading...</p>
+  <script src="pricing-engine.js"></script>
+  <script>
+    const state = {
+      basePrice: 100,
+      variables: [{name:'Delivery', value:2, rate:25}],
+      modifiers: { urgency: true, nightShift: false, remoteArea: false, hazard: false },
+      discount: { type:'percent', value:10 },
+      qty: 5,
+      tiers: { type:'bulk', rules: [ {minQty:10, price:80} ] }
+    };
+    const res = window.PricingEngine.calcPrice(state.basePrice, state.variables, state.modifiers, state.discount);
+    const tier = window.PricingEngine.calculateTierPrice(res.total, state.qty, state.tiers);
+    document.getElementById('out').innerHTML = '<pre>' + JSON.stringify({res,tier}, null, 2) + '</pre>';
+  </script>
+</body>
+</html>

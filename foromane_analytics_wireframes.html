@@ -1,0 +1,403 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.screen-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:2rem}
+.screen-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.05em;margin-bottom:10px;text-transform:uppercase}
+.phone{background:var(--color-background-primary);border-radius:16px;border:0.5px solid var(--color-border-secondary);max-width:360px;margin:0 auto;overflow:hidden}
+.top-bar{background:#e87722;padding:10px 14px;display:flex;align-items:center;gap:8px}
+.top-bar-title{font-size:14px;font-weight:500;color:#fff}
+.top-bar-back{font-size:18px;color:#fff;cursor:pointer;line-height:1}
+.section-head{font-size:11px;font-weight:500;color:var(--color-text-tertiary);padding:10px 14px 4px;letter-spacing:.04em}
+.list-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;color:var(--color-text-primary)}
+.list-row-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.list-row-right{font-size:13px;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px}
+.acc-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.badge{font-size:11px;padding:2px 8px;border-radius:999px}
+.orange-btn{background:#e87722;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:13px;padding:8px 14px;width:calc(100% - 28px);margin:10px 14px;display:block;text-align:center;font-weight:500}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px}
+.stat-num{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.stat-label{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.stat-delta{font-size:11px;margin-top:3px}
+.chart-placeholder{background:var(--color-background-secondary);border-radius:var(--border-radius-md);margin:0 14px 10px;padding:10px;height:90px;display:flex;align-items:flex-end;gap:4px}
+.bar{border-radius:3px 3px 0 0;flex:1}
+.section-divider{height:6px;background:var(--color-background-tertiary)}
+.pill-row{display:flex;gap:6px;padding:8px 14px;flex-wrap:wrap}
+.pill{font-size:11px;padding:4px 10px;border-radius:999px;border:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);background:var(--color-background-primary)}
+.pill.active{background:#e87722;border-color:#e87722;color:#fff}
+.progress-row{padding:6px 14px 10px}
+.progress-label-row{display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.prog-track{height:6px;background:var(--color-border-tertiary);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px}
+.row-icon{width:28px;height:28px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.month-btn{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;color:var(--color-text-primary);cursor:pointer}
+.month-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.annotation{font-size:10px;color:var(--color-text-tertiary);font-style:italic;padding:4px 14px;line-height:1.5}
+.wf-label{font-size:10px;color:var(--color-text-tertiary);text-align:right;padding:2px 6px}
+.tabs-row{display:flex;border-bottom:0.5px solid var(--color-border-tertiary)}
+.tab-item{flex:1;text-align:center;font-size:11px;padding:8px 4px;color:var(--color-text-secondary);border-bottom:2px solid transparent}
+.tab-item.on{color:#e87722;border-bottom-color:#e87722;font-weight:500}
+</style>
+
+<h2 class="sr-only">Three wireframe screens for the Foromane analytics feature: the account entry point, the main analytics dashboard, and the monthly drill-down view.</h2>
+
+<div style="padding:1rem 0">
+
+<div class="screen-wrap">
+  <div class="screen-label">Screen 1 — view-account › KPI dashboard › Budget accordion</div>
+  <div class="phone">
+    <div class="top-bar">
+      <div class="top-bar-back"><i class="ti ti-chevron-left" aria-hidden="true"></i></div>
+      <div class="top-bar-title">My account</div>
+    </div>
+    <div class="section-head">KPI DASHBOARD</div>
+    <div class="acc-header">
+      Subscription & billing
+      <span><i class="ti ti-chevron-down" style="font-size:14px;color:var(--color-text-tertiary)" aria-hidden="true"></i></span>
+    </div>
+    <div class="acc-header" style="background:var(--color-background-primary)">
+      Budget
+      <span><i class="ti ti-chevron-down" style="font-size:14px;color:#e87722" aria-hidden="true"></i></span>
+    </div>
+    <div style="background:var(--color-background-primary);padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div class="stat-card">
+          <div class="stat-num">P700</div>
+          <div class="stat-label">Spent this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">8/12</div>
+          <div class="stat-label">Promo credits used</div>
+        </div>
+      </div>
+      <div style="background:#e87722;color:#fff;border-radius:var(--border-radius-md);font-size:13px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+        <span>View full analytics</span>
+        <i class="ti ti-arrow-right" style="font-size:16px" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="wf-label">↑ tapping "View full analytics" opens view-analytics</div>
+    <div class="acc-header">
+      Notes
+      <span><i class="ti ti-chevron-down" style="font-size:14px;color:var(--color-text-tertiary)" aria-hidden="true"></i></span>
+    </div>
+    <div class="acc-header">
+      Personal details
+      <span><i class="ti ti-chevron-down" style="font-size:14px;color:var(--color-text-tertiary)" aria-hidden="true"></i></span>
+    </div>
+  </div>
+</div>
+
+<div class="screen-wrap">
+  <div class="screen-label">Screen 2 — view-analytics (main dashboard)</div>
+  <div class="phone">
+    <div class="top-bar">
+      <div class="top-bar-back"><i class="ti ti-chevron-left" aria-hidden="true"></i></div>
+      <div class="top-bar-title">Analytics</div>
+    </div>
+
+    <div class="pill-row">
+      <div class="pill active">This month</div>
+      <div class="pill">Last month</div>
+      <div class="pill">3 months</div>
+      <div class="pill">All time</div>
+    </div>
+
+    <div class="section-head">SPENDING OVERVIEW</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num" style="color:#e87722">P700</div>
+        <div class="stat-label">Total spent</div>
+        <div class="stat-delta" style="color:var(--color-text-success)">P350 plan + P350 add-on</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">P2,450</div>
+        <div class="stat-label">Spent this year</div>
+        <div class="stat-delta" style="color:var(--color-text-tertiary)">7 months active</div>
+      </div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-label-row"><span>Promo credits</span><span>8 of 12 used</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:66%;background:#e87722"></div></div>
+    </div>
+    <div class="progress-row" style="padding-top:0">
+      <div class="progress-label-row"><span>Facebook slots</span><span>5 of 12 used</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:41%;background:#378ADD"></div></div>
+    </div>
+    <div class="list-row">
+      <div>
+        <div>Renewal date</div>
+        <div class="list-row-sub">P350 / month plan</div>
+      </div>
+      <div class="list-row-right">1 Jun 2026 <i class="ti ti-chevron-right" style="font-size:14px" aria-hidden="true"></i></div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">CATALOGUE PERFORMANCE</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">342</div>
+        <div class="stat-label">Catalogue views</div>
+        <div class="stat-delta" style="color:var(--color-text-success)">+18% vs last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">12</div>
+        <div class="stat-label">Items listed</div>
+        <div class="stat-delta" style="color:var(--color-text-tertiary)">2 with zero views</div>
+      </div>
+    </div>
+    <div style="padding:0 14px 4px;font-size:12px;color:var(--color-text-secondary)">Top viewed items this month</div>
+    <div class="list-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="row-icon" style="background:#FAECE7;color:#993C1D">1</div>
+        <div>
+          <div style="font-size:13px">Meranti Planks 22×144mm</div>
+          <div class="list-row-sub">Boards & Timber</div>
+        </div>
+      </div>
+      <div class="list-row-right" style="color:#e87722">84 views</div>
+    </div>
+    <div class="list-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="row-icon" style="background:#EAF3DE;color:#27500A">2</div>
+        <div>
+          <div style="font-size:13px">Chipboard 18mm 2440×1220mm</div>
+          <div class="list-row-sub">Boards & Timber</div>
+        </div>
+      </div>
+      <div class="list-row-right" style="color:#e87722">61 views</div>
+    </div>
+    <div class="list-row" style="cursor:pointer">
+      <div style="font-size:13px;color:#378ADD">View all items <i class="ti ti-arrow-right" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i></div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">PROMO PERFORMANCE</div>
+    <div style="padding:6px 14px 2px;font-size:11px;color:var(--color-text-tertiary)">Impressions by promo — tap any bar</div>
+    <div class="chart-placeholder">
+      <div class="bar" style="height:75%;background:#e87722;opacity:.9"></div>
+      <div class="bar" style="height:55%;background:#e87722;opacity:.7"></div>
+      <div class="bar" style="height:90%;background:#e87722;opacity:.9"></div>
+      <div class="bar" style="height:40%;background:#e87722;opacity:.6"></div>
+      <div class="bar" style="height:65%;background:#e87722;opacity:.8"></div>
+      <div class="bar" style="height:30%;background:#e87722;opacity:.5"></div>
+      <div class="bar" style="height:80%;background:#e87722;opacity:.9"></div>
+      <div class="bar" style="height:50%;background:#e87722;opacity:.7"></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">1,840</div>
+        <div class="stat-label">Total impressions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">6.2%</div>
+        <div class="stat-label">Avg tap-through</div>
+      </div>
+    </div>
+    <div class="list-row">
+      <div>
+        <div>Promos live now</div>
+        <div class="list-row-sub">3 active · 1 pending approval</div>
+      </div>
+      <div class="list-row-right"><span class="badge" style="background:#EAF3DE;color:#27500A">3 live</span></div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">FACEBOOK PROMOS</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Posts this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">Wed</div>
+        <div class="stat-label">Best day (reach)</div>
+      </div>
+    </div>
+    <div class="list-row">
+      <div>
+        <div>Estimated reach this month</div>
+        <div class="list-row-sub">From P350 pool — all categories</div>
+      </div>
+      <div class="list-row-right" style="color:#378ADD">~48k</div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">DIRECTORY & SHARING</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">129</div>
+        <div class="stat-label">Profile views</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">34</div>
+        <div class="stat-label">Contact taps</div>
+      </div>
+    </div>
+    <div class="stat-row" style="padding-top:0">
+      <div class="stat-card">
+        <div class="stat-num">17</div>
+        <div class="stat-label">Added to notes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">9</div>
+        <div class="stat-label">WhatsApp shares</div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">MONTHLY HISTORY</div>
+    <div class="annotation">Tap a month to see the full breakdown</div>
+    <div class="month-btn">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="month-dot" style="background:#e87722"></div>
+        <div>
+          <div style="font-size:13px">May 2026</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">P700 · 1,840 impressions</div>
+        </div>
+      </div>
+      <i class="ti ti-chevron-right" style="font-size:14px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
+    </div>
+    <div class="month-btn">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="month-dot" style="background:#D3D1C7"></div>
+        <div>
+          <div style="font-size:13px">April 2026</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">P350 · 1,220 impressions</div>
+        </div>
+      </div>
+      <i class="ti ti-chevron-right" style="font-size:14px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
+    </div>
+    <div class="month-btn" style="border-bottom:none">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="month-dot" style="background:#D3D1C7"></div>
+        <div>
+          <div style="font-size:13px">March 2026</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">P350 · 990 impressions</div>
+        </div>
+      </div>
+      <i class="ti ti-chevron-right" style="font-size:14px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
+    </div>
+    <div style="height:10px"></div>
+  </div>
+</div>
+
+<div class="screen-wrap">
+  <div class="screen-label">Screen 3 — view-analytics-month (monthly drill-down)</div>
+  <div class="phone">
+    <div class="top-bar">
+      <div class="top-bar-back"><i class="ti ti-chevron-left" aria-hidden="true"></i></div>
+      <div class="top-bar-title">May 2026</div>
+    </div>
+
+    <div class="tabs-row">
+      <div class="tab-item on">Spending</div>
+      <div class="tab-item">Catalogue</div>
+      <div class="tab-item">Promos</div>
+      <div class="tab-item">Facebook</div>
+    </div>
+
+    <div class="section-head">WHAT YOU PAID FOR</div>
+    <div class="list-row">
+      <div>
+        <div>P350 monthly plan</div>
+        <div class="list-row-sub">Renewed 1 May 2026</div>
+      </div>
+      <div class="list-row-right">P350.00</div>
+    </div>
+    <div class="list-row">
+      <div>
+        <div>Facebook promo add-on</div>
+        <div class="list-row-sub">+12 slots purchased 4 May</div>
+      </div>
+      <div class="list-row-right">P200.00</div>
+    </div>
+    <div class="list-row">
+      <div>
+        <div>Promo boost — Chipboard</div>
+        <div class="list-row-sub">3-day boost · ran 6–9 May</div>
+      </div>
+      <div class="list-row-right">P75.00</div>
+    </div>
+    <div class="list-row" style="background:var(--color-background-secondary)">
+      <div style="font-weight:500;font-size:13px">Total</div>
+      <div class="list-row-right" style="font-weight:500;color:#e87722">P625.00</div>
+    </div>
+    <div class="annotation">All transactions are for reference only. Contact Foromane to dispute any charge.</div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">CREDITS USED THIS MONTH</div>
+    <div class="progress-row">
+      <div class="progress-label-row"><span>App promo credits</span><span>8 / 12 used</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:66%;background:#e87722"></div></div>
+    </div>
+    <div class="progress-row" style="padding-top:0">
+      <div class="progress-label-row"><span>Facebook slots</span><span>5 / 24 used</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:21%;background:#378ADD"></div></div>
+    </div>
+    <div class="progress-row" style="padding-top:0">
+      <div class="progress-label-row"><span>Boosted categories</span><span>3 / 5 active</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:60%;background:#1D9E75"></div></div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">PROMO RESULTS THIS MONTH</div>
+    <div class="list-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="row-icon" style="background:#FAECE7;color:#993C1D"><i class="ti ti-eye" style="font-size:13px" aria-hidden="true"></i></div>
+        <div>Meranti Planks 15% off</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:#e87722">412 views</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary)">8.1% tap-through</div>
+      </div>
+    </div>
+    <div class="list-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="row-icon" style="background:#FAECE7;color:#993C1D"><i class="ti ti-eye" style="font-size:13px" aria-hidden="true"></i></div>
+        <div>Chipboard clearance</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:#e87722">280 views</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary)">5.4% tap-through</div>
+      </div>
+    </div>
+    <div class="list-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="row-icon" style="background:#EAF3DE;color:#27500A"><i class="ti ti-clock" style="font-size:13px" aria-hidden="true"></i></div>
+        <div>PVC Foil oak woodgrain</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:var(--color-text-secondary)">Pending</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary)">Awaiting approval</div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-head">CATALOGUE ITEM BREAKDOWN</div>
+    <div class="list-row">
+      <div style="font-size:13px">Meranti Planks 22×144mm</div>
+      <div class="list-row-right" style="color:#e87722">84</div>
+    </div>
+    <div class="list-row">
+      <div style="font-size:13px">Chipboard 18mm</div>
+      <div class="list-row-right" style="color:#e87722">61</div>
+    </div>
+    <div class="list-row">
+      <div style="font-size:13px">Postform Top Glacier White</div>
+      <div class="list-row-right" style="color:#e87722">55</div>
+    </div>
+    <div class="list-row">
+      <div style="font-size:13px">PVC Edging 22mm</div>
+      <div class="list-row-right" style="color:var(--color-text-tertiary)">12</div>
+    </div>
+    <div class="list-row" style="border-bottom:none">
+      <div style="font-size:13px;color:var(--color-text-danger)">PVC Foil oak woodgrain</div>
+      <div class="list-row-right" style="color:var(--color-text-tertiary)">0 views</div>
+    </div>
+    <div class="annotation">Items with 0 views may need a better image or description.</div>
+    <div style="height:10px"></div>
+  </div>
+</div>
+
+</div>
