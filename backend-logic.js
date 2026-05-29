@@ -261,6 +261,56 @@ async function fetchUserBusiness(uid) {
   return null;
 }
 
+// ==========================================
+// 6. CROWD-SOURCED AREA DATABASE
+// ==========================================
+
+var _submittedAreasLoaded = false;
+
+async function submitAreaToFirestore(country, town, area) {
+  var fb = await _getFirebase();
+  if (!fb) return;
+  try {
+    var col = fb.firestore.collection(fb.db, 'submitted_areas');
+    var type = area ? 'area' : 'town';
+    await fb.firestore.addDoc(col, {
+      type: type,
+      country: country,
+      town: town,
+      area: area || '',
+      submittedAt: fb.firestore.serverTimestamp(),
+      approved: false
+    });
+  } catch (e) {
+    console.warn('Could not sync area to Firestore:', e.message);
+  }
+}
+
+async function loadSubmittedAreas() {
+  if (_submittedAreasLoaded) return;
+  window.submittedTownsCache = window.submittedTownsCache || [];
+  window.submittedAreasCache = window.submittedAreasCache || [];
+  var fb = await _getFirebase();
+  if (!fb) return;
+  try {
+    var col = fb.firestore.collection(fb.db, 'submitted_areas');
+    var snap = await fb.firestore.getDocs(col);
+    snap.forEach(function(doc) {
+      var d = doc.data();
+      var cache = d.type === 'town' ? window.submittedTownsCache : window.submittedAreasCache;
+      var exists = cache.some(function(e) {
+        return e.country === d.country && e.town === d.town && (d.type !== 'area' || e.area === d.area);
+      });
+      if (!exists) cache.push(d);
+    });
+    _submittedAreasLoaded = true;
+  } catch (e) {
+    console.warn('Could not load submitted areas:', e.message);
+  }
+}
+
+window.submitAreaToFirestore = submitAreaToFirestore;
+window.loadSubmittedAreas = loadSubmittedAreas;
 window.fetchPendingOnboarding = fetchPendingOnboarding;
 window.approveOnboarding = approveOnboarding;
 window.recordInteraction = recordInteraction;

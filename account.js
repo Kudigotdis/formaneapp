@@ -60,8 +60,8 @@ function renderPersonalDetails() {
   const body = document.getElementById('personal-details-body');
   if (!body) return;
   body.innerHTML = renderIdentitySection() + renderContactSection() + renderLocationSection() + renderSocialSection() + renderCategoriesSection();
-  populateTownDatalist();
-  populateAreaDatalist(UserState.location.town || 'Gaborone');
+  populateTownDropdown();
+  populateAreaDropdown(UserState.location.town || 'Gaborone');
 }
 
 function renderIdentitySection() {
@@ -106,56 +106,252 @@ function renderIdentitySection() {
 }
 
 function renderLocationSection() {
+  var townVal = (UserState.location.town||'Gaborone').replace(/"/g,'&quot;');
+  var areaVal = (UserState.location.area||'').replace(/"/g,'&quot;');
   return `<div class="sub-accordion">
     <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Location</div>
     <div class="sub-accordion-body">
-      <div class="field-row" style="margin-bottom:1px;">
-        <input type="text" class="field-input" id="loc-town" list="loc-town-list" placeholder="Town / Village / City" value="${(UserState.location.town||'Gaborone').replace(/"/g,'&quot;')}" oninput="populateAreaDatalist(this.value)" onchange="onTownChange(this.value)">
-        <datalist id="loc-town-list"></datalist>
+      <div class="address-stack-row" style="margin-bottom:2px;position:relative;">
+          <input type="text" class="field-input" id="loc-town" placeholder="Town / Village / City" value="${townVal}" oninput="onTownInput(this.value)" onfocus="showDropdown('loc-town-dropdown')" onblur="setTimeout(function(){hideDropdown('loc-town-dropdown')},180)" autocomplete="off">
+          <div class="custom-dropdown" id="loc-town-dropdown"></div>
+        <div class="add-entry-btn" id="add-town-container" style="display:none;margin-top:4px;width:100%;" onclick="submitNewTown()">
+          <i class="fas fa-plus-circle"></i> Add "<span id="add-town-name"></span>" to database
+        </div>
       </div>
-      <div class="field-row" style="margin-bottom:1px;">
-        <input type="text" class="field-input" id="loc-area" list="loc-area-list" placeholder="Area / Neighbourhood" value="${(UserState.location.area||'').replace(/"/g,'&quot;')}" onchange="updateLocationField('area', this.value)">
-        <datalist id="loc-area-list"></datalist>
+      <div class="address-stack-row" style="margin-bottom:2px;position:relative;">
+          <input type="text" class="field-input" id="loc-area" placeholder="Area / Neighbourhood" value="${areaVal}" oninput="onAreaInput(this.value)" onfocus="showDropdown('loc-area-dropdown')" onblur="setTimeout(function(){hideDropdown('loc-area-dropdown')},180)" autocomplete="off">
+          <div class="custom-dropdown" id="loc-area-dropdown"></div>
+        <div class="add-entry-btn" id="add-area-container" style="display:none;margin-top:4px;width:100%;" onclick="submitNewArea()">
+          <i class="fas fa-plus-circle"></i> Add "<span id="add-area-name"></span>" to database
+        </div>
       </div>
-      <div class="field-row" style="margin-bottom:1px;">
+      <div class="address-stack-row" style="margin-bottom:2px;">
         <input type="text" class="field-input" id="loc-gps" placeholder="Google GPS Link" value="${(UserState.location.gps||'').replace(/"/g,'&quot;')}" onchange="updateLocationField('gps', this.value)">
       </div>
-      <div class="field-row">
+      <div class="address-stack-row">
         <button class="add-entry-btn" onclick="openGpsMap()"><i class="fas fa-map-marked-alt"></i> Open in Google Maps</button>
       </div>
     </div>
   </div>`;
 }
 
-function populateTownDatalist() {
-  const dl = document.getElementById('loc-town-list');
-  if (!dl) return;
-  const data = window.LOCATIONS_DATA || { districts: [] };
-  const towns = new Set();
-  data.districts.forEach(d => (d.towns||[]).forEach(t => towns.add(t.name)));
-  dl.innerHTML = [...towns].sort().map(t => `<option value="${t.replace(/"/g,'&quot;')}">`).join('');
+var regCountry = 'botswana';
+window.submittedAreasCache = window.submittedAreasCache || [];
+window.submittedTownsCache = window.submittedTownsCache || [];
+
+function getLocationData() {
+  return regCountry === 'zimbabwe'
+    ? (window.ZIMBABWE_LOCATIONS_DATA || { districts: [] })
+    : (window.LOCATIONS_DATA || { districts: [] });
 }
 
-function populateAreaDatalist(townName) {
-  const dl = document.getElementById('loc-area-list');
-  if (!dl) return;
-  const data = window.LOCATIONS_DATA || { districts: [] };
-  let areas = [];
-  for (const d of data.districts) {
-    const town = (d.towns||[]).find(t => t.name === townName);
-    if (town) { areas = town.areas || []; break; }
+function getMergedTowns() {
+  var data = getLocationData();
+  var towns = [];
+  for (var d = 0; d < data.districts.length; d++) {
+    var townList = data.districts[d].towns || [];
+    for (var t = 0; t < townList.length; t++) {
+      if (towns.indexOf(townList[t].name) === -1) towns.push(townList[t].name);
+    }
   }
-  dl.innerHTML = areas.map(a => `<option value="${a.replace(/"/g,'&quot;')}">`).join('');
+  for (var s = 0; s < window.submittedTownsCache.length; s++) {
+    if (window.submittedTownsCache[s].country === regCountry) {
+      if (towns.indexOf(window.submittedTownsCache[s].town) === -1) {
+        towns.push(window.submittedTownsCache[s].town);
+      }
+    }
+  }
+  towns.sort();
+  return towns;
+}
+
+function getMergedAreas(townName) {
+  var data = getLocationData();
+  var areas = [];
+  for (var d = 0; d < data.districts.length; d++) {
+    var towns = data.districts[d].towns || [];
+    for (var t = 0; t < towns.length; t++) {
+      if (towns[t].name === townName) {
+        areas = (towns[t].areas || []).slice();
+        break;
+      }
+    }
+    if (areas.length) break;
+  }
+  for (var s = 0; s < window.submittedAreasCache.length; s++) {
+    if (window.submittedAreasCache[s].country === regCountry && window.submittedAreasCache[s].town === townName) {
+      if (areas.indexOf(window.submittedAreasCache[s].area) === -1) {
+        areas.push(window.submittedAreasCache[s].area);
+      }
+    }
+  }
+  return areas;
+}
+
+// ─── Custom dropdown helpers ───
+
+function showDropdown(id) {
+  var el = document.getElementById(id);
+  if (el && el.children.length > 0) el.classList.add('show');
+}
+
+function hideDropdown(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.remove('show');
+}
+
+function selectDropdownItem(inputId, dropdownId, value) {
+  document.getElementById(inputId).value = value;
+  hideDropdown(dropdownId);
+  if (inputId === 'loc-town') {
+    onTownChange(value);
+    onTownInput(value);
+  } else {
+    onAreaChange(value);
+    onAreaInput(value);
+  }
+  hideDropdown(dropdownId);
+}
+
+function renderDropdownItems(dropdownId, items, inputId, filter) {
+  var el = document.getElementById(dropdownId);
+  if (!el) return;
+  var f = filter ? filter.toLowerCase() : '';
+  var matched = items.filter(function(i) { return !f || i.toLowerCase().indexOf(f) !== -1; });
+  if (matched.length === 0) { el.innerHTML = ''; el.classList.remove('show'); return; }
+  el.innerHTML = matched.map(function(i) {
+    return '<div class="custom-dropdown-item" onmousedown="event.preventDefault();selectDropdownItem(\'' + inputId + '\',\'' + dropdownId + '\',\'' + i.replace(/'/g,"\\'").replace(/"/g,'&quot;') + '\')">' + i.replace(/</g,'&lt;') + '</div>';
+  }).join('');
+  el.classList.add('show');
+}
+
+// ─── Country ───
+
+function onCountryChange(country) {
+  regCountry = country;
+  populateTownDropdown();
+  var townInput = document.getElementById('loc-town');
+  var areaInput = document.getElementById('loc-area');
+  if (townInput) townInput.value = '';
+  if (areaInput) areaInput.value = '';
+  var areaDd = document.getElementById('loc-area-dropdown');
+  if (areaDd) areaDd.innerHTML = '';
+  document.getElementById('add-town-container').style.display = 'none';
+  document.getElementById('add-area-container').style.display = 'none';
+}
+
+// ─── Village / Town / City ───
+
+function populateTownDropdown() {
+  renderDropdownItems('loc-town-dropdown', getMergedTowns(), 'loc-town', '');
+  hideDropdown('loc-town-dropdown');
+}
+
+function onTownInput(value) {
+  renderDropdownItems('loc-town-dropdown', getMergedTowns(), 'loc-town', value);
+  var container = document.getElementById('add-town-container');
+  var nameSpan = document.getElementById('add-town-name');
+  if (!container || !nameSpan) return;
+  if (!value.trim()) { container.style.display = 'none'; return; }
+  var merged = getMergedTowns();
+  var exists = merged.some(function(t) { return t.toLowerCase() === value.trim().toLowerCase(); });
+  if (exists) {
+    container.style.display = 'none';
+  } else {
+    nameSpan.textContent = value.trim();
+    container.style.display = 'block';
+  }
 }
 
 function onTownChange(value) {
-  const prev = UserState.location.town;
+  var prev = UserState.location.town;
   if (value === prev) return;
   UserState.updateLocation('town', value);
   UserState.updateLocation('area', '');
-  const areaInput = document.getElementById('loc-area');
+  var areaInput = document.getElementById('loc-area');
   if (areaInput) areaInput.value = '';
-  populateAreaDatalist(value);
+  populateAreaDropdown(value);
+  document.getElementById('add-town-container').style.display = 'none';
+  document.getElementById('add-area-container').style.display = 'none';
+}
+
+function submitNewTown() {
+  var nameSpan = document.getElementById('add-town-name');
+  var townInput = document.getElementById('loc-town');
+  if (!nameSpan || !townInput) return;
+  var townName = nameSpan.textContent.trim();
+  if (!townName) return;
+  var merged = getMergedTowns();
+  if (merged.indexOf(townName) !== -1) {
+    document.getElementById('add-town-container').style.display = 'none';
+    showToast('This town is already in the database');
+    return;
+  }
+  window.submittedTownsCache.push({ country: regCountry, town: townName });
+  townInput.value = townName;
+  onTownChange(townName);
+  document.getElementById('add-town-container').style.display = 'none';
+  showToast('"' + townName + '" added to database');
+  if (typeof window.submitAreaToFirestore === 'function') {
+    window.submitAreaToFirestore(regCountry, townName, '');
+  }
+}
+
+// ─── Area / Neighbourhood ───
+
+function populateAreaDropdown(townName) {
+  renderDropdownItems('loc-area-dropdown', getMergedAreas(townName), 'loc-area', '');
+  hideDropdown('loc-area-dropdown');
+}
+
+function onAreaInput(value) {
+  renderDropdownItems('loc-area-dropdown', getMergedAreas(document.getElementById('loc-town').value), 'loc-area', value);
+
+  var container = document.getElementById('add-area-container');
+  var nameSpan = document.getElementById('add-area-name');
+  if (!container || !nameSpan) return;
+  if (!value.trim()) { container.style.display = 'none'; return; }
+  var dd = document.getElementById('loc-area-dropdown');
+  var exists = false;
+  if (dd) {
+    for (var i = 0; i < dd.children.length; i++) {
+      if (dd.children[i].textContent.toLowerCase() === value.trim().toLowerCase()) { exists = true; break; }
+    }
+  }
+  if (exists) {
+    container.style.display = 'none';
+  } else {
+    nameSpan.textContent = value.trim();
+    container.style.display = 'block';
+  }
+}
+
+function onAreaChange(value) {
+  UserState.updateLocation('area', value);
+}
+
+function submitNewArea() {
+  var nameSpan = document.getElementById('add-area-name');
+  var areaInput = document.getElementById('loc-area');
+  var townInput = document.getElementById('loc-town');
+  if (!nameSpan || !areaInput || !townInput) return;
+  var areaName = nameSpan.textContent.trim();
+  var townName = townInput.value.trim();
+  if (!areaName || !townName) return;
+  var merged = getMergedAreas(townName);
+  if (merged.indexOf(areaName) !== -1) {
+    document.getElementById('add-area-container').style.display = 'none';
+    showToast('This area is already in the database');
+    return;
+  }
+  window.submittedAreasCache.push({ country: regCountry, town: townName, area: areaName });
+  areaInput.value = areaName;
+  onAreaChange(areaName);
+  document.getElementById('add-area-container').style.display = 'none';
+  showToast('"' + areaName + '" added to database');
+  if (typeof window.submitAreaToFirestore === 'function') {
+    window.submitAreaToFirestore(regCountry, townName, areaName);
+  }
 }
 
 function renderContactSection() {
@@ -845,7 +1041,7 @@ function renderPromoRequestsList() {
         '<span style="background:' + sc.bg + ';color:' + sc.color + ';font-size:10px;font-weight:800;padding:4px 8px;border-radius:6px;text-transform:uppercase;">' + statusLabel + '</span>' +
       '</div>' +
       '<div style="display:flex;gap:12px;background:#f9f9f9;padding:10px;border-radius:8px;margin-bottom:12px;">' +
-        (imgSrc ? '<img src="' + imgSrc + '" style="width:60px;height:60px;border-radius:6px;object-fit:cover;background:#eee;">' : '<div style="width:60px;height:60px;border-radius:6px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:20px;">\ud83d\udcc4</div>') +
+        (imgSrc ? '<img src="' + imgSrc + '" style="width:60px;height:60px;border-radius:6px;object-fit:cover;background:#eee;" loading="lazy" width="60" height="60">' : '<div style="width:60px;height:60px;border-radius:6px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:20px;">\ud83d\udcc4</div>') +
         '<div style="flex:1;">' +
           '<div style="font-size:12px;font-weight:600;color:var(--grey-dark);margin-bottom:2px;">Category</div>' +
           '<div style="font-size:13px;color:#333;">' + category + '</div>' +
@@ -1039,7 +1235,7 @@ function renderLikedList(mode) {
           '</div>' +
           '<div class="promo-text-extra">' +
             '<div class="promo-text-thumb-flex">' +
-              (function(bId){ var logo = window.getBusinessLogo(bId); return logo ? '<img src="' + logo + '" class="promo-text-thumb" alt="">' : ''; })(i.businessId) +
+              (function(bId){ var logo = window.getBusinessLogo(bId); return logo ? '<img src="' + logo + '" class="promo-text-thumb" alt="" loading="lazy" width="48" height="48">' : ''; })(i.businessId) +
               '<div class="promo-text-biz-info" onclick="openBizFromPromo(\'' + (i.businessId || '') + '\',\'' + (bizEsc || '') + '\')">' +
                 '<div class="promo-text-biz-name">' + (i.businessName || 'Unknown') + '</div>' +
                 '<div class="promo-text-biz-location">' + (typeof i.location === 'object' && i.location ? (i.location.town || '') : (i.location || 'Category: ' + (i.category || 'General'))) + '</div>' +
@@ -1052,7 +1248,7 @@ function renderLikedList(mode) {
               '<button class="action-btn" onclick="sharePromo(\'' + i.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
               '<span class="action-divider">|</span>' +
               '<button class="action-btn liked" id="like-' + i.id + '" onclick="handleProdLike(\'' + i.id + '\', this)">' +
-                '<img src="assets/icons/heart_active_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
+                '<img src="assets/icons/heart_active_icon.webp" style="width:16px;height:16px;vertical-align:middle;" loading="lazy">' +
               '</button>' +
             '</div>' +
           '</div>' +
@@ -1097,7 +1293,7 @@ function renderLikedList(mode) {
             '</div>' +
             '<div class="promo-text-extra">' +
               '<div class="promo-text-thumb-flex">' +
-                (function(bId){ var logo = window.getBusinessLogo(bId); return logo ? '<img src="' + logo + '" class="promo-text-thumb" alt="">' : ''; })(p.businessId) +
+                (function(bId){ var logo = window.getBusinessLogo(bId); return logo ? '<img src="' + logo + '" class="promo-text-thumb" alt="" loading="lazy" width="48" height="48">' : ''; })(p.businessId) +
                 '<div class="promo-text-biz-info" onclick="openBizFromPromo(\'' + (p.businessId || '') + '\',\'' + (bizName.replace(/'/g,"\\'") || '') + '\')">' +
                   '<div class="promo-text-biz-name">' + bizName + '</div>' +
                   '<div class="promo-text-biz-location">' + (typeof p.location === 'object' && p.location ? (p.location.town || '') + (p.location.area ? ' · ' + p.location.area : '') : (p.location || 'Category: ' + (p.category || 'General'))) + '</div>' +
@@ -1109,10 +1305,10 @@ function renderLikedList(mode) {
                 '<span class="action-divider">|</span>' +
                 '<button class="action-btn" onclick="sharePromo(\'' + p.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
                 (isOwnPromo || window.Auth?.isAdmin() ?
-                '<span class="action-divider">|</span><button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
+                '<span class="action-divider">|</span><button class="action-btn" onclick="openFbPromo(\'' + p.id + '\')"><img src="assets/icons/facebook_icon_f.webp" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
                 (isOwnPromo ? '' :
                 '<span class="action-divider">|</span><button class="action-btn ' + (p.liked ? 'liked' : '') + '" id="like-' + p.id + '" onclick="toggleLike(\'' + p.id + '\', this)">' +
-                  '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
+                  '<img src="assets/icons/heart_' + (p.liked ? 'active' : 'inactive') + '_icon.webp" style="width:16px;height:16px;vertical-align:middle;" loading="lazy">' +
                 '</button>') +
               '</div>' +
             '</div>' +
@@ -1162,7 +1358,7 @@ function renderLikedList(mode) {
     var role = item.role || item.category || '';
     var profileImg = item.image || (mode !== 'tradesmen' ? item.logo : null) || null;
     var avatarHtml = profileImg
-      ? '<img src="' + profileImg + '" class="dir-avatar" style="object-fit:cover;" alt="" onerror="this.outerHTML=\'' + init + '\'">'
+      ? '<img src="' + profileImg + '" class="dir-avatar" style="object-fit:cover;" alt="" onerror="this.outerHTML=\'' + init + '\'" loading="lazy" width="48" height="48">'
       : '<div class="dir-avatar" style="background:' + col + ';">' + init + '</div>';
     var onClick = mode === 'tradesmen'
       ? 'openProProfile(\'' + item.id + '\')'
@@ -1171,7 +1367,7 @@ function renderLikedList(mode) {
       avatarHtml +
       '<div class="dir-info"><h3>' + item.name + '</h3><p>' + role + ' · ' + loc + '</p></div>' +
       '<button onclick="event.stopPropagation();toggleFavDir(this,\'' + item.id + '\');renderLikedList(\'' + mode + '\')" style="background:none;border:none;cursor:pointer;padding:4px 8px;flex-shrink:0;margin-left:auto;" title="Remove">' +
-        '<img src="assets/icons/heart_active_icon.png" style="width:22px;height:22px;display:block;">' +
+        '<img src="assets/icons/heart_active_icon.webp" style="width:22px;height:22px;display:block;" loading="lazy">' +
       '</button></div>';
   }).join('');
 }
@@ -1223,7 +1419,7 @@ function showLikedCategoryItems(catName) {
         '</div>' +
         '<div class="promo-text-extra">' +
           '<div class="promo-text-thumb-flex">' +
-            (function(bId){ var logo = window.getBusinessLogo(bId); return logo ? '<img src="' + logo + '" class="promo-text-thumb" alt="">' : ''; })(i.businessId) +
+            (function(bId){ var logo = window.getBusinessLogo(bId); return logo ? '<img src="' + logo + '" class="promo-text-thumb" alt="" loading="lazy" width="48" height="48">' : ''; })(i.businessId) +
             '<div class="promo-text-biz-info" onclick="openBizFromPromo(\'' + (i.businessId || '') + '\',\'' + (bizName.replace(/'/g,"\\'") || '') + '\')">' +
               '<div class="promo-text-biz-name">' + (bizName || 'Unknown') + '</div>' +
               '<div class="promo-text-biz-location">' + (typeof i.location === 'object' && i.location ? (i.location.town || '') : (i.location || 'Category: ' + (i.category || 'General'))) + '</div>' +
@@ -1235,10 +1431,10 @@ function showLikedCategoryItems(catName) {
             '<span class="action-divider">|</span>' +
             '<button class="action-btn" onclick="sharePromo(\'' + i.id + '\')"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:14px;height:14px;vertical-align:middle;"></button>' +
             (isOwnPromo || window.Auth?.isAdmin() ?
-            '<span class="action-divider">|</span><button class="action-btn" onclick="openFbPromo(\'' + i.id + '\')"><img src="assets/icons/facebook_icon_f.png" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
+            '<span class="action-divider">|</span><button class="action-btn" onclick="openFbPromo(\'' + i.id + '\')"><img src="assets/icons/facebook_icon_f.webp" style="height:14px;vertical-align:middle;object-fit:contain;"></button>' : '') +
             (isOwnPromo ? '' :
             '<span class="action-divider">|</span><button class="action-btn liked" id="like-' + i.id + '" onclick="handleProdLike(\'' + i.id + '\', this)">' +
-              '<img src="assets/icons/heart_active_icon.png" style="width:16px;height:16px;vertical-align:middle;">' +
+              '<img src="assets/icons/heart_active_icon.webp" style="width:16px;height:16px;vertical-align:middle;" loading="lazy">' +
             '</button>') +
           '</div>' +
         '</div>' +
@@ -1370,10 +1566,10 @@ function updateAccountHero() {
 
     var customAvatar = s.customAvatar || localStorage.getItem('foromane_custom_avatar_' + s.id);
   if (customAvatar) {
-    avatar.innerHTML = '<img src="' + customAvatar + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;border:3px solid rgba(200,200,200,0.2);">';
+    avatar.innerHTML = '<img src="' + customAvatar + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;border:3px solid rgba(200,200,200,0.2);" loading="lazy" width="120" height="120">';
     avatar.onclick = function() { document.getElementById('acct-avatar-input').click(); };
   } else if (isGuest) {
-    avatar.innerHTML = '<img src="' + window.assetUrl('assets/images/company_logos_dummy/foromane_logo_thumbnail.webp') + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;border:3px solid rgba(200,200,200,0.2);">';
+    avatar.innerHTML = '<img src="' + window.assetUrl('assets/images/company_logos_dummy/foromane_logo_thumbnail.webp') + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;border:3px solid rgba(200,200,200,0.2);" loading="lazy" width="120" height="120">';
     avatar.onclick = null;
   } else if (isAdmin) {
     avatar.innerHTML = initials;
@@ -1382,7 +1578,7 @@ function updateAccountHero() {
     const demoAcc = window.DEMO_PROFILES ? window.DEMO_PROFILES.find(a => a.id === s.id) : null;
     const fallbackImage = `assets/images/profile_pictures_dummy/${encodeURIComponent(name)}.jpg`;
     const imgSrc = window.assetUrl((demoAcc && demoAcc.image) || (demoAcc && demoAcc.logo) || fallbackImage);
-    avatar.innerHTML = '<img src="' + imgSrc + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;border:3px solid rgba(200,200,200,0.2);" onerror="this.outerHTML=\'' + initials + '\'">';
+    avatar.innerHTML = '<img src="' + imgSrc + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;border:3px solid rgba(200,200,200,0.2);" onerror="this.outerHTML=\'' + initials + '\'" loading="lazy" width="120" height="120">';
     avatar.onclick = function() { document.getElementById('acct-avatar-input').click(); };
   }
 
@@ -1413,7 +1609,7 @@ function handleAvatarChange(event) {
   reader.onload = function(e) {
     var dataUrl = e.target.result;
     var avatar = document.getElementById('acct-avatar');
-    avatar.innerHTML = '<img src="' + dataUrl + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;border:3px solid rgba(200,200,200,0.2);">';
+    avatar.innerHTML = '<img src="' + dataUrl + '" style="width:120px;height:120px;border-radius:8px;object-fit:cover;display:block;border:3px solid rgba(200,200,200,0.2);" loading="lazy" width="120" height="120">';
     localStorage.setItem('foromane_custom_avatar_' + UserState.id, dataUrl);
     if (UserState.customAvatar !== undefined) UserState.customAvatar = dataUrl;
   };
@@ -1425,7 +1621,7 @@ function getSwitcherImg(id, name) {
   if (id === 'guest' || id === 'admin') return '';
   var p = window.DEMO_PROFILES ? window.DEMO_PROFILES.find(function(a) { return a.id === id || a.name === name; }) : null;
   var src = window.assetUrl((p && p.image) || 'assets/images/profile_pictures_dummy/' + id + '-avatar.jpg');
-  return '<img src="' + src + '" class="switcher-profile-img" onerror="this.outerHTML=\'\'">';
+  return '<img src="' + src + '" class="switcher-profile-img" onerror="this.outerHTML=\'\'" loading="lazy" width="48" height="48">';
 }
 
 function renderSwitcherOption(id, name, role, initials, color, extraAttr) {
@@ -1777,7 +1973,7 @@ function renderBusinessCardHTML(biz) {
   var isStaff = UserState.businessRole === 'staff';
 
   var logoHtml = biz.logo
-    ? '<img src="' + biz.logo + '" class="biz-logo-img" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">'
+    ? '<img src="' + biz.logo + '" class="biz-logo-img" style="width:44px;height:44px;border-radius:6px;object-fit:cover;" loading="lazy" width="44" height="44">'
     : '<div class="biz-logo" style="background:' + col + ';">' + init + '</div>';
 
   var headerHtml = '<div class="listed-header">Listed</div>' +
@@ -1881,7 +2077,7 @@ function renderProAccountPage() {
 
   var projectsHtml = portfolio.length > 0
     ? portfolio.map(function(p, i) {
-        var imgHtml = p.image ? '<img src="' + p.image.replace(/'/g, "\\'") + '" alt="' + (p.title || '').replace(/'/g, "\\'") + '" style="width:100%;max-height:180px;object-fit:cover;border-radius:4px;margin-top:6px;">' : '';
+        var imgHtml = p.image ? '<img src="' + p.image.replace(/'/g, "\\'") + '" alt="' + (p.title || '').replace(/'/g, "\\'") + '" style="width:100%;max-height:180px;object-fit:cover;border-radius:4px;margin-top:6px;" loading="lazy">' : '';
         var videoHtml = p.videoUrl ? '<div style="margin-top:4px;"><a href="' + p.videoUrl.replace(/'/g, "\\'") + '" target="_blank" style="font-size:12px;color:var(--orange);"><i class="fab fa-facebook"></i> View Video</a></div>' : '';
         return '<div style="padding:8px;border:1px solid var(--grey-light);border-radius:8px;margin-bottom:6px;font-size:13px;">' +
           '<div style="display:flex;justify-content:space-between;">' +
@@ -2070,7 +2266,7 @@ function toggleAccountDropdown(type) {
       else if (i.action === 'facebook') clickHandler = "closeAccountDropdowns();window.open('https://www.facebook.com/search/top?q=" + encodeURIComponent(p1) + "','_blank')";
       else clickHandler = 'closeAccountDropdowns()';
       return '<div class="biz-dd-row" onclick="' + clickHandler + '">' +
-        '<div class="biz-dd-icon">' + (i.action === 'facebook' ? '<img src="assets/icons/facebook_icon_f.png" style="width:20px;height:20px;object-fit:contain;">' : i.action === 'whatsapp' ? '<img src="assets/icons/whatsapp_icon_1.webp" style="width:20px;height:20px;object-fit:contain;">' : '<i class="fas fa-' + iconName + '"></i>') + '</div>' +
+        '<div class="biz-dd-icon">' + (i.action === 'facebook' ? '<img src="assets/icons/facebook_icon_f.webp" style="width:20px;height:20px;object-fit:contain;">' : i.action === 'whatsapp' ? '<img src="assets/icons/whatsapp_icon_1.webp" style="width:20px;height:20px;object-fit:contain;">' : '<i class="fas fa-' + iconName + '"></i>') + '</div>' +
         '<div class="biz-dd-text"><h4>' + i.label + '</h4>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' +
       '</div>';
     }).join('');
@@ -2286,7 +2482,7 @@ function renderBusinessCard() {
   const isStaff = UserState.businessRole === 'staff';
   const bizDesc = (biz.description || '').replace(/'/g, "\\'");
   const logoHtml = biz.logo
-    ? '<img src="' + biz.logo + '" class="biz-logo-img" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">'
+    ? '<img src="' + biz.logo + '" class="biz-logo-img" style="width:44px;height:44px;border-radius:6px;object-fit:cover;" loading="lazy" width="44" height="44">'
     : '<div class="biz-logo" style="background:' + col + ';">' + init + '</div>';
   const actionsHtml = isStaff
     ? '<div style="padding:8px 16px;border-top:1px solid var(--grey-light);font-size:12px;color:var(--grey-dark);"><span style="background:var(--grey-light);padding:4px 8px;border-radius:4px;">Staff \u00B7 View only</span> <button class="btn-sm" style="margin-left:8px;background:var(--orange);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;" onclick="openBusinessStaff(\'' + (biz.id || 'biz_user') + '\',\'' + nameEsc + '\')">Staff Panel</button></div>'
@@ -3006,8 +3202,8 @@ window.toggleCategoryChildren = toggleCategoryChildren;
 
 /* ─── Exports for register-modal ─── */
 window.NATIONALITIES_DATA = NATIONALITIES_DATA;
-window.populateTownDatalist = populateTownDatalist;
-window.populateAreaDatalist = populateAreaDatalist;
+window.populateTownDropdown = populateTownDropdown;
+window.populateAreaDropdown = populateAreaDropdown;
 window.onTownChange = onTownChange;
 window.updateIdentityField = updateIdentityField;
 window.updateLocationField = updateLocationField;

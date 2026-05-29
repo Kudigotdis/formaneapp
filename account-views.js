@@ -1220,9 +1220,13 @@
         natSel.appendChild(opt);
       });
     }
-    /* Populate register modal town datalist */
-    if (typeof window.populateTownDatalist === 'function') {
-      window.populateTownDatalist();
+    /* Populate register modal town dropdown */
+    if (typeof window.populateTownDropdown === 'function') {
+      window.populateTownDropdown();
+    }
+    /* Load crowd-sourced area submissions */
+    if (typeof window.loadSubmittedAreas === 'function') {
+      window.loadSubmittedAreas();
     }
   });
 

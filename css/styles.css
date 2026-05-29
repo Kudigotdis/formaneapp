@@ -422,11 +422,51 @@ label { font-size: 12px; font-weight: 600; color: var(--orange); text-transform:
 }
 .field-input::placeholder { color: #94a3b8; }
 
-/* Social Media accordion — white body, no input grey, tight rows */
-.social-body { background: #fff !important; padding: 4px 12px 8px !important; }
-.social-body .field-row { margin-bottom: 1px; }
-.social-body .field-input { background: transparent; }
-.social-body .field-input:focus { background: #fff; }
+/* ─── STACKED ADDRESS INPUTS (Country / Town / Area) ─── */
+.address-stack-row { margin-bottom: 0 !important; }
+.address-stack-row .field-input {
+  width: 100%; box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--grey-light);
+  border-bottom: none;
+  border-radius: 0;
+  font-size: 14px;
+}
+.address-stack-row:first-of-type .field-input {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+.address-stack-row:last-of-type .field-input {
+  border-bottom: 1px solid var(--grey-light);
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.address-stack-row .field-input:focus {
+  outline: none; border-color: var(--orange);
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(253,118,0,0.1);
+  position: relative; z-index: 2;
+}
+
+/* ─── CUSTOM DROPDOWN ─── */
+.custom-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0;
+  z-index: 100; background: #fff;
+  border: 1px solid var(--grey-light);
+  border-top: none; border-radius: 0 0 6px 6px;
+  max-height: 180px; overflow-y: auto;
+  display: none;
+}
+.custom-dropdown.show {
+  display: block;
+}
+.custom-dropdown-item {
+  padding: 8px 12px; cursor: pointer;
+  font-size: 14px; color: var(--grey-dark);
+  transition: 0.1s;
+}
+.custom-dropdown-item:hover,
+.custom-dropdown-item:active { background: var(--orange); color: #fff; }
 
 .profile-photo-upload {
   width: 120px; height: 120px; border-radius: 12px;

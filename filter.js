@@ -12,6 +12,7 @@ let currentLocationMode = 'placeA';
 let selectedPlaceA = 'Nation Wide';
 let selectedPlaceB = 'All Area';
 let locationData = null;
+let currentCountry = 'botswana';
 
 function openPromoTypeModal() {
   const container = document.getElementById('promo-type-options');
@@ -98,6 +99,8 @@ window.openLocationSheet = openLocationSheet;
 window.applyCategoryFilter = applyCategoryFilter;
 window.updateCategoryFilterText = updateCategoryFilterText;
 window.selectNationWide = selectNationWide;
+window.openCountryPicker = openCountryPicker;
+window.selectCountry = selectCountry;
 
 let currentSearchMode = 'all';
 function setSearchMode(mode) {
@@ -267,6 +270,7 @@ function applyCategoryFilter() {
 
 /* ─── APPLY FILTERS (category + location + promo type) ─── */
 function applyFilters() {
+  if (currentCountry === 'zimbabwe') return [];
   var items = window._promos || [];
 
   if (selectedCategories.length > 0) {
@@ -289,9 +293,76 @@ function applyFilters() {
 
 window.applyFilters = applyFilters;
 
+/* ─── COUNTRY PICKER ─── */
+function selectCountry(country) {
+  currentCountry = country;
+  localStorage.setItem('foromane_country', country);
+  window.locationData = null;
+  locationData = null;
+  var flag = document.getElementById('country-flag');
+  if (flag) {
+    flag.src = 'assets/icons/circle-flag-of-' + country + '.webp';
+  }
+  closeModal('country-picker-modal');
+  selectedPlaceA = 'Nation Wide';
+  selectedPlaceB = 'All Area';
+  var btn = document.getElementById('place-a-btn');
+  if (btn) btn.textContent = 'Nation Wide';
+  var proBtn = document.getElementById('place-a-btn-pro');
+  if (proBtn) proBtn.textContent = 'Nation Wide';
+  var bBtn = document.getElementById('place-b-btn');
+  if (bBtn) bBtn.textContent = 'All Area';
+  if (typeof renderPromos === 'function') renderPromos();
+  if (typeof renderDirectory === 'function') renderDirectory();
+}
+
+function openCountryPicker() {
+  var existing = document.getElementById('country-picker-modal');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'country-picker-modal';
+  overlay.innerHTML =
+    '<div class="modal-sheet" style="max-width:320px;margin:auto;">' +
+      '<div class="modal-header">' +
+        '<span class="modal-title">Select Country</span>' +
+        '<button class="modal-close" onclick="closeModal(\'country-picker-modal\')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>' +
+      '</div>' +
+      '<div class="modal-body" style="padding:8px 0;">' +
+        '<div onclick="selectCountry(\'botswana\')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--grey-light);' + (currentCountry === 'botswana' ? 'background:var(--orange-light);font-weight:600;' : '') + '">' +
+          '<img src="assets/icons/circle-flag-of-botswana.webp" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">' +
+          '<span>Botswana</span>' +
+          (currentCountry === 'botswana' ? ' <span style="margin-left:auto;color:var(--orange);">\u2713</span>' : '') +
+        '</div>' +
+        '<div onclick="selectCountry(\'zimbabwe\')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;' + (currentCountry === 'zimbabwe' ? 'background:var(--orange-light);font-weight:600;' : '') + '">' +
+          '<img src="assets/icons/circle-flag-of-zimbabwe.webp" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">' +
+          '<span>Zimbabwe</span>' +
+          (currentCountry === 'zimbabwe' ? ' <span style="margin-left:auto;color:var(--orange);">\u2713</span>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  openModal('country-picker-modal');
+}
+
 /* ─── LOCATION FILTER SHEET ─── */
 function ensureLocationsLoaded() {
   if (window.locationData) return Promise.resolve(window.locationData);
+  if (currentCountry === 'zimbabwe') {
+    if (window.ZIMBABWE_LOCATIONS_DATA) {
+      window.locationData = window.ZIMBABWE_LOCATIONS_DATA;
+      locationData = window.ZIMBABWE_LOCATIONS_DATA;
+      return Promise.resolve(window.locationData);
+    }
+    return fetch('zimbabwe_locations.json').then(function(r) { return r.json(); }).then(function(d) {
+      window.locationData = d;
+      locationData = d;
+      return d;
+    }).catch(function() {
+      showToast('Could not load Zimbabwe locations');
+      return { districts: [] };
+    });
+  }
   var data = window.LOCATIONS_DATA;
   if (!data) {
     showToast('Could not load location data');
@@ -328,32 +399,54 @@ function renderLocationSheet() {
     html += '</style>';
 
     html += '<div style="margin:0 16px;border-bottom:1px solid var(--grey-light);"></div>';
-    districts.forEach(function(d) {
-      if (!d.towns || d.towns.length === 0) return;
-      d.towns.forEach(function(t) {
-        var town = t.name;
-        var areas = t.areas || [];
-        var areaCount = areas.length;
-        var isSelected = selectedPlaceA === town;
-        html += '<details style="padding:0 16px;">';
-        html += '<summary style="padding:14px 0;cursor:pointer;font-size:15px;display:flex;justify-content:space-between;align-items:center;' + (isSelected ? 'background:var(--orange-light);font-weight:600;' : '') + '">' +
-          '<span>' + town + '</span>' +
-          '<span class="loc-count" style="font-size:12px;color:var(--grey-dark);">' + areaCount + '</span>' +
-        '</summary>';
-        html += '<div style="padding-left:32px;">';
-        html += '<div style="padding:10px 0;font-size:14px;cursor:pointer;font-weight:500;" onclick="selectTownArea(\'' + town.replace(/'/g, "\\'") + '\',\'All Area\')">All Area</div>';
-        areas.forEach(function(a) {
-          var areaSelected = selectedPlaceB === a;
-          html += '<div style="margin:0 16px 0 48px;border-top:1px solid var(--grey-light);"></div>';
-          html += '<div style="padding:10px 0;font-size:14px;cursor:pointer;' + (areaSelected ? 'background:var(--orange-light);font-weight:600;color:var(--orange);' : '') + '" onclick="selectTownArea(\'' + town.replace(/'/g, "\\'") + '\',\'' + a.replace(/'/g, "\\'") + '\')">' +
-            a +
-            (areaSelected ? ' <img src="assets/icons/solid/check-2_orange.webp" style="width:16px;height:16px;float:right;">' : '') +
-          '</div>';
+    var displayTowns = [];
+    if (currentCountry === 'zimbabwe') {
+      var pinnedCities = ['Harare', 'Bulawayo', 'Chitungwiza', 'Mutare', 'Gweru', 'Kwekwe', 'Kadoma', 'Chinhoyi', 'Masvingo', 'Marondera'];
+      districts.forEach(function(d) {
+        if (!d.towns || d.towns.length === 0) return;
+        d.towns.forEach(function(t) {
+          displayTowns.push({ name: t.name, areas: t.areas || [] });
         });
-        html += '</div>';
-        html += '</details>';
-        html += '<div style="margin:0 16px;border-top:1px solid var(--grey-light);"></div>';
       });
+      var pinned = [], rest = [];
+      displayTowns.forEach(function(t) {
+        if (pinnedCities.indexOf(t.name) !== -1) pinned.push(t);
+        else rest.push(t);
+      });
+      pinned.sort(function(a, b) { return pinnedCities.indexOf(a.name) - pinnedCities.indexOf(b.name); });
+      rest.sort(function(a, b) { return a.name.localeCompare(b.name); });
+      displayTowns = pinned.concat(rest);
+    } else {
+      districts.forEach(function(d) {
+        if (!d.towns || d.towns.length === 0) return;
+        d.towns.forEach(function(t) {
+          displayTowns.push({ name: t.name, areas: t.areas || [] });
+        });
+      });
+    }
+    displayTowns.forEach(function(t) {
+      var town = t.name;
+      var areas = t.areas || [];
+      var areaCount = areas.length;
+      var isSelected = selectedPlaceA === town;
+      html += '<details style="padding:0 16px;">';
+      html += '<summary style="padding:14px 0;cursor:pointer;font-size:15px;display:flex;justify-content:space-between;align-items:center;' + (isSelected ? 'background:var(--orange-light);font-weight:600;' : '') + '">' +
+        '<span>' + town + '</span>' +
+        '<span class="loc-count" style="font-size:12px;color:var(--grey-dark);">' + areaCount + '</span>' +
+      '</summary>';
+      html += '<div style="padding-left:32px;">';
+      html += '<div style="padding:10px 0;font-size:14px;cursor:pointer;font-weight:500;" onclick="selectTownArea(\'' + town.replace(/'/g, "\\'") + '\',\'All Area\')">All Area</div>';
+      areas.forEach(function(a) {
+        var areaSelected = selectedPlaceB === a;
+        html += '<div style="margin:0 16px 0 48px;border-top:1px solid var(--grey-light);"></div>';
+        html += '<div style="padding:10px 0;font-size:14px;cursor:pointer;' + (areaSelected ? 'background:var(--orange-light);font-weight:600;color:var(--orange);' : '') + '" onclick="selectTownArea(\'' + town.replace(/'/g, "\\'") + '\',\'' + a.replace(/'/g, "\\'") + '\')">' +
+          a +
+          (areaSelected ? ' <img src="assets/icons/solid/check-2_orange.webp" style="width:16px;height:16px;float:right;">' : '') +
+        '</div>';
+      });
+      html += '</div>';
+      html += '</details>';
+      html += '<div style="margin:0 16px;border-top:1px solid var(--grey-light);"></div>';
     });
     body.innerHTML = html;
   });
@@ -391,3 +484,10 @@ function selectNationWide() {
 }
 
 ensureLocationsLoaded();
+// Always start on Botswana regardless of previous selection
+(function initFlag() {
+  var flag = document.getElementById('country-flag');
+  if (flag) flag.src = 'assets/icons/circle-flag-of-botswana.webp';
+  window.locationData = null;
+  locationData = null;
+})();

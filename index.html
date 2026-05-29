@@ -17,17 +17,23 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="ui-styles.css">
+  <link rel="preload" as="image" href="assets/images/company_logos_dummy/foromane_logo_icon_online.png">
+  <link rel="preload" as="image" href="assets/images/company_logos_dummy/Foromane_logo_no_background_1.png">
+  <link rel="preload" as="image" href="assets/icons/solid/bullhorn-2_active.webp">
+  <link rel="preload" as="image" href="assets/icons/solid/address-book-2_inactive.webp">
+  <link rel="preload" as="image" href="assets/icons/solid/clipboard-list_inactive.webp">
+  <link rel="preload" as="image" href="assets/icons/solid/user-circle_inactive.webp">
 </head>
 <body id="app">
 
   <!-- ── HEADER ── -->
   <header id="app-header" class="shell-hidden">
     <div class="logo">
-      <img src="assets/images/company_logos_dummy/foromane_logo_icon_online.png" alt="Foromane" style="height:27px;">
+      <img src="assets/images/company_logos_dummy/foromane_logo_icon_online.png" alt="Foromane" style="height:27px;" loading="eager">
     </div>
     <div class="header-actions">
       <button class="icon-btn" onclick="shareApp()"><img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:18px;height:18px;display:block;"></button>
-      <img src="assets/icons/circle-flag-of-botswana.webp" style="width:24px;height:24px;border-radius:50%;border:3px solid rgba(200,200,200,0.2);object-fit:cover;">
+      <img src="assets/icons/circle-flag-of-botswana.webp" id="country-flag" style="width:24px;height:24px;border-radius:50%;border:3px solid rgba(200,200,200,0.2);object-fit:cover;cursor:pointer;" onclick="openCountryPicker()">
     </div>
   </header>
 
@@ -38,7 +44,7 @@
     <div id="view-welcome" class="view active">
       <div class="welcome-screen">
         <div class="welcome-logo-wrap">
-          <img src="assets/images/company_logos_dummy/Foromane_logo_no_background_1.png" alt="Foromane" class="welcome-logo">
+          <img src="assets/images/company_logos_dummy/Foromane_logo_no_background_1.png" alt="Foromane" class="welcome-logo" loading="eager">
         </div>
         <div class="welcome-buttons">
           <button class="welcome-btn welcome-btn-primary" onclick="Auth.loginAsGuest()">Browse</button>
@@ -357,7 +363,7 @@
         <button class="biz-back-round" onclick="goBack()"><img src="assets/icons/solid/chevron-left_white.webp" alt="Back"></button>
         <div style="display:flex;align-items:center;gap:16px;">
           <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="toggleBlogLike(this)">
-            <img src="assets/icons/heart_inactive_icon.png" style="width:24px;height:24px;">
+            <img src="assets/icons/heart_inactive_icon.webp" style="width:24px;height:24px;">
           </div>
           <img src="assets/icons/solid/share-nodes_whatsapp_green.webp" style="width:22px;height:22px;cursor:pointer;" onclick="shareBlog()">
         </div>
@@ -411,11 +417,11 @@
       <div class="biz-bottom-wrapper">
         <div class="biz-bottom-bar">
           <div id="biz-bar-actions">
-            <img src="assets/icons/Call_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
-            <img src="assets/icons/facebook_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
-            <img src="assets/icons/GPS_On.png" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
-            <img src="assets/icons/whatsApp_icon_on.png" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
-            <img src="assets/icons/heart_inactive_icon.png" class="biz-bar-icon" onclick="toggleFavBiz('biz-10')" id="biz-heart-icon">
+            <img src="assets/icons/Call_on.webp" class="biz-bar-icon" onclick="toggleBizDropdown('call')">
+            <img src="assets/icons/facebook_icon_on.webp" class="biz-bar-icon" onclick="toggleBizDropdown('facebook')">
+            <img src="assets/icons/GPS_On.webp" class="biz-bar-icon" onclick="toggleBizDropdown('gps')">
+            <img src="assets/icons/whatsApp_icon_on.webp" class="biz-bar-icon" onclick="toggleBizDropdown('whatsapp')">
+            <img src="assets/icons/heart_inactive_icon.webp" class="biz-bar-icon" onclick="toggleFavBiz('biz-10')" id="biz-heart-icon">
           </div>
         </div>
         <div id="dd-call" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div><div id="dd-facebook" class="biz-dropdown-container biz-dd-facebook"><div class="biz-dropdown-inner"></div></div><div id="dd-gps" class="biz-dropdown-container"><div class="biz-dropdown-inner"></div></div><div id="dd-whatsapp" class="biz-dropdown-container biz-dd-whatsapp"><div class="biz-dropdown-inner"></div></div>
@@ -457,10 +463,10 @@
 
   <!-- ── BOTTOM NAV ── -->
   <nav id="bottom-nav" style="display:none;">
-    <a class="nav-item active" id="nav-promos" onclick="navTab('view-promos','nav-promos')"><img src="assets/icons/solid/bullhorn-2_active.webp" class="nav-icon" alt="Promos"></a>
-    <a class="nav-item" id="nav-directory" onclick="navTab('view-directory','nav-directory')"><img src="assets/icons/solid/address-book-2_inactive.webp" class="nav-icon" alt="Directory"></a>
-    <a class="nav-item" id="nav-notes" onclick="navTab('view-notes','nav-notes')"><img src="assets/icons/solid/clipboard-list_inactive.webp" class="nav-icon" alt="Notes"></a>
-    <a class="nav-item" id="nav-account" onclick="navTab('view-account','nav-account')"><img src="assets/icons/solid/user-circle_inactive.webp" class="nav-icon" alt="Account"></a>
+    <a class="nav-item active" id="nav-promos" onclick="navTab('view-promos','nav-promos')"><img src="assets/icons/solid/bullhorn-2_active.webp" class="nav-icon" alt="Promos" loading="eager"></a>
+    <a class="nav-item" id="nav-directory" onclick="navTab('view-directory','nav-directory')"><img src="assets/icons/solid/address-book-2_inactive.webp" class="nav-icon" alt="Directory" loading="eager"></a>
+    <a class="nav-item" id="nav-notes" onclick="navTab('view-notes','nav-notes')"><img src="assets/icons/solid/clipboard-list_inactive.webp" class="nav-icon" alt="Notes" loading="eager"></a>
+    <a class="nav-item" id="nav-account" onclick="navTab('view-account','nav-account')"><img src="assets/icons/solid/user-circle_inactive.webp" class="nav-icon" alt="Account" loading="eager"></a>
   </nav>
 
   <!-- ── ACCOUNT SWITCHER MODAL ── -->
@@ -482,9 +488,9 @@
         <button class="modal-close" onclick="closeModal('login-modal')"><img src="assets/icons/solid/xmark_orange.webp" style="width:18px;height:18px;display:block;"></button>
       </div>
       <div class="modal-body">
-        <label>Email or Phone</label>
+        <label for="login-credential">Email or Phone</label>
         <input type="text" id="login-credential" placeholder="email@example.com or +267 71..." autocomplete="username">
-        <label>Password</label>
+        <label for="login-password">Password</label>
         <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();Auth.loginWithCredential();}">
         <div id="login-error" style="color:#c00;font-size:12px;margin-bottom:8px;display:none;"></div>
         <button class="btn" onclick="Auth.loginWithCredential()">Sign In</button>
@@ -572,24 +578,58 @@
         </div>
 
         <!-- Location -->
-        <div class="sub-accordion">
+        <div class="sub-accordion" style="overflow:visible;">
           <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Location</div>
           <div class="sub-accordion-body">
-            <div class="field-row" style="margin-bottom:1px;">
-              <input type="text" class="field-input" id="loc-town" list="loc-town-list" placeholder="Town / Village / City" value="" oninput="populateAreaDatalist(this.value)" onchange="onTownChange(this.value)">
-              <datalist id="loc-town-list"></datalist>
+
+            <!-- 1. Country Selection (Top) -->
+            <div class="field-row address-stack-row">
+              <select class="field-input" id="loc-country" onchange="onCountryChange(this.value)">
+                <option value="" disabled selected>Select Country</option>
+                <option value="botswana">Botswana</option>
+                <option value="zimbabwe">Zimbabwe</option>
+              </select>
             </div>
-            <div class="field-row" style="margin-bottom:1px;">
-              <input type="text" class="field-input" id="loc-area" list="loc-area-list" placeholder="Area / Neighbourhood" value="" onchange="updateLocationField('area', this.value)">
-              <datalist id="loc-area-list"></datalist>
+
+            <!-- 2. Village / Town / City (Middle) -->
+            <div class="field-row address-stack-row" style="position:relative;">
+              <input type="text" class="field-input" id="loc-town"
+                placeholder="Village / Town / City" autocomplete="off"
+                oninput="onTownInput(this.value)" onchange="onTownChange(this.value)"
+                onfocus="showDropdown('loc-town-dropdown')"
+                onblur="setTimeout(function(){hideDropdown('loc-town-dropdown')},180)">
+              <div class="custom-dropdown" id="loc-town-dropdown"></div>
             </div>
+            <!-- Add town to database -->
+            <div id="add-town-container" style="display:none;">
+              <button type="button" class="add-entry-btn" onclick="submitNewTown()">
+                <i class="fas fa-plus-circle"></i> Add "<span id="add-town-name"></span>" to database
+              </button>
+            </div>
+
+            <!-- 3. Area / Neighbourhood (Bottom) -->
+            <div class="field-row address-stack-row" style="position:relative;">
+              <input type="text" class="field-input" id="loc-area"
+                placeholder="Area / Neighbourhood" autocomplete="off"
+                oninput="onAreaInput(this.value)" onchange="onAreaChange(this.value)"
+                onfocus="showDropdown('loc-area-dropdown')"
+                onblur="setTimeout(function(){hideDropdown('loc-area-dropdown')},180)">
+              <div class="custom-dropdown" id="loc-area-dropdown"></div>
+            </div>
+            <!-- Add area to database -->
+            <div id="add-area-container" style="display:none;">
+              <button type="button" class="add-entry-btn" onclick="submitNewArea()">
+                <i class="fas fa-plus-circle"></i> Add "<span id="add-area-name"></span>" to database
+              </button>
+            </div>
+
           </div>
         </div>
 
         <!-- Social Media -->
-        <div class="accordion">
-          <div class="accordion-header" onclick="toggleAcc(this)"><span>Social Media</span></div>
-          <div class="accordion-body social-body">
+        <div class="sub-accordion">
+          <div class="sub-accordion-header" onclick="toggleSubAcc(this)">Social Media</div>
+          <div class="sub-accordion-body">
             <div class="field-row"><input type="text" class="field-input" id="social_facebook" placeholder="Facebook (username or URL)" value="" onchange="updateSocialField('facebook', this.value)"></div>
             <div class="field-row"><input type="text" class="field-input" id="social_twitter" placeholder="Twitter / X" value="" onchange="updateSocialField('twitter', this.value)"></div>
             <div class="field-row"><input type="text" class="field-input" id="social_instagram" placeholder="Instagram" value="" onchange="updateSocialField('instagram', this.value)"></div>
@@ -662,7 +702,7 @@
       </div>
       <div class="modal-body">
         <p style="font-size:13px;color:var(--grey-dark);margin-bottom:12px;">Enter admin password to continue.</p>
-        <label>Password</label>
+        <label for="admin-password-input">Password</label>
         <input type="password" id="admin-password-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter'){event.preventDefault();Auth.adminLogin();}">
         <div id="admin-pw-error" style="color:#c00;font-size:12px;margin-bottom:8px;display:none;"></div>
         <button class="btn" onclick="Auth.adminLogin()">Enter Admin Panel</button>
@@ -763,7 +803,7 @@
 
             <!-- Business Name -->
             <div style="padding:8px 0;">
-              <label>Business Name</label>
+              <label for="biz-name">Business Name</label>
               <input type="text" id="biz-name" placeholder="e.g. Kago Timber &amp; Hardware" style="width:100%;padding:8px 10px;border:1px solid var(--grey-light);border-radius:4px;font-size:13px;box-sizing:border-box;">
             </div>
 
@@ -771,7 +811,7 @@
 
             <!-- Description -->
             <div style="padding:8px 0;">
-              <label>Business Description</label>
+              <label for="biz-description">Business Description</label>
               <textarea id="biz-description" rows="3" placeholder="Describe your business..." style="width:100%;padding:8px 10px;border:1px solid var(--grey-light);border-radius:4px;font-size:13px;box-sizing:border-box;resize:vertical;font-family:var(--font-main);"></textarea>
             </div>
 
@@ -846,27 +886,27 @@
             <span style="color:var(--orange);">1. Description</span>
           </div>
           <div class="accordion-body">
-            <label>Item Title</label>
+            <label for="item-title">Item Title</label>
             <input type="text" id="item-title" placeholder="e.g. Meranti Planks 22x144mm" oninput="updateItemPreview()">
 
-            <label>Image</label>
+            <div style="font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px;margin-top:8px;display:block;">Image</div>
             <div id="item-image-picker" style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;margin-bottom:8px;"></div>
 
-            <label>Description</label>
+            <label for="item-desc">Description</label>
             <textarea id="item-desc" placeholder="Describe the item..." rows="2"></textarea>
 
-            <label>Category</label>
+            <div style="font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px;margin-top:8px;display:block;">Category</div>
             <div id="item-category-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"></div>
             <p id="item-cat-display" style="font-size:12px;color:var(--grey-dark);margin-top:4px;"></p>
 
-            <label>Town</label>
+            <label for="item-town">Town</label>
             <select id="item-town" style="margin-bottom:8px;"></select>
 
-            <label>Area</label>
+            <div style="font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px;margin-top:8px;display:block;">Area</div>
             <button id="item-area-btn" class="btn-outline" onclick="openItemAreaSelector()" style="width:100%;justify-content:center;font-size:13px;">Select areas</button>
             <p id="item-area-display" style="font-size:12px;color:var(--grey-dark);margin-top:4px;"></p>
 
-            <label>Tags</label>
+            <label for="item-tag-input">Tags</label>
             <div id="item-tag-container" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;"></div>
             <div style="display:flex;gap:6px;">
               <input type="text" id="item-tag-input" placeholder="Type tag + Enter" style="flex:1;margin:0;" onkeydown="if(event.key==='Enter'){event.preventDefault();addItemTag();}">
@@ -881,17 +921,17 @@
             <span style="color:var(--orange);">2. Cost Settings</span>
           </div>
           <div class="accordion-body">
-            <label>Base Price (P)</label>
+            <label for="item-price">Base Price (P)</label>
             <input type="number" id="item-price" placeholder="0.00" oninput="updatePricingPreview()">
 
-            <label>Unit</label>
+            <label for="item-unit">Unit</label>
             <select id="item-unit" onchange="updatePricingPreview()"></select>
 
-            <label>Variables (Add-ons)</label>
+            <div style="font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px;margin-top:8px;display:block;">Variables (Add-ons)</div>
             <div id="item-variables-container"></div>
             <button class="add-entry-btn" onclick="addItemVariable()" style="margin-bottom:10px;">+ Add Variable</button>
 
-            <label>Tier Pricing</label>
+            <label for="item-tier-type">Tier Pricing</label>
             <select id="item-tier-type" onchange="onTierTypeChange()" style="margin-bottom:6px;">
               <option value="none">None</option>
               <option value="bulk">Bulk (flat)</option>
@@ -900,7 +940,7 @@
             </select>
             <div id="item-tier-rules" style="display:none;"></div>
 
-            <label>Discount</label>
+            <label for="item-discount-type">Discount</label>
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
               <select id="item-discount-type" onchange="updatePricingPreview()" style="flex:1;margin:0;">
                 <option value="none">No discount</option>
@@ -920,7 +960,7 @@
             <span style="color:var(--orange);">3. Visibility & Scheduling</span>
           </div>
           <div class="accordion-body">
-            <label>Region</label>
+            <label for="item-region">Region</label>
             <select id="item-region" onchange="onItemRegionChange(); updatePromoCostEstimate();">
               <option value="local">Local (my town)</option>
               <option value="francistown">Francistown</option>
@@ -928,7 +968,7 @@
             </select>
 
             <div id="item-location-detail" style="display:block;">
-              <label>GPS Pin</label>
+              <div style="font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px;margin-top:8px;display:block;">GPS Pin</div>
               <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
                 <button class="btn-outline" onclick="pinItemLocation()" style="flex:1;justify-content:center;" id="item-gps-btn">Pin Location</button>
               </div>
@@ -941,13 +981,13 @@
               </div>
             </div>
 
-            <label style="margin-top:12px;">Schedule Lifespan</label>
+            <div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px;display:block;">Schedule Lifespan</div>
             <div style="display:flex;flex-direction:column;gap:6px;">
-              <div><label style="font-size:10px;">End Date</label><input type="date" id="item-end-date"></div>
-              <div><label style="font-size:10px;">Start Date</label><input type="date" id="item-start-date"></div>
+              <div><label for="item-end-date" style="font-size:10px;">End Date</label><input type="date" id="item-end-date"></div>
+              <div><label for="item-start-date" style="font-size:10px;">Start Date</label><input type="date" id="item-start-date"></div>
             </div>
 
-            <label style="margin-top:8px;">Availability Hours (7-day grid)</label>
+            <div style="margin-top:8px;font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px;display:block;">Availability Hours (7-day grid)</div>
             <div id="item-schedule-grid" style="margin-bottom:8px;">
               <div id="item-day-rows"></div>
             </div>
@@ -971,7 +1011,7 @@
           <div id="add-item-promo-unlocked" style="display:none;">
             <p style="font-size:13px;color:var(--text-sub);margin-bottom:10px;">Boost this item to the Promos feed.</p>
 
-            <label>Promo Duration</label>
+            <label for="item-promo-days">Promo Duration</label>
             <div style="display:flex;gap:8px;align-items:center;">
               <input type="number" id="item-promo-days" value="3" min="3" max="90" oninput="updatePromoCostEstimate()" style="flex:1;margin:0;">
               <span style="font-size:13px;color:var(--grey-dark);">days (min 3)</span>
@@ -1021,7 +1061,7 @@
       </div>
       <div class="modal-body">
         <!-- Images at top -->
-        <label>Images (max 5)</label>
+        <label for="promo-image-input">Images (max 5)</label>
         <div id="promo-image-dropzone" style="border:2px dashed var(--grey-light);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;margin-bottom:8px;" onclick="document.getElementById('promo-image-input').click()">
           <div style="font-size:13px;color:var(--grey-dark);">Tap to select images</div>
         </div>
@@ -1032,10 +1072,10 @@
           <span id="promo-img-total-size">0 KB</span> total
         </div>
 
-        <label>Item Title</label><input type="text" id="promo-item-title" placeholder="e.g. Meranti Planks 22x144mm">
-        <label>Description</label><textarea id="promo-item-desc" placeholder="Describe the item..." rows="2"></textarea>
+        <label for="promo-item-title">Item Title</label><input type="text" id="promo-item-title" placeholder="e.g. Meranti Planks 22x144mm">
+        <label for="promo-item-desc">Description</label><textarea id="promo-item-desc" placeholder="Describe the item..." rows="2"></textarea>
 
-        <label>Promo Type</label>
+        <label for="promo-type">Promo Type</label>
         <select id="promo-type">
           <option>Buy New</option>
           <option>Buy Used</option>
@@ -1044,18 +1084,18 @@
         </select>
 
         <!-- Category select -->
-        <label>Category</label>
+        <label for="promo-item-cat">Category</label>
         <select id="promo-item-cat" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--grey-light);font-size:14px;margin-bottom:8px;"></select>
 
-        <label>Tags</label>
+        <div style="font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px;margin-top:8px;display:block;">Tags</div>
         <div id="promo-tag-display" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;min-height:24px;"></div>
         <button class="btn-sm" style="width:100%;padding:10px;margin-bottom:10px;background:var(--orange-light);color:var(--orange);border:1px solid var(--orange);text-align:center;" onclick="openPromoTagSelector()">+ Select / Add Tags</button>
 
-        <label>Price (P)</label><input type="number" id="promo-item-price" placeholder="0.00" oninput="updatePromoCost()">
-        <label>Unit</label>
+        <label for="promo-item-price">Price (P)</label><input type="number" id="promo-item-price" placeholder="0.00" oninput="updatePromoCost()">
+        <label for="promo-item-unit">Unit</label>
         <select id="promo-item-unit"><option>each</option><option>per meter</option><option>per kg</option><option>per hour</option><option>per day</option><option>per m²</option><option>per box</option><option>per set</option></select>
 
-        <label>Visibility</label>
+        <label for="promo-region">Visibility</label>
         <select id="promo-region" onchange="updatePromoCost()">
           <option value="local">Local (my town)</option>
           <option value="francistown">Francistown</option>
@@ -1064,7 +1104,7 @@
 
         <p id="promo-free-indicator" style="font-size:12px;color:#2e7d32;font-weight:600;margin-bottom:8px;display:none;"></p>
 
-        <label>Duration (days)</label>
+        <label for="promo-days">Duration (days)</label>
         <input type="number" id="promo-days" value="3" min="3" max="90" oninput="updatePromoCost()">
 
         <div class="promo-cost-summary">
@@ -1488,6 +1528,7 @@
   <script defer src="data.js"></script>
   <script defer src="demo-data.js"></script>
   <script defer src="locations-data.js"></script>
+  <script defer src="zimbabwe_locations.js"></script>
   <script defer src="demo-profiles.js"></script>
   <script defer src="db.js"></script>
   <script defer src="media-cache.js"></script>
