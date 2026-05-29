@@ -1,62 +1,62 @@
-const CACHE = 'foromane-v5';
+const CACHE = 'foromane-v6';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/manifest.json',
-  '/assets/icons/pwa/icon-192.png',
-  '/assets/icons/pwa/icon-512.png',
-  '/asset-url.js',
-  '/data.js',
-  '/demo-data.js',
-  '/demo-profiles.js',
-  '/db.js',
-  '/media-cache.js',
-  '/user-state.js',
-  '/auth.js',
-  '/utils.js',
-  '/pricing-engine.js',
-  '/foromane_product_categories.js',
-  '/data/tradeSpecific.js',
-  '/data/tradesman-skills.js',
-  '/data/trade-skill-map.js',
-  '/skill-ratings.js',
-  '/filter.js',
-  '/navigation.js',
-  '/router.js',
-  '/promos.js',
-  '/pro.js',
-  '/data/seed-pro-skills.js',
-  '/directory.js',
-  '/notes.js',
-  '/account.js',
-  '/analytics.js',
-  '/admin/AdminData.js',
-  '/admin/AdminState.js',
-  '/admin/views/ClientListTab.js',
-  '/admin/views/OverviewTab.js',
-  '/admin/views/ApprovalsTab.js',
-  '/admin/views/FacebookCalendarTab.js',
-  '/admin/views/DirectoryTab.js',
-  '/admin/views/AnalyticsTab.js',
-  '/admin/views/AdminManagementTab.js',
-  '/admin/Admin.js',
-  '/admin.js',
-  '/items.js',
-  '/blogs.js',
-  '/app.js',
-  '/staff.js',
-  '/account-views.js',
-  '/sync.js',
-  '/path-utils.js',
-  '/mode-controller.js',
-  '/ui-helpers.js',
-  '/backend-logic.js',
-  '/ui-styles.css',
-  '/sw-register.js',
-  '/drive-api.js',
-  '/google-config.js',
-  '/locations.json'
+  './',
+  'index.html',
+  'css/styles.css',
+  'manifest.json',
+  'assets/icons/pwa/icon-192.png',
+  'assets/icons/pwa/icon-512.png',
+  'asset-url.js',
+  'data.js',
+  'demo-data.js',
+  'demo-profiles.js',
+  'db.js',
+  'media-cache.js',
+  'user-state.js',
+  'auth.js',
+  'utils.js',
+  'pricing-engine.js',
+  'foromane_product_categories.js',
+  'data/tradeSpecific.js',
+  'data/tradesman-skills.js',
+  'data/trade-skill-map.js',
+  'skill-ratings.js',
+  'filter.js',
+  'navigation.js',
+  'router.js',
+  'promos.js',
+  'pro.js',
+  'data/seed-pro-skills.js',
+  'directory.js',
+  'notes.js',
+  'account.js',
+  'analytics.js',
+  'admin/AdminData.js',
+  'admin/AdminState.js',
+  'admin/views/ClientListTab.js',
+  'admin/views/OverviewTab.js',
+  'admin/views/ApprovalsTab.js',
+  'admin/views/FacebookCalendarTab.js',
+  'admin/views/DirectoryTab.js',
+  'admin/views/AnalyticsTab.js',
+  'admin/views/AdminManagementTab.js',
+  'admin/Admin.js',
+  'admin.js',
+  'items.js',
+  'blogs.js',
+  'app.js',
+  'staff.js',
+  'account-views.js',
+  'sync.js',
+  'path-utils.js',
+  'mode-controller.js',
+  'ui-helpers.js',
+  'backend-logic.js',
+  'ui-styles.css',
+  'sw-register.js',
+  'drive-api.js',
+  'google-config.js',
+  'locations.json'
 ];
 
 self.addEventListener('install', e => {
@@ -76,7 +76,20 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      caches.match(e.request).then(r => r || caches.match('/index.html') || fetch(e.request)).catch(() => caches.match('/index.html'))
+      caches.match(e.request).then(r => r || caches.match('index.html') || fetch(e.request)).catch(() => caches.match('index.html'))
+    );
+    return;
+  }
+
+  if (e.request.destination === 'image' || e.request.url.match(/\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/)) {
+    e.respondWith(
+      caches.match(e.request).then(cachedResponse => {
+        const fetchPromise = fetch(e.request).then(networkResponse => {
+          caches.open(CACHE).then(cache => cache.put(e.request, networkResponse.clone()));
+          return networkResponse;
+        }).catch(() => cachedResponse);
+        return cachedResponse || fetchPromise;
+      })
     );
     return;
   }
@@ -86,22 +99,22 @@ self.addEventListener('fetch', e => {
       const copy = res.clone();
       caches.open(CACHE).then(cache => cache.put(e.request, copy));
       return res;
-    }).catch(() => caches.match('/index.html')))
+    }).catch(() => caches.match('index.html')))
   );
 });
 
 /* ─── PUSH NOTIFICATIONS ─── */
 self.addEventListener('push', e => {
-  var data = { title: 'Foromane', body: 'New update available', icon: '/assets/icons/pwa/icon-192.png' };
+  var data = { title: 'Foromane', body: 'New update available', icon: 'assets/icons/pwa/icon-192.png' };
   try {
     if (e.data) data = Object.assign(data, e.data.json());
   } catch(err) {}
   var opts = {
     body: data.body,
     icon: data.icon,
-    badge: '/assets/icons/pwa/icon-192.png',
+    badge: 'assets/icons/pwa/icon-192.png',
     vibrate: [200, 100, 200],
-    data: { url: data.url || '/' }
+    data: { url: data.url || './' }
   };
   e.waitUntil(self.registration.showNotification(data.title, opts));
 });
