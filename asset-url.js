@@ -21,7 +21,7 @@ window.assetUrl = function (relativePath) {
   function stripOrigin(p) {
     if (location.protocol === 'file:') return p;
     try {
-      var u = new URL(p, location.origin);
+      var u = new URL(p, document.baseURI);
       return u.origin === location.origin ? u.pathname + u.search : p;
     } catch (_) { return p; }
   }

@@ -1,2 +1,5 @@
 node_modules/
 .opencode/
+drive-oauth-token.json
+foromane-config-oauth.json
+foromane-config.json
